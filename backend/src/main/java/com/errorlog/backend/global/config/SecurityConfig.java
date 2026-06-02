@@ -1,5 +1,6 @@
 package com.errorlog.backend.global.config;
 
+import com.errorlog.backend.domain.auth.service.TokenBlacklistService;
 import com.errorlog.backend.global.security.JwtAuthenticationFilter;
 import com.errorlog.backend.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,13 +29,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**"
-                        ).permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtUtil),
+                        new JwtAuthenticationFilter(jwtUtil, tokenBlacklistService),
                         UsernamePasswordAuthenticationFilter.class
                 )
                 .build();
