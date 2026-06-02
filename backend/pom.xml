@@ -30,6 +30,7 @@
 		<java.version>21</java.version>
 		<jjwt.version>0.12.6</jjwt.version>
 		<spring-mail.version>3.4.5</spring-mail.version>
+		<openfeign.querydsl.version>7.2</openfeign.querydsl.version>
 	</properties>
 
 	<dependencies>
@@ -96,6 +97,14 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- Querydsl -->
+		<dependency>
+			<groupId>io.github.openfeign.querydsl</groupId>
+			<artifactId>querydsl-jpa</artifactId>
+			<version>${openfeign.querydsl.version}</version>
+		</dependency>
+
+
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -150,6 +159,12 @@
 								<path>
 									<groupId>org.projectlombok</groupId>
 									<artifactId>lombok</artifactId>
+								</path>
+								<path>
+									<groupId>io.github.openfeign.querydsl</groupId>
+									<artifactId>querydsl-apt</artifactId>
+									<version>${openfeign.querydsl.version}</version>
+									<classifier>jpa</classifier>
 								</path>
 							</annotationProcessorPaths>
 						</configuration>
