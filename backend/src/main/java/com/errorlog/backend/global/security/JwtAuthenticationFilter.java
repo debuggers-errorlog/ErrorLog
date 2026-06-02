@@ -1,5 +1,6 @@
 package com.errorlog.backend.global.security;
 
+import com.errorlog.backend.domain.auth.service.TokenBlacklistService;
 import com.errorlog.backend.global.util.JwtUtil;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -22,6 +23,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -34,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token)) {
             try {
-                if (jwtUtil.isTokenValid(token)) {
+                if (jwtUtil.isTokenValid(token) && !tokenBlacklistService.isBlacklisted(token)) {
                     Long userId = jwtUtil.extractUserId(token);
                     String role = jwtUtil.extractRole(token);
 

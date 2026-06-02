@@ -3,6 +3,7 @@ package com.errorlog.backend.domain.auth.service;
 import com.errorlog.backend.domain.auth.dto.LoginRequest;
 import com.errorlog.backend.domain.auth.dto.SignUpRequest;
 import com.errorlog.backend.domain.auth.dto.TokenResponse;
+import com.errorlog.backend.domain.auth.dto.WithdrawRequest;
 import com.errorlog.backend.domain.user.entity.User;
 import com.errorlog.backend.domain.user.repository.UserRepository;
 import com.errorlog.backend.global.exception.AppException;
@@ -23,22 +24,19 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailVerificationService emailVerificationService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Transactional
     public void signUp(SignUpRequest request) {
-        // 이메일 중복 체크
         if (userRepository.existsByEmail(request.email())) {
             throw new AppException(ErrorCode.DUPLICATE_EMAIL);
         }
-        // 닉네임 중복 체크
         if (userRepository.existsByNickname(request.nickname())) {
             throw new AppException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
-        // 이메일 인증 코드 검증
         emailVerificationService.verifyCode(request.email(), request.verificationCode());
 
-        // 사용자 저장
         User user = User.builder()
                 .email(request.email())
                 .nickname(request.nickname())
@@ -56,7 +54,6 @@ public class AuthService {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_CREDENTIALS));
 
-        // 상태 검증
         if (user.getStatus() == User.Status.DELETED) {
             throw new AppException(ErrorCode.USER_DELETED);
         }
@@ -64,7 +61,6 @@ public class AuthService {
             throw new AppException(ErrorCode.USER_SUSPENDED);
         }
 
-        // 비밀번호 검증
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             throw new AppException(ErrorCode.INVALID_CREDENTIALS);
         }
@@ -73,5 +69,23 @@ public class AuthService {
         String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getRole().name());
 
         return new TokenResponse(accessToken, refreshToken);
+    }
+
+    public void logout(String token) {
+        tokenBlacklistService.add(token);
+        log.info("로그아웃 완료 - 토큰 블랙리스트 등록");
+    }
+
+    @Transactional
+    public void withdraw(Long userId, WithdrawRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+        }
+
+        user.withdraw();
+        log.info("회원탈퇴 완료: userId={}", userId);
     }
 }
