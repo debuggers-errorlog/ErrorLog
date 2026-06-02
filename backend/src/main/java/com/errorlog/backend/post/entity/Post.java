@@ -1,18 +1,17 @@
-package com.errorlog.backend.user.entity;
+package com.errorlog.backend.post.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 @Entity
-@Table(name = "users")
+@Table(name = "posts")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class Post {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nickname;
-    private String email;
-    // password, role, created_at 등은 팀원이 채울 예정. 여기선 안 써도 validate 통과함.
+    private String title;   // 나머지 컬럼은 게시글 담당자가 채움
 }

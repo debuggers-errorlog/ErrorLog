@@ -1,33 +1,36 @@
-package com.errorlog.backend.follow.entity;
+package com.errorlog.backend.like.entity;
 
+import com.errorlog.backend.post.entity.Post;
 import com.errorlog.backend.domain.user.entity.User;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "follows")
+@Table(name = "likes")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Follow {
+public class Like {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follower_id")     // 팔로우 하는 사람
-    private User follower;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "following_id")    // 팔로우 받는 사람
-    private User following;
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    public Follow(User follower, User following) {
-        this.follower = follower;
-        this.following = following;
+    public Like(User user, Post post) {
+        this.user = user;
+        this.post = post;
     }
 }
