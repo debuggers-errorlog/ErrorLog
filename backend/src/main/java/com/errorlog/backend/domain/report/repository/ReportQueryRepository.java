@@ -26,10 +26,6 @@ public class ReportQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    /**
-     * 관리자 신고 목록 동적 검색.
-     * cond에 들어온 조건만 WHERE에 붙고, 비어있으면 전체에서 페이지만 끊어 반환한다.
-     */
     public Page<ReportListResponseDto> search(ReportSearchConditionDto cond, Pageable pageable) {
 
         // 1) 콘텐츠 쿼리: 실제 데이터 한 페이지

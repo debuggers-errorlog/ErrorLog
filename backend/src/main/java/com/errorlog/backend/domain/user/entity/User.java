@@ -60,6 +60,14 @@ public class User {
         this.deletedAt = LocalDateTime.now();
     }
 
+    public void suspend() {
+        this.status = Status.SUSPENDED;
+    }
+
+    public void restore() {
+        this.status = Status.ACTIVE;
+    }
+
     public enum Role {
         ADMIN, USER
     }
