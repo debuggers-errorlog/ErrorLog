@@ -1,21 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { sendVerificationEmail, signUp } from '../api/auth'
+import { sendVerificationEmail, resetPassword } from '../api/auth'
 
-export default function SignUpPage() {
+export default function PasswordResetPage() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    nickname: '',
-    password: '',
-    passwordConfirm: '',
-    verificationCode: '',
-    bio: '',
-    link: '',
-  })
+  const [form, setForm] = useState({ email: '', verificationCode: '', newPassword: '', newPasswordConfirm: '' })
   const [codeSent, setCodeSent] = useState(false)
+  const [sendingCode, setSendingCode] = useState(false)
   const [timeLeft, setTimeLeft] = useState(0)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const timerRef = useRef(null)
 
   const startTimer = () => {
@@ -32,9 +26,6 @@ export default function SignUpPage() {
   useEffect(() => () => clearInterval(timerRef.current), [])
 
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sendingCode, setSendingCode] = useState(false)
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -45,7 +36,7 @@ export default function SignUpPage() {
     if (!form.email) return setError('이메일을 입력해주세요.')
     setSendingCode(true)
     try {
-      await sendVerificationEmail(form.email, 'SIGNUP')
+      await sendVerificationEmail(form.email, 'PASSWORD_RESET')
       setCodeSent(true)
       startTimer()
     } catch (err) {
@@ -58,20 +49,17 @@ export default function SignUpPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!codeSent) return setError('이메일 인증을 완료해주세요.')
-    if (form.password !== form.passwordConfirm) return setError('비밀번호가 일치하지 않습니다.')
+    if (form.newPassword !== form.newPasswordConfirm) return setError('비밀번호가 일치하지 않습니다.')
     setLoading(true)
     try {
-      await signUp({
+      await resetPassword({
         email: form.email,
-        nickname: form.nickname,
-        password: form.password,
         verificationCode: form.verificationCode,
-        bio: form.bio || null,
-        link: form.link || null,
+        newPassword: form.newPassword,
       })
       navigate('/login')
     } catch (err) {
-      setError(err.response?.data?.message || '회원가입에 실패했습니다.')
+      setError(err.response?.data?.message || '비밀번호 재설정에 실패했습니다.')
     } finally {
       setLoading(false)
     }
@@ -81,18 +69,17 @@ export default function SignUpPage() {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* 왼쪽 패널 */}
+      {/* 왼쪽 브랜드 패널 */}
       <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-card border-r border-border px-8 py-10">
         <div className="mb-8">
           <p className="font-mono text-lg font-medium tracking-tight" style={{ color: 'var(--neon-blue)' }}>&gt;_ errorLog</p>
-          <p className="text-muted-foreground text-xs mt-1 leading-relaxed">함께 성장하는 개발자 커뮤니티</p>
+          <p className="text-muted-foreground text-xs mt-1 leading-relaxed">개발자들의 트러블슈팅 지식이 모이는 곳</p>
         </div>
-
         <div className="flex flex-col gap-5 flex-1">
           {[
-            { color: 'var(--neon-blue)', title: '무료 · PRO 게시글', desc: '공개 범위를 선택해서 게시글을 발행할 수 있어요' },
-            { color: 'var(--gold)', title: '크리에이터 구독', desc: '관심 전문가를 구독하고 PRO 전용 글을 받아보세요' },
-            { color: 'var(--neon-blue)', title: '전문가 질문', desc: '특정 크리에이터에게 직접 질문할 수 있어요' },
+            { color: 'var(--neon-blue)', title: '무료 게시글', desc: '누구나 트러블슈팅 경험을 공유할 수 있어요' },
+            { color: 'var(--gold)', title: '크리에이터 구독', desc: '특정 전문가를 구독하고 PRO 콘텐츠를 받아보세요' },
+            { color: 'var(--neon-blue)', title: '전문가 질문', desc: '크리에이터에게 직접 질문할 수 있어요' },
           ].map((f) => (
             <div key={f.title} className="flex items-start gap-3">
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: f.color }} />
@@ -103,25 +90,17 @@ export default function SignUpPage() {
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-6">© 2025 ErrorLog</p>
+        <p className="text-xs text-muted-foreground">© 2025 ErrorLog</p>
       </div>
 
       {/* 오른쪽 폼 */}
       <div className="flex-1 flex flex-col justify-center px-8 py-10 max-w-md mx-auto w-full">
-        {/* 탭 */}
-        <div className="flex border-b border-border mb-6">
-          <Link to="/login"
-            className="flex-1 text-center pb-2.5 text-sm text-muted-foreground border-b-2 border-transparent hover:text-foreground transition-colors">
-            로그인
-          </Link>
-          <span className="flex-1 text-center pb-2.5 text-sm font-medium border-b-2"
-            style={{ color: 'var(--neon-blue)', borderColor: 'var(--neon-blue)' }}>
-            회원가입
-          </span>
-        </div>
+        <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block">
+          ← 로그인으로 돌아가기
+        </Link>
 
-        <p className="text-muted-foreground text-sm mb-1">계정 정보를 입력해 주세요</p>
-        <h1 className="text-xl font-medium text-foreground mb-6">회원가입</h1>
+        <p className="text-muted-foreground text-sm mb-1">이메일로 인증 후 재설정할 수 있어요</p>
+        <h1 className="text-2xl font-medium text-foreground mb-6">비밀번호 재설정</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -137,7 +116,7 @@ export default function SignUpPage() {
             {codeSent && (
               <>
                 <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs text-muted-foreground">인증 코드가 발송되었습니다. 5분 내로 입력해주세요.</span>
+                  <span className="text-xs text-muted-foreground">인증 코드가 발송되었습니다</span>
                   <span className={`text-xs font-medium tabular-nums ${timeLeft <= 60 ? 'text-destructive' : 'text-muted-foreground'}`}>
                     {timeLeft > 0 ? formatTime(timeLeft) : '만료됨'}
                   </span>
@@ -148,46 +127,17 @@ export default function SignUpPage() {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">아이디 (핸들)</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-              <input type="text" name="nickname" value={form.nickname} onChange={handleChange}
-                placeholder="kimdev" required className={`pl-7 ${inputCls}`} />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              errorlog.io/@{form.nickname || 'kimdev'} 로 공개됩니다
-            </p>
-          </div>
-
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">비밀번호</label>
-              <input type="password" name="password" value={form.password} onChange={handleChange}
+              <label className="block text-sm font-medium text-foreground mb-1.5">새 비밀번호</label>
+              <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange}
                 placeholder="••••••••" required className={inputCls} />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1.5">비밀번호 확인</label>
-              <input type="password" name="passwordConfirm" value={form.passwordConfirm} onChange={handleChange}
+              <input type="password" name="newPasswordConfirm" value={form.newPasswordConfirm} onChange={handleChange}
                 placeholder="••••••••" required className={inputCls} />
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              한 줄 소개 <span className="text-muted-foreground font-normal">(선택)</span>
-            </label>
-            <input type="text" name="bio" value={form.bio} onChange={handleChange}
-              placeholder="React · TypeScript 좋아하는 프론트엔드 개발자입니다"
-              className={inputCls} />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              GitHub / 블로그 <span className="text-muted-foreground font-normal">(선택)</span>
-            </label>
-            <input type="url" name="link" value={form.link} onChange={handleChange}
-              placeholder="https://github.com/" className={inputCls} />
           </div>
 
           {error && <p className="text-destructive text-sm">{error}</p>}
@@ -195,7 +145,7 @@ export default function SignUpPage() {
           <button type="submit" disabled={loading}
             className="w-full py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
             style={{ background: 'var(--neon-blue)', color: '#000' }}>
-            {loading ? '가입 중...' : '가입 완료'}
+            {loading ? '재설정 중...' : '비밀번호 재설정'}
           </button>
         </form>
       </div>

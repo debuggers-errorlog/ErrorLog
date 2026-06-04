@@ -116,6 +116,7 @@ export default function LoginPage() {
 
           <button
             type="button"
+            onClick={() => navigate('/password-reset')}
             className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             비밀번호를 잊으셨나요?
