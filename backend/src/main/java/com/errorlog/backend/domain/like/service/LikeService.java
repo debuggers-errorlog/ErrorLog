@@ -1,10 +1,10 @@
-package com.errorlog.backend.like.service;
+package com.errorlog.backend.domain.like.service;
 
-import com.errorlog.backend.like.dto.LikeResponse;
-import com.errorlog.backend.like.entity.Like;
-import com.errorlog.backend.like.repository.LikeRepository;
-import com.errorlog.backend.post.entity.Post;
-import com.errorlog.backend.post.repository.PostRepository;
+import com.errorlog.backend.domain.like.dto.LikeResponse;
+import com.errorlog.backend.domain.like.entity.Like;
+import com.errorlog.backend.domain.like.repository.LikeRepository;
+import com.errorlog.backend.domain.post.entity.Post;
+import com.errorlog.backend.domain.post.repository.PostRepository;
 import com.errorlog.backend.domain.user.entity.User;
 import com.errorlog.backend.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;

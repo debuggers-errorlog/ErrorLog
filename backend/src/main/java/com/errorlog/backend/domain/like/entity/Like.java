@@ -1,6 +1,6 @@
-package com.errorlog.backend.like.entity;
+package com.errorlog.backend.domain.like.entity;
 
-import com.errorlog.backend.post.entity.Post;
+import com.errorlog.backend.domain.post.entity.Post;
 import com.errorlog.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

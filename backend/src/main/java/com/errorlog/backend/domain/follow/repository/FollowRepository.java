@@ -1,6 +1,6 @@
-package com.errorlog.backend.follow.repository;
+package com.errorlog.backend.domain.follow.repository;
 
-import com.errorlog.backend.follow.entity.Follow;
+import com.errorlog.backend.domain.follow.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {

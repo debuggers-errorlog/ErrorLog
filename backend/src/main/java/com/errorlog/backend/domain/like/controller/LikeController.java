@@ -1,8 +1,8 @@
-package com.errorlog.backend.like.controller;
+package com.errorlog.backend.domain.like.controller;
 
-import com.errorlog.backend.like.dto.LikeResponse;
-import com.errorlog.backend.like.repository.LikeRepository;
-import com.errorlog.backend.like.service.LikeService;
+import com.errorlog.backend.domain.like.dto.LikeResponse;
+import com.errorlog.backend.domain.like.repository.LikeRepository;
+import com.errorlog.backend.domain.like.service.LikeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

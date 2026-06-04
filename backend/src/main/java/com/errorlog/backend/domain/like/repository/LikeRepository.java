@@ -1,6 +1,6 @@
-package com.errorlog.backend.like.repository;
+package com.errorlog.backend.domain.like.repository;
 
-import com.errorlog.backend.like.entity.Like;
+import com.errorlog.backend.domain.like.entity.Like;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface LikeRepository extends JpaRepository<Like, Long> {

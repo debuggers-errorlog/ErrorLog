@@ -1,8 +1,8 @@
-package com.errorlog.backend.follow.service;
+package com.errorlog.backend.domain.follow.service;
 
-import com.errorlog.backend.follow.dto.FollowStatusResponse;
-import com.errorlog.backend.follow.entity.Follow;
-import com.errorlog.backend.follow.repository.FollowRepository;
+import com.errorlog.backend.domain.follow.dto.FollowStatusResponse;
+import com.errorlog.backend.domain.follow.entity.Follow;
+import com.errorlog.backend.domain.follow.repository.FollowRepository;
 import com.errorlog.backend.domain.user.entity.User;
 import com.errorlog.backend.domain.user.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
