@@ -1,9 +1,9 @@
-package com.errorlog.backend.comment.controller;
+package com.errorlog.backend.domain.comment.controller;
 
-import com.errorlog.backend.comment.dto.CommentCreateRequest;
-import com.errorlog.backend.comment.dto.CommentResponse;
-import com.errorlog.backend.comment.dto.CommentUpdateRequest;
-import com.errorlog.backend.comment.service.CommentService;
+import com.errorlog.backend.domain.comment.dto.CommentCreateRequest;
+import com.errorlog.backend.domain.comment.dto.CommentResponse;
+import com.errorlog.backend.domain.comment.dto.CommentUpdateRequest;
+import com.errorlog.backend.domain.comment.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

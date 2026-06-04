@@ -1,9 +1,9 @@
-package com.errorlog.backend.comment.service;
+package com.errorlog.backend.domain.comment.service;
 
-import com.errorlog.backend.comment.dto.CommentResponse;
-import com.errorlog.backend.comment.entity.Comment;
-import com.errorlog.backend.comment.entity.CommentStatus;
-import com.errorlog.backend.comment.repository.CommentRepository;
+import com.errorlog.backend.domain.comment.dto.CommentResponse;
+import com.errorlog.backend.domain.comment.entity.Comment;
+import com.errorlog.backend.domain.comment.entity.CommentStatus;
+import com.errorlog.backend.domain.comment.repository.CommentRepository;
 import com.errorlog.backend.post.entity.Post;
 import com.errorlog.backend.post.repository.PostRepository;
 import com.errorlog.backend.domain.user.entity.User;

@@ -1,4 +1,4 @@
-package com.errorlog.backend.post.entity;
+package com.errorlog.backend.domain.post.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

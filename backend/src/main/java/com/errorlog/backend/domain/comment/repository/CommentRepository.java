@@ -1,7 +1,7 @@
-package com.errorlog.backend.comment.repository;
+package com.errorlog.backend.domain.comment.repository;
 
-import com.errorlog.backend.comment.entity.Comment;
-import com.errorlog.backend.comment.entity.CommentStatus;
+import com.errorlog.backend.domain.comment.entity.Comment;
+import com.errorlog.backend.domain.comment.entity.CommentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 

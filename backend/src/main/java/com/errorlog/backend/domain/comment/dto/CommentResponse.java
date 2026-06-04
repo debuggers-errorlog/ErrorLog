@@ -1,6 +1,6 @@
-package com.errorlog.backend.comment.dto;
+package com.errorlog.backend.domain.comment.dto;
 
-import com.errorlog.backend.comment.entity.Comment;
+import com.errorlog.backend.domain.comment.entity.Comment;
 import java.time.LocalDateTime;
 
 public record CommentResponse(
