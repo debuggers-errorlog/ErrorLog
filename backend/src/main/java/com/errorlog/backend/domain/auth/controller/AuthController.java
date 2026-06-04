@@ -50,6 +50,16 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
+    // Access Token 재발급
+    // POST /api/auth/reissue
+    @PostMapping("/reissue")
+    public ResponseEntity<TokenResponse> reissue(
+            @RequestHeader("Authorization") String authHeader
+    ) {
+        String refreshToken = authHeader.substring(7);
+        return ResponseEntity.ok(authService.reissue(refreshToken));
+    }
+
     // 로그아웃
     // POST /api/auth/logout
     @PostMapping("/logout")
