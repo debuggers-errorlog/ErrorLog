@@ -1,4 +1,4 @@
-package com.errorlog.backend.follow.dto;
+package com.errorlog.backend.domain.follow.dto;
 
 public record FollowStatusResponse(
         boolean following,    // 내가 이 사람을 팔로우 중인가?

@@ -1,9 +1,9 @@
-package com.errorlog.backend.follow.controller;
+package com.errorlog.backend.domain.follow.controller;
 
-import com.errorlog.backend.follow.dto.FollowResponse;
-import com.errorlog.backend.follow.dto.FollowStatusResponse;
-import com.errorlog.backend.follow.repository.FollowRepository;
-import com.errorlog.backend.follow.service.FollowService;
+import com.errorlog.backend.domain.follow.dto.FollowResponse;
+import com.errorlog.backend.domain.follow.dto.FollowStatusResponse;
+import com.errorlog.backend.domain.follow.repository.FollowRepository;
+import com.errorlog.backend.domain.follow.service.FollowService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

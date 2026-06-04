@@ -1,4 +1,4 @@
-package com.errorlog.backend.follow.entity;
+package com.errorlog.backend.domain.follow.entity;
 
 import com.errorlog.backend.domain.user.entity.User;
 import jakarta.persistence.*;
