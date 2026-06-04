@@ -1,6 +1,7 @@
 package com.errorlog.backend.domain.auth.service;
 
 import com.errorlog.backend.domain.auth.dto.LoginRequest;
+import com.errorlog.backend.domain.auth.dto.PasswordResetRequest;
 import com.errorlog.backend.domain.auth.dto.SignUpRequest;
 import com.errorlog.backend.domain.auth.dto.TokenResponse;
 import com.errorlog.backend.domain.auth.dto.WithdrawRequest;
@@ -44,7 +45,7 @@ public class AuthService {
             throw new AppException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
-        emailVerificationService.verifyCode(request.email(), request.verificationCode());
+        emailVerificationService.verifyCode(request.email(), request.verificationCode(), EmailVerificationService.Purpose.SIGNUP);
 
         User user = User.builder()
                 .email(request.email())
@@ -127,8 +128,18 @@ public class AuthService {
         return new TokenResponse(newAccessToken, newRefreshToken);
     }
 
-    public void logout(String token) {
-        tokenBlacklistService.add(token);
+    @Transactional
+    public void resetPassword(PasswordResetRequest request) {
+        emailVerificationService.verifyCode(request.email(), request.verificationCode(), EmailVerificationService.Purpose.PASSWORD_RESET);
+
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        user.updatePassword(passwordEncoder.encode(request.newPassword()));
+        log.info("비밀번호 재설정 완료: {}", request.email());
+    }
+
+    public void logout(String token) {        tokenBlacklistService.add(token);
         log.info("로그아웃 완료 - 토큰 블랙리스트 등록");
     }
 

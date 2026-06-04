@@ -1,7 +1,7 @@
 import api from './axios'
 
-export const sendVerificationEmail = (email) =>
-  api.post('/auth/email/verification', { email })
+export const sendVerificationEmail = (email, purpose) =>
+  api.post('/auth/email/verification', { email, purpose })
 
 export const signUp = (data) =>
   api.post('/auth/signup', data)
@@ -14,3 +14,6 @@ export const logout = () =>
 
 export const withdraw = (password) =>
   api.delete('/auth/withdraw', { data: { password } })
+
+export const resetPassword = (data) =>
+  api.post('/auth/password/reset', data)
