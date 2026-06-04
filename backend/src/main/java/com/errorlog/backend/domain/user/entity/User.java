@@ -40,6 +40,12 @@ public class User {
     @Column(nullable = false)
     private Status status;
 
+    @Column(length = 150)
+    private String bio;
+
+    @Column(length = 255)
+    private String link;
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -53,6 +59,11 @@ public class User {
 
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void updateProfile(String bio, String link) {
+        this.bio = bio;
+        this.link = link;
     }
 
     public void withdraw() {
