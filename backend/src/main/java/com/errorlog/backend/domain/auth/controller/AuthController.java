@@ -1,6 +1,7 @@
 package com.errorlog.backend.domain.auth.controller;
 
 import com.errorlog.backend.domain.auth.dto.LoginRequest;
+import com.errorlog.backend.domain.auth.dto.PasswordResetRequest;
 import com.errorlog.backend.domain.auth.dto.SendVerificationEmailRequest;
 import com.errorlog.backend.domain.auth.dto.SignUpRequest;
 import com.errorlog.backend.domain.auth.dto.TokenResponse;
@@ -21,13 +22,23 @@ public class AuthController {
     private final AuthService authService;
     private final EmailVerificationService emailVerificationService;
 
-    // 이메일 인증 코드 발송
+    // 이메일 인증 코드 발송 (회원가입 / 비밀번호 재설정 공용)
     // POST /api/auth/email/verification
     @PostMapping("/email/verification")
     public ResponseEntity<Void> sendVerificationEmail(
             @Valid @RequestBody SendVerificationEmailRequest request
     ) {
-        emailVerificationService.sendVerificationCode(request.email());
+        emailVerificationService.sendVerificationCode(request.email(), request.purpose());
+        return ResponseEntity.ok().build();
+    }
+
+    // 비밀번호 재설정
+    // POST /api/auth/password/reset
+    @PostMapping("/password/reset")
+    public ResponseEntity<Void> resetPassword(
+            @Valid @RequestBody PasswordResetRequest request
+    ) {
+        authService.resetPassword(request);
         return ResponseEntity.ok().build();
     }
 
