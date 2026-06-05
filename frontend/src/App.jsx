@@ -2,7 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { SubscriptionInfoPage } from './pages/SubscriptionInfoPage' // 1. 구독전 정보확인
 import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage' // 2. 결제창
 import { SubscriptionManagePage } from './pages/SubscriptionManagePage.jsx' // 3. 구독관리
-import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage' // 4. 구독 플랜 설정
+import {SettlementPage} from "./pages/SettlementPage.jsx"; // 4. 구독 플랜 설정
+import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage' // 5. 정산 화면
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
             <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
             {/* 구독 플랜 설정 */}
             <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
+            {/* 정산 페이지 */}
+            <Route path="/settlement" element={<SettlementPage />} />
         </Routes>
       </BrowserRouter>
   )

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Lock, Star, FileText, Calendar, Heart, Bell, Unlock } from "lucide-react";
+import { getSubscriptionInfo } from '../api/subscriptionApi';
 
 export function SubscriptionInfoPage() {
     const { creatorId } = useParams();
@@ -12,9 +13,7 @@ export function SubscriptionInfoPage() {
     useEffect(() => {
         async function fetchInfo() {
             try {
-                const res = await fetch(`/api/subscriptions/${creatorId}/info`);
-                if (!res.ok) throw new Error("구독 정보를 불러올 수 없습니다.");
-                const data = await res.json();
+                const { data } = await getSubscriptionInfo(creatorId);
                 setInfo(data);
             } catch (e) {
                 setError(e.message);

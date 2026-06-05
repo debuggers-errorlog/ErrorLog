@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Save } from "lucide-react";
+import { getSubscriptionSettings, createSubscriptionSettings, updateSubscriptionSettings }
+    from '../api/subscriptionApi';
 
 export function SubscriptionSettingsPage() {
     const navigate = useNavigate();
-    const creatorId = 1; // TODO: 토큰에서 userId 추출로 교체 필요
-    // const token = localStorage.getItem('token');
-    // const decoded = JSON.parse(atob(token.split('.')[1]));
-    // const creatorId = decoded.userId;
+    const creatorId = 1; // jwt 연동후 제거
 
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
@@ -18,13 +17,10 @@ export function SubscriptionSettingsPage() {
     useEffect(() => {
         async function fetchSettings() {
             try {
-                const res = await fetch(`/api/subscription-settings/${creatorId}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setPrice(data.price);
-                    setDescription(data.description);
-                    setIsExisting(true);
-                }
+                const { data } = await getSubscriptionSettings(creatorId);
+                setPrice(data.price);
+                setDescription(data.description);
+                setIsExisting(true);
             } catch (e) {
                 console.error(e);
             } finally {
@@ -39,28 +35,16 @@ export function SubscriptionSettingsPage() {
             setMessage({ type: "error", text: "가격과 설명을 입력해주세요." });
             return;
         }
-
         try {
-            const res = await fetch(
-                isExisting
-                    ? `/api/subscription-settings/${creatorId}`
-                    : "/api/subscription-settings",
-                {
-                    method: isExisting ? "PUT" : "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        userId: creatorId,
-                        price: Number(price),
-                        description,
-                    }),
-                }
-            );
-
-            if (!res.ok) throw new Error("저장에 실패했습니다.");
+            if (isExisting) {
+                await updateSubscriptionSettings(creatorId, { userId: creatorId, price: Number(price), description });
+            } else {
+                await createSubscriptionSettings({ userId: creatorId, price: Number(price), description });
+            }
             setIsExisting(true);
             setMessage({ type: "success", text: "구독 플랜이 저장되었습니다!" });
-        } catch (e) {
-            setMessage({ type: "error", text: e.message });
+        } catch {
+            setMessage({ type: "error", text: "저장에 실패했습니다." });
         }
     };
 

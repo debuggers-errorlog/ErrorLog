@@ -1,5 +1,7 @@
 import { useParams, useNavigate , useLocation } from "react-router-dom";
 import { CreditCard, Shield, CheckCircle } from "lucide-react";
+import { subscribe } from '../api/subscriptionApi';
+import { cancelPayment } from '../api/paymentApi';
 
 export function SubscriptionPaymentPage() {
   const { creatorId } = useParams();
@@ -9,35 +11,17 @@ export function SubscriptionPaymentPage() {
 
   const handlePayment = async () => {
     try {
-      const res = await fetch("/api/subscriptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subscriberId: 1, // 로그인한 유저 ID로 교체 필요
-          creatorId: Number(creatorId),
-        }),
-      });
-      if (!res.ok) throw new Error("결제에 실패했습니다.");
+      await subscribe(1, Number(creatorId)); // JWT 연동 후 제거
       alert("구독 결제가 완료되었습니다!");
       navigate(`/creator/${creatorId}`); // 크리에이터 프로필 경로 확정 후 교체
-    } catch (e) {
-      alert(e.message);
+    } catch {
+      alert("결제에 실패했습니다.");
     }
   };
 
   const handleCancel = async () => {
     try {
-      await fetch("/api/payments/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: 1, // 로그인한 유저 ID로 교체 필요
-          // const token = localStorage.getItem('token');
-          // const decoded = JSON.parse(atob(token.split('.')[1]));
-          // const userId = decoded.userId;
-          creatorId: Number(creatorId),
-        }),
-      });
+      await cancelPayment(1, Number(creatorId), Number(creatorId)); // JWT 연동 후 제거
     } catch (e) {
       console.error(e);
     } finally {
