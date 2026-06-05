@@ -1,6 +1,7 @@
 package com.errorlog.backend.domain.auth.service;
 
 import com.errorlog.backend.domain.auth.dto.LoginRequest;
+import com.errorlog.backend.domain.auth.dto.OAuthAdditionalInfoRequest;
 import com.errorlog.backend.domain.auth.dto.PasswordResetRequest;
 import com.errorlog.backend.domain.auth.dto.SignUpRequest;
 import com.errorlog.backend.domain.auth.dto.TokenResponse;
@@ -139,8 +140,49 @@ public class AuthService {
         log.info("비밀번호 재설정 완료: {}", request.email());
     }
 
-    public void logout(String token) {        tokenBlacklistService.add(token);
+    public void logout(String token) {
+        tokenBlacklistService.add(token);
         log.info("로그아웃 완료 - 토큰 블랙리스트 등록");
+    }
+
+    @Transactional
+    public TokenResponse oAuthAdditionalInfo(String tempToken, OAuthAdditionalInfoRequest request) {
+        if (!jwtUtil.isTokenValid(tempToken) || !jwtUtil.isTempToken(tempToken)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+
+        String email = jwtUtil.extractEmailFromTempToken(tempToken);
+        String providerId = jwtUtil.extractProviderIdFromTempToken(tempToken);
+
+        if (userRepository.existsByNickname(request.nickname())) {
+            throw new AppException(ErrorCode.DUPLICATE_NICKNAME);
+        }
+
+        User user = User.builder()
+                .email(email)
+                .nickname(request.nickname())
+                .provider(User.Provider.GOOGLE)
+                .providerId(providerId)
+                .role(User.Role.USER)
+                .status(User.Status.ACTIVE)
+                .bio(request.bio())
+                .link(request.link())
+                .build();
+
+        userRepository.save(user);
+
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getRole().name());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getRole().name());
+
+        refreshTokenRepository.save(RefreshToken.builder()
+                .user(user)
+                .token(refreshToken)
+                .isRevoked(false)
+                .expiresAt(LocalDateTime.now().plusSeconds(refreshTokenExpiration / 1000))
+                .build());
+
+        log.info("OAuth 회원가입 완료: {}", email);
+        return new TokenResponse(accessToken, refreshToken);
     }
 
     @Transactional

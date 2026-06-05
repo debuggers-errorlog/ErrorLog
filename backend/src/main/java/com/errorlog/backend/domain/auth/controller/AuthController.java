@@ -1,6 +1,7 @@
 package com.errorlog.backend.domain.auth.controller;
 
 import com.errorlog.backend.domain.auth.dto.LoginRequest;
+import com.errorlog.backend.domain.auth.dto.OAuthAdditionalInfoRequest;
 import com.errorlog.backend.domain.auth.dto.PasswordResetRequest;
 import com.errorlog.backend.domain.auth.dto.SendVerificationEmailRequest;
 import com.errorlog.backend.domain.auth.dto.SignUpRequest;
@@ -80,6 +81,17 @@ public class AuthController {
         String token = authHeader.substring(7);
         authService.logout(token);
         return ResponseEntity.ok().build();
+    }
+
+    // OAuth 추가 정보 입력 (구글 신규 유저)
+    // POST /api/auth/oauth/additional-info
+    @PostMapping("/oauth/additional-info")
+    public ResponseEntity<TokenResponse> oAuthAdditionalInfo(
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody OAuthAdditionalInfoRequest request
+    ) {
+        String tempToken = authHeader.substring(7);
+        return ResponseEntity.ok(authService.oAuthAdditionalInfo(tempToken, request));
     }
 
     // 회원탈퇴
