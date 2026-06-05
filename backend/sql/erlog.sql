@@ -18,7 +18,9 @@ DROP TABLE IF EXISTS `subscriptions`;
 DROP TABLE IF EXISTS `follows`;
 DROP TABLE IF EXISTS `question_requests`;
 DROP TABLE IF EXISTS `tags`;
+DROP TABLE IF EXISTS `payments`;
 DROP TABLE IF EXISTS `users`;
+
 
 CREATE TABLE `users` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -236,5 +238,16 @@ CREATE TABLE IF NOT EXISTS `images` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     INDEX `idx_target` (`target_type`, `target_id`)
+);
+
+CREATE TABLE `payments` (
+    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,     -- 결제 고유 ID
+    `user_id` BIGINT NOT NULL,                  -- 결제자(구독자/질문자) ID
+    `target_id` BIGINT NOT NULL,                -- 구독일 경우 플랜ID, 질문일 경우 질문글ID
+    `payment_type` VARCHAR(20) NOT NULL,        -- 'SUBSCRIPTION' 또는 'QUESTION'
+    `price` BIGINT NOT NULL,                   -- 결제 금액
+    `status` ENUM('PAID', 'FAILED') NOT NULL,      -- 'PAID'(성공), 'FAILED'(실패)
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP, -- 결제 생성일
+    CONSTRAINT `FK_USERS_TO_PAYMENTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 commit;

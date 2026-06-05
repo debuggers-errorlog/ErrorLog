@@ -1,7 +1,8 @@
--- 1. 유저 데이터 (관리자 1명, 일반 유저 1명) 비밀번호 1234 통일
+-- 1. 유저 데이터 (관리자 1명, 일반 유저 2명) 비밀번호 1234 통일
 INSERT INTO `users` (`id`, `email`, `nickname`, `password`, `role`, `status`) VALUES
 (1, 'admin@test.com', '최고관리자', '$2a$10$q820TvhJVwxz/vdxMK2F.OZRldQvAyPKfdGE/ASvlfkS5/XySFyQK', 'ADMIN', 'ACTIVE'),
-(2, 'user1@test.com', '코딩하는코린이', '$2a$10$q820TvhJVwxz/vdxMK2F.OZRldQvAyPKfdGE/ASvlfkS5/XySFyQK', 'USER', 'ACTIVE');
+(2, 'user1@test.com', '코딩하는코린이', '$2a$10$q820TvhJVwxz/vdxMK2F.OZRldQvAyPKfdGE/ASvlfkS5/XySFyQK', 'USER', 'ACTIVE'),
+(3, 'user2@test.com', '김개발', '$2a$10$q820TvhJVwxz/vdxMK2F.OZRldQvAyPKfdGE/ASvlfkS5/XySFyQK', 'USER', 'ACTIVE');
 
 -- 2. 태그 데이터
 INSERT INTO `tags` (`id`, `name`) VALUES
@@ -14,7 +15,8 @@ INSERT INTO `refresh_tokens` (`user_id`, `token`, `is_revoked`, `expires_at`) VA
 
 -- 4. 구독 설정 데이터 (지식을 나누는 관리자의 멤버십 설정)
 INSERT INTO `subscription_settings` (`user_id`, `price`, `description`) VALUES
-(1, 4900, '관리자의 고급 에러 해결 노하우 및 1:1 답변 권한 프리미엄 패스');
+(1, 4900, '관리자의 고급 에러 해결 노하우 및 1:1 답변 권한 프리미엄 패스'),
+(2, 3900, '코딩하는코린이의 에러 해결 노하우 공유');
 
 -- 5. 구독 내역 데이터 (일반 유저가 관리자를 구독)
 INSERT INTO `subscriptions` (`subscriber_id`, `creator_id`, `expired_at`) VALUES
@@ -67,5 +69,9 @@ INSERT INTO `answers` (`id`, `question_id`, `author_id`, `author_role`, `content
 INSERT INTO `images` (`target_type`, `target_id`, `image_path`, `image_seq`) VALUES
 ('POST', 1, '/uploads/posts/error_stacktrace.png', 1),
 ('ANSWER', 1, '/uploads/answers/security_architecture.png', 1);
+
+-- 16. 결제 데이터 ( 추가된 3번 유저가 2번 유저 구독)
+INSERT INTO `payments` (`user_id`, `target_id`, `payment_type`, `price`, `status`, `created_at`) VALUES
+(3, 2, 'SUBSCRIPTION', 3900, 'PAID', NOW());
 
 COMMIT;

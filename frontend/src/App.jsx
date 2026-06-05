@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import { theme } from './theme/theme';
 import { GlobalStyle } from './theme/GlobalStyle';
-
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import MyPage from './pages/MyPage';
@@ -13,6 +12,11 @@ import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
 import WritePostPage from './pages/WritePostPage';
 import SearchPage from './pages/SearchPage';
+import { SubscriptionInfoPage } from './pages/SubscriptionInfoPage';
+import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage';
+import { SubscriptionManagePage } from './pages/SubscriptionManagePage';
+import { SettlementPage } from './pages/SettlementPage';
+import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage';
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('accessToken');
@@ -36,6 +40,11 @@ export default function App() {
             <Route path="/write" element={<WritePostPage />} />
             <Route path="/search" element={<SearchPage />} />
             <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+            <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
+            <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
+            <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
+            <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
+            <Route path="/settlement" element={<SettlementPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
