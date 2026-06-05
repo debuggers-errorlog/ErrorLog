@@ -1,7 +1,183 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Users, UserCheck } from "lucide-react";
+import styled from "styled-components";
 import { getSubscriptionList } from '../api/subscriptionApi';
+
+const Page = styled.div`
+  background: ${({ theme }) => theme.colors.bg};
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  color: ${({ theme }) => theme.colors.text};
+  box-sizing: border-box;
+`;
+
+const Content = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const Header = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const Title = styled.h1`
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Subtitle = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 4px;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const ActionBtn = styled.button`
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.accent};
+  border: 1px solid ${({ theme }) => theme.colors.accent}4d;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover {
+    background: ${({ theme }) => theme.colors.accentDim};
+  }
+`;
+
+const CloseBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+`;
+
+const SectionHeader = styled.div`
+  margin-bottom: 1rem;
+`;
+
+const SectionTitleRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const SectionTitle = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Badge = styled.span`
+  width: 22px;
+  height: 22px;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const List = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const Card = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const CardLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const Avatar = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0;
+`;
+
+const Name = styled.p`
+  font-size: 15px;
+  font-weight: 500;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Date = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 2px 0 0;
+`;
+
+const RenewBtn = styled.button`
+  padding: 0.5rem 1rem;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+`;
+
+const MutedText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const ErrorText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.danger};
+`;
 
 export function SubscriptionManagePage() {
   const navigate = useNavigate();
@@ -26,213 +202,91 @@ export function SubscriptionManagePage() {
   }, []);
 
   const formatDate = (dateStr) => {
-    const d = new Date(dateStr);
+    const d = new window.Date(dateStr);
     return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}.`;
   };
 
-  if (loading) return <div style={styles.page}><p style={styles.muted}>불러오는 중...</p></div>;
-  if (error) return <div style={styles.page}><p style={styles.error}>{error}</p></div>;
+  if (loading) return <Page><MutedText>불러오는 중...</MutedText></Page>;
+  if (error) return <Page><ErrorText>{error}</ErrorText></Page>;
 
   return (
-      <div style={styles.page}>
-        <div style={styles.content}>
-          {/* 헤더 */}
-          <div style={styles.header}>
-            <div style={styles.headerRow}>
+      <Page>
+        <Content>
+          <Header>
+            <HeaderRow>
               <div>
-                <h1 style={styles.title}>구독 관리</h1>
-                <p style={styles.subtitle}>구독 중인 크리에이터와 구독자를 관리하세요</p>
+                <Title>구독 관리</Title>
+                <Subtitle>구독 중인 크리에이터와 구독자를 관리하세요</Subtitle>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                <button style={styles.settlementBtn} onClick={() => navigate("/subscription-settings")}>
-                  구독 플랜 설정
-                </button>
-                <button style={styles.settlementBtn} onClick={() => navigate("/settlement")}>
-                  정산 관리
-                </button>
-                <button style={styles.closeBtn} onClick={() => navigate(-1)}>✕</button>
-              </div>
-            </div>
-          </div>
+              <HeaderActions>
+                <ActionBtn onClick={() => navigate("/subscription-settings")}>구독 플랜 설정</ActionBtn>
+                <ActionBtn onClick={() => navigate("/settlement")}>정산 관리</ActionBtn>
+                <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
+              </HeaderActions>
+            </HeaderRow>
+          </Header>
 
-          {/* 그리드 */}
-          <div style={styles.grid}>
-            {/* 내가 구독중인 개발자 */}
+          <Grid>
             <div>
-              <div style={styles.sectionHeader}>
-                <div style={styles.sectionTitleRow}>
-                  <Users size={18} color="#e8e8f0" />
-                  <span style={styles.sectionTitle}>내가 구독중인 개발자</span>
-                  <span style={styles.badge}>{data.followingCount}</span>
-                </div>
-              </div>
-              <div style={styles.list}>
+              <SectionHeader>
+                <SectionTitleRow>
+                  <Users size={18} />
+                  <SectionTitle>내가 구독중인 개발자</SectionTitle>
+                  <Badge>{data.followingCount}</Badge>
+                </SectionTitleRow>
+              </SectionHeader>
+              <List>
                 {data.following.length === 0 ? (
-                    <p style={styles.muted}>구독중인 개발자가 없습니다.</p>
+                    <MutedText>구독중인 개발자가 없습니다.</MutedText>
                 ) : (
                     data.following.map((item) => (
-                        <div key={item.creatorId} style={styles.card}>
-                          <div style={styles.cardLeft}>
-                            <div style={styles.avatar}>{item.creatorName[0]}</div>
+                        <Card key={item.creatorId}>
+                          <CardLeft>
+                            <Avatar>{item.creatorName[0]}</Avatar>
                             <div>
-                              <p style={styles.name}>{item.creatorName}</p>
-                              <p style={styles.date}>구독 만료 날짜 : {formatDate(item.expiredAt)}</p>
+                              <Name>{item.creatorName}</Name>
+                              <Date>구독 만료 날짜 : {formatDate(item.expiredAt)}</Date>
                             </div>
-                          </div>
-                          <button
-                              style={styles.renewBtn}
-                              onClick={() => navigate(`/subscriptions/${item.creatorId}/payment`, {
-                                state: { expiredAt: item.expiredAt }
-                              })}
-                          >
+                          </CardLeft>
+                          <RenewBtn onClick={() => navigate(`/subscriptions/${item.creatorId}/payment`, {
+                            state: { expiredAt: item.expiredAt }
+                          })}>
                             구독 연장하기
-                          </button>
-                        </div>
+                          </RenewBtn>
+                        </Card>
                     ))
                 )}
-              </div>
+              </List>
             </div>
 
-            {/* 나를 구독하는 개발자 */}
             <div>
-              <div style={styles.sectionHeader}>
-                <div style={styles.sectionTitleRow}>
-                  <UserCheck size={18} color="#e8e8f0" />
-                  <span style={styles.sectionTitle}>나를 구독하는 개발자</span>
-                  <span style={styles.badge}>{data.followerCount}</span>
-                </div>
-              </div>
-              <div style={styles.list}>
+              <SectionHeader>
+                <SectionTitleRow>
+                  <UserCheck size={18} />
+                  <SectionTitle>나를 구독하는 개발자</SectionTitle>
+                  <Badge>{data.followerCount}</Badge>
+                </SectionTitleRow>
+              </SectionHeader>
+              <List>
                 {data.followers.length === 0 ? (
-                    <p style={styles.muted}>구독자가 없습니다.</p>
+                    <MutedText>구독자가 없습니다.</MutedText>
                 ) : (
                     data.followers.map((item) => (
-                        <div key={item.subscriberId} style={styles.card}>
-                          <div style={styles.cardLeft}>
-                            <div style={styles.avatar}>{item.subscriberName[0]}</div>
+                        <Card key={item.subscriberId}>
+                          <CardLeft>
+                            <Avatar>{item.subscriberName[0]}</Avatar>
                             <div>
-                              <p style={styles.name}>{item.subscriberName}</p>
-                              <p style={styles.date}>구독 시작 날짜 : {formatDate(item.createdAt)}</p>
+                              <Name>{item.subscriberName}</Name>
+                              <Date>구독 시작 날짜 : {formatDate(item.createdAt)}</Date>
                             </div>
-                          </div>
-                        </div>
+                          </CardLeft>
+                        </Card>
                     ))
                 )}
-              </div>
+              </List>
             </div>
-          </div>
-        </div>
-      </div>
+          </Grid>
+        </Content>
+      </Page>
   );
 }
-
-const styles = {
-  page: {
-    background: "#0d0d14",
-    minHeight: "100vh",
-    width: "100%",
-    padding: "2rem",
-    color: "#e8e8f0",
-    fontFamily: "inherit",
-    boxSizing: "border-box",
-  },
-  header: { marginBottom: "2rem" },
-  headerRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  title: { fontSize: "22px", fontWeight: 500, margin: 0, color: "#ffffff" },
-  subtitle: { fontSize: "13px", color: "#717182", marginTop: "4px" },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: "2rem",
-  },
-  sectionHeader: { marginBottom: "1rem" },
-  sectionTitleRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-  },
-  sectionTitle: { fontSize: "16px", fontWeight: 500 },
-  badge: {
-    width: "22px",
-    height: "22px",
-    background: "#00d4ff",
-    color: "#0d0d14",
-    borderRadius: "50%",
-    fontSize: "12px",
-    fontWeight: 500,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  list: { display: "flex", flexDirection: "column", gap: "0.75rem" },
-  card: {
-    background: "#1a1a24",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "12px",
-    padding: "1rem 1.25rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
-  },
-  avatar: {
-    width: "42px",
-    height: "42px",
-    borderRadius: "50%",
-    background: "#00d4ff",
-    color: "#0d0d14",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: "16px",
-    fontWeight: 500,
-    flexShrink: 0,
-  },
-  name: { fontSize: "15px", fontWeight: 500, margin: 0 },
-  date: { fontSize: "13px", color: "#717182", margin: "2px 0 0" },
-  renewBtn: {
-    padding: "0.5rem 1rem",
-    background: "#00d4ff",
-    color: "#0d0d14",
-    border: "none",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: 500,
-    cursor: "pointer",
-    flexShrink: 0,
-  },
-  settlementBtn: {
-    padding: "0.5rem 1rem",
-    background: "transparent",
-    color: "#00d4ff",
-    border: "1px solid rgba(0,212,255,0.3)",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: 500,
-    cursor: "pointer",
-  },
-  closeBtn: {
-    background: "transparent",
-    border: "none",
-    color: "#717182",
-    fontSize: "18px",
-    cursor: "pointer",
-    padding: "0.25rem",
-    lineHeight: 1,
-  },
-  content: {
-    maxWidth: "1200px",
-    margin: "0 auto",
-  },
-  muted: { color: "#717182", fontSize: "14px" },
-  error: { color: "#ff4d4d", fontSize: "14px" },
-};

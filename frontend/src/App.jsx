@@ -1,27 +1,28 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { SubscriptionInfoPage } from './pages/SubscriptionInfoPage' // 1. 구독전 정보확인
-import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage' // 2. 결제창
-import { SubscriptionManagePage } from './pages/SubscriptionManagePage.jsx' // 3. 구독관리
-import {SettlementPage} from "./pages/SettlementPage.jsx"; // 4. 구독 플랜 설정
-import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage' // 5. 정산 화면
+import { ThemeProvider } from 'styled-components'
+import { theme } from './theme/theme'
+import { GlobalStyle } from './theme/GlobalStyle'
+import { SubscriptionInfoPage } from './pages/SubscriptionInfoPage'
+import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage'
+import { SubscriptionManagePage } from './pages/SubscriptionManagePage'
+import { SettlementPage } from './pages/SettlementPage'
+import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage'
 
 function App() {
-  return (
-      <BrowserRouter>
-        <Routes>
-            {/* 구독 결제 정보 확인 */}
-          <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
-            {/* 결제 화면 */}
-            <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
-            {/* 구독 관리 */}
-            <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
-            {/* 구독 플랜 설정 */}
-            <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
-            {/* 정산 페이지 */}
-            <Route path="/settlement" element={<SettlementPage />} />
-        </Routes>
-      </BrowserRouter>
-  )
+    return (
+        <ThemeProvider theme={theme}>
+            <GlobalStyle />
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
+                    <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
+                    <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
+                    <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
+                    <Route path="/settlement" element={<SettlementPage />} />
+                </Routes>
+            </BrowserRouter>
+        </ThemeProvider>
+    )
 }
 
 export default App

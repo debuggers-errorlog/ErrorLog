@@ -1,7 +1,146 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Receipt } from "lucide-react";
+import styled from "styled-components";
 import { getSettlement } from '../api/paymentApi';
+
+const Page = styled.div`
+  background: ${({ theme }) => theme.colors.bg};
+  min-height: 100vh;
+  padding: 2rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Header = styled.div`
+  margin-bottom: 2rem;
+`;
+
+const HeaderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const Title = styled.h1`
+  font-size: 22px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0;
+`;
+
+const Subtitle = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 4px;
+`;
+
+const CloseBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0.25rem;
+  line-height: 1;
+`;
+
+const TabRow = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+`;
+
+const Tab = styled.button`
+  padding: 0.5rem 1.25rem;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.border};
+  background: ${({ $active, theme }) => $active ? theme.colors.accent : 'transparent'};
+  color: ${({ $active, theme }) => $active ? theme.colors.bg : theme.colors.textMuted};
+  transition: all 0.15s;
+`;
+
+const MetricGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+`;
+
+const MetricCard = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 1.25rem;
+`;
+
+const MetricLabel = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 0 0 0.5rem;
+`;
+
+const MetricValue = styled.p`
+  font-size: 24px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.accent};
+  margin: 0;
+`;
+
+const SectionTitle = styled.div`
+  font-size: 15px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.accent};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const TableWrap = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  overflow: hidden;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+`;
+
+const Th = styled.th`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-weight: 500;
+  padding: 0.75rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  width: 25%;
+`;
+
+const Td = styled.td`
+  font-size: 13px;
+  padding: 0.875rem 1.25rem;
+  text-align: left;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ $accent, theme }) => $accent ? theme.colors.accent : theme.colors.text};
+  font-weight: ${({ $accent }) => $accent ? 500 : 400};
+  width: 25%;
+`;
+
+const MutedText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const ErrorText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.danger};
+`;
 
 const TABS = [
   { label: "구독 수익", value: "SUBSCRIPTION" },
@@ -11,7 +150,7 @@ const TABS = [
 
 export function SettlementPage() {
   const navigate = useNavigate();
-  const creatorId = 2; // jwt 연동 후 제거
+  const creatorId = 2; // JWT 연동 후 제거
 
   const [activeTab, setActiveTab] = useState("SUBSCRIPTION");
   const [data, setData] = useState(null);
@@ -39,196 +178,90 @@ export function SettlementPage() {
   };
 
   const formatPrice = (price) => `₩${price.toLocaleString()}`;
-
   const totalLabel = activeTab === "SUBSCRIPTION" ? "총 구독자 수" : activeTab === "QUESTION" ? "총 질문 건수" : "총 결제 건수";
 
   return (
-    <div style={styles.page}>
-      {/* 헤더 */}
-      <div style={styles.header}>
-        <div style={styles.headerRow}>
-          <div>
-            <h1 style={styles.title}>정산 관리</h1>
-            <p style={styles.subtitle}>구독 및 질문글 수익을 확인하세요</p>
-          </div>
-          <button style={styles.closeBtn} onClick={() => navigate(-1)}>✕</button>
-        </div>
-      </div>
-
-      {/* 탭 */}
-      <div style={styles.tabRow}>
-        {TABS.map((tab) => (
-          <button
-            key={tab.label}
-            style={activeTab === tab.value ? styles.tabActive : styles.tab}
-            onClick={() => setActiveTab(tab.value)}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <p style={styles.muted}>불러오는 중...</p>
-      ) : error ? (
-        <p style={styles.error}>{error}</p>
-      ) : (
-        <>
-          {/* 메트릭 카드 */}
-          <div style={styles.metricGrid}>
-            <div style={styles.metricCard}>
-              <p style={styles.metricLabel}>이번 달 수익</p>
-              <p style={styles.metricValue}>{formatPrice(data.thisMonthRevenue)}</p>
+      <Page>
+        <Header>
+          <HeaderRow>
+            <div>
+              <Title>정산 관리</Title>
+              <Subtitle>구독 및 질문글 수익을 확인하세요</Subtitle>
             </div>
-            <div style={styles.metricCard}>
-              <p style={styles.metricLabel}>총 누적 수익</p>
-              <p style={styles.metricValue}>{formatPrice(data.totalRevenue)}</p>
-            </div>
-            <div style={styles.metricCard}>
-              <p style={styles.metricLabel}>{totalLabel}</p>
-              <p style={styles.metricValue}>{data.totalCount}건</p>
-            </div>
-          </div>
+            <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
+          </HeaderRow>
+        </Header>
 
-          {/* 결제 내역 */}
-          <div style={styles.sectionTitle}>
-            <Receipt size={16} color="#00d4ff" />
-            결제 내역
-          </div>
+        <TabRow>
+          {TABS.map((tab) => (
+              <Tab
+                  key={tab.label}
+                  $active={activeTab === tab.value}
+                  onClick={() => setActiveTab(tab.value)}
+              >
+                {tab.label}
+              </Tab>
+          ))}
+        </TabRow>
 
-          <div style={styles.tableWrap}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>결제자</th>
-                  <th style={styles.th}>결제 유형</th>
-                  <th style={styles.th}>금액</th>
-                  <th style={styles.th}>결제일</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.details.length === 0 ? (
+        {loading ? (
+            <MutedText>불러오는 중...</MutedText>
+        ) : error ? (
+            <ErrorText>{error}</ErrorText>
+        ) : (
+            <>
+              <MetricGrid>
+                <MetricCard>
+                  <MetricLabel>이번 달 수익</MetricLabel>
+                  <MetricValue>{formatPrice(data.thisMonthRevenue)}</MetricValue>
+                </MetricCard>
+                <MetricCard>
+                  <MetricLabel>총 누적 수익</MetricLabel>
+                  <MetricValue>{formatPrice(data.totalRevenue)}</MetricValue>
+                </MetricCard>
+                <MetricCard>
+                  <MetricLabel>{totalLabel}</MetricLabel>
+                  <MetricValue>{data.totalCount}건</MetricValue>
+                </MetricCard>
+              </MetricGrid>
+
+              <SectionTitle>
+                <Receipt size={16} />
+                결제 내역
+              </SectionTitle>
+
+              <TableWrap>
+                <Table>
+                  <thead>
                   <tr>
-                    <td colSpan={4} style={{ ...styles.td, textAlign: "center", color: "#717182" }}>
-                      결제 내역이 없습니다.
-                    </td>
+                    <Th>결제자</Th>
+                    <Th>결제 유형</Th>
+                    <Th>금액</Th>
+                    <Th>결제일</Th>
                   </tr>
-                ) : (
-                  data.details.map((item) => (
-                    <tr key={item.paymentId}>
-                      <td style={styles.td}>{item.payerName}</td>
-                      <td style={styles.td}>
-                        {item.paymentType === "SUBSCRIPTION" ? "구독" : "질문글"}
-                      </td>
-                      <td style={{ ...styles.td, color: "#00d4ff", fontWeight: 500 }}>
-                        {formatPrice(item.price)}
-                      </td>
-                      <td style={styles.td}>{formatDate(item.createdAt)}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-    </div>
+                  </thead>
+                  <tbody>
+                  {data.details.length === 0 ? (
+                      <tr>
+                        <Td colSpan={4} style={{ textAlign: "center", color: "inherit" }}>
+                          결제 내역이 없습니다.
+                        </Td>
+                      </tr>
+                  ) : (
+                      data.details.map((item) => (
+                          <tr key={item.paymentId}>
+                            <Td>{item.payerName}</Td>
+                            <Td>{item.paymentType === "SUBSCRIPTION" ? "구독" : "질문글"}</Td>
+                            <Td $accent>{formatPrice(item.price)}</Td>
+                            <Td>{formatDate(item.createdAt)}</Td>
+                          </tr>
+                      ))
+                  )}
+                  </tbody>
+                </Table>
+              </TableWrap>
+            </>
+        )}
+      </Page>
   );
 }
-
-const styles = {
-  page: {
-    background: "#0d0d14",
-    minHeight: "100vh",
-    padding: "2rem",
-    color: "#e8e8f0",
-    fontFamily: "inherit",
-  },
-  header: { marginBottom: "2rem" },
-  headerRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  title: { fontSize: "22px", fontWeight: 500, color: "#ffffff", margin: 0 , textAlign: "left" },
-  subtitle: { fontSize: "13px", color: "#717182", marginTop: "4px" },
-  closeBtn: {
-    background: "transparent",
-    border: "none",
-    color: "#717182",
-    fontSize: "18px",
-    cursor: "pointer",
-    padding: "0.25rem",
-    lineHeight: 1,
-  },
-  tabRow: { display: "flex", gap: "0.5rem", marginBottom: "1.5rem" },
-  tab: {
-    padding: "0.5rem 1.25rem",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: 500,
-    cursor: "pointer",
-    border: "1px solid rgba(255,255,255,0.1)",
-    background: "transparent",
-    color: "#717182",
-  },
-  tabActive: {
-    padding: "0.5rem 1.25rem",
-    borderRadius: "8px",
-    fontSize: "13px",
-    fontWeight: 500,
-    cursor: "pointer",
-    border: "1px solid #00d4ff",
-    background: "#00d4ff",
-    color: "#0d0d14",
-  },
-  metricGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "1rem",
-    marginBottom: "1.5rem",
-  },
-  metricCard: {
-    background: "#1a1a24",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "12px",
-    padding: "1.25rem",
-  },
-  metricLabel: { fontSize: "12px", color: "#717182", margin: "0 0 0.5rem" },
-  metricValue: { fontSize: "24px", fontWeight: 500, color: "#00d4ff", margin: 0 },
-  sectionTitle: {
-    fontSize: "15px",
-    fontWeight: 500,
-    color: "#00d4ff",
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    marginBottom: "1rem",
-  },
-  tableWrap: {
-    background: "#1a1a24",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "12px",
-    overflow: "hidden",
-  },
-  table: { width: "100%", borderCollapse: "collapse",tableLayout: "fixed" },
-  th: {
-    fontSize: "12px",
-    color: "#717182",
-    fontWeight: 500,
-    padding: "0.75rem 1.25rem",
-    textAlign: "left",
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-    width: "25%",
-  },
-  td: {
-    fontSize: "13px",
-    padding: "0.875rem 1.25rem",
-    textAlign: "left",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    color: "#e8e8f0",
-    width: "25%",
-  },
-  muted: { color: "#717182", fontSize: "14px" },
-  error: { color: "#ff4d4d", fontSize: "14px" },
-};

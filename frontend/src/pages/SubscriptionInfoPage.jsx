@@ -1,7 +1,260 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Lock, Star, FileText, Calendar, Heart, Bell, Unlock } from "lucide-react";
+import styled from "styled-components";
 import { getSubscriptionInfo } from '../api/subscriptionApi';
+
+const Page = styled.div`
+  background: ${({ theme }) => theme.colors.bg};
+  min-height: 100vh;
+  padding: 2rem;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const LoadingText = styled.div`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 14px;
+`;
+
+const ErrorText = styled.div`
+  color: ${({ theme }) => theme.colors.danger};
+  font-size: 14px;
+`;
+
+const TopHeader = styled.div`
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  text-align: center;
+`;
+
+const TopTitle = styled.h1`
+  font-size: 22px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0;
+`;
+
+const TopSubtitle = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 6px;
+`;
+
+const CreatorHeader = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+`;
+
+const CreatorAvatar = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0;
+`;
+
+const CreatorName = styled.p`
+  font-size: 17px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  margin: 0;
+`;
+
+const CreatorCta = styled.p`
+  font-size: 17px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 2px 0 0;
+`;
+
+const PriceCard = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.accent}33;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+`;
+
+const PriceLabel = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 0.5rem;
+`;
+
+const PriceAmount = styled.span`
+  font-size: 36px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.accent};
+`;
+
+const PricePeriod = styled.span`
+  font-size: 16px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const PriceDesc = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-top: 0.75rem;
+`;
+
+const DateRange = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const SectionTitle = styled.div`
+  font-size: 15px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.accent};
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+`;
+
+const BenefitCard = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const BenefitIcon = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => theme.colors.accentDim};
+  border: 1px solid ${({ theme }) => theme.colors.accent}33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+`;
+
+const BenefitText = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const PostCountBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.75rem;
+  background: ${({ theme }) => theme.colors.premiumDim};
+  border: 1px solid ${({ theme }) => theme.colors.premium}4d;
+  border-radius: 20px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.premium};
+  margin-bottom: 1rem;
+`;
+
+const PostItem = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const PostTitle = styled.span`
+  font-size: 14px;
+  line-height: 1.4;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const PostLock = styled.div`
+  width: 28px;
+  height: 28px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => theme.colors.premiumDim};
+  border: 1px solid ${({ theme }) => theme.colors.premium}4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-left: 1rem;
+`;
+
+const CtaSection = styled.div`
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const TotalPrice = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const TotalAmount = styled.span`
+  font-size: 20px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const BtnRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+`;
+
+const CancelBtn = styled.button`
+  flex: 1;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.bg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const CtaBtn = styled.button`
+  flex: 1;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+`;
 
 export function SubscriptionInfoPage() {
     const { creatorId } = useParams();
@@ -30,284 +283,81 @@ export function SubscriptionInfoPage() {
     const formatDate = (d) =>
         `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
 
-    if (loading) {
-        return (
-            <div style={styles.page}>
-                <div style={styles.loadingText}>불러오는 중...</div>
-            </div>
-        );
-    }
-
-    if (error || !info) {
-        return (
-            <div style={styles.page}>
-                <div style={styles.errorText}>{error ?? "오류가 발생했습니다."}</div>
-            </div>
-        );
-    }
+    if (loading) return <Page><LoadingText>불러오는 중...</LoadingText></Page>;
+    if (error || !info) return <Page><ErrorText>{error ?? "오류가 발생했습니다."}</ErrorText></Page>;
 
     return (
-        <div style={styles.page}>
-            {/* 상단 헤더 */}
-            <div style={styles.topHeader}>
-                <h1 style={styles.topTitle}>크리에이터 구독</h1>
-                <p style={styles.topSubtitle}>전문 지식을 지속적으로 받아보세요</p>
-            </div>
-            {/* 크리에이터 정보 */}
-            <div style={styles.creatorHeader}>
-                <div style={styles.creatorAvatar}>{info.creatorName[0]}</div>
-                <div>
-                    <p style={styles.creatorName}>{info.creatorName} 크리에이터</p>
-                    <p style={styles.creatorCta}>구독 시작하기</p>
-                </div>
-            </div>
+        <Page>
+            <TopHeader>
+                <TopTitle>크리에이터 구독</TopTitle>
+                <TopSubtitle>전문 지식을 지속적으로 받아보세요</TopSubtitle>
+            </TopHeader>
 
-            {/* 가격 카드 */}
-            <div style={styles.priceCard}>
-                <p style={styles.priceLabel}>월 구독료</p>
+            <CreatorHeader>
+                <CreatorAvatar>{info.creatorName[0]}</CreatorAvatar>
                 <div>
-          <span style={styles.priceAmount}>
-            ₩{info.price.toLocaleString()}
-          </span>
-                    <span style={styles.pricePeriod}> / 월</span>
+                    <CreatorName>{info.creatorName} 크리에이터</CreatorName>
+                    <CreatorCta>구독 시작하기</CreatorCta>
                 </div>
-                <p style={styles.priceDesc}>{info.description}</p>
-                <div style={styles.dateRange}>
-                    <Calendar size={14} color="#717182" />
-                    <span>
-            {formatDate(today)} ~ {formatDate(nextMonth)} · 부가세 포함 금액
-          </span>
-                </div>
-            </div>
+            </CreatorHeader>
 
-            {/* 구독 혜택 */}
-            <div style={styles.sectionTitle}>
-                <Star size={16} color="#00d4ff" />
+            <PriceCard>
+                <PriceLabel>월 구독료</PriceLabel>
+                <div>
+                    <PriceAmount>₩{info.price.toLocaleString()}</PriceAmount>
+                    <PricePeriod> / 월</PricePeriod>
+                </div>
+                <PriceDesc>{info.description}</PriceDesc>
+                <DateRange>
+                    <Calendar size={14} />
+                    <span>{formatDate(today)} ~ {formatDate(nextMonth)} · 부가세 포함 금액</span>
+                </DateRange>
+            </PriceCard>
+
+            <SectionTitle>
+                <Star size={16} />
                 구독 혜택
-            </div>
+            </SectionTitle>
 
-            <div style={styles.benefitCard}>
-                <div style={styles.benefitIcon}>
-                    <Unlock size={16} color="#00d4ff" />
-                </div>
-                <span style={styles.benefitText}>모든 유료글 무제한 열람</span>
-            </div>
-            <div style={styles.benefitCard}>
-                <div style={styles.benefitIcon}>
-                    <Bell size={16} color="#00d4ff" />
-                </div>
-                <span style={styles.benefitText}>새 프리미엄 글 알림 수신</span>
-            </div>
+            <BenefitCard>
+                <BenefitIcon><Unlock size={16} /></BenefitIcon>
+                <BenefitText>모든 유료글 무제한 열람</BenefitText>
+            </BenefitCard>
+            <BenefitCard>
+                <BenefitIcon><Bell size={16} /></BenefitIcon>
+                <BenefitText>새 프리미엄 글 알림 수신</BenefitText>
+            </BenefitCard>
 
-            {/* 프리미엄 콘텐츠 */}
             <div style={{ marginTop: "1.5rem" }}>
-                <div style={styles.sectionTitle}>
-                    <FileText size={16} color="#00d4ff" />
+                <SectionTitle>
+                    <FileText size={16} />
                     프리미엄 콘텐츠
-                </div>
-                <div style={styles.postCountBadge}>
-                    <Lock size={12} color="#ffd700" />
+                </SectionTitle>
+                <PostCountBadge>
+                    <Lock size={12} />
                     총 {info.premiumPostCount}개의 프리미엄 글
-                </div>
+                </PostCountBadge>
                 {info.recentPremiumPosts.map((post) => (
-                    <div key={post.id} style={styles.postItem}>
-                        <span style={styles.postTitle}>{post.title}</span>
-                        <div style={styles.postLock}>
-                            <Lock size={13} color="#ffd700" />
-                        </div>
-                    </div>
+                    <PostItem key={post.id}>
+                        <PostTitle>{post.title}</PostTitle>
+                        <PostLock><Lock size={13} /></PostLock>
+                    </PostItem>
                 ))}
             </div>
 
-            {/* 하단 버튼 */}
-            <div style={styles.ctaSection}>
-                <div style={styles.totalPrice}>
-                    <span style={styles.totalLabel}>총 결제 금액</span>
-                    <span style={styles.totalAmount}>
-            ₩{info.price.toLocaleString()}
-          </span>
-                </div>
-                <div style={styles.btnRow}>
-                    <button style={styles.cancelBtn} onClick={() => navigate(-1)}>
-                        취소
-                    </button>
-                    <button
-                        style={styles.ctaBtn}
-                        onClick={() => navigate(`/subscriptions/${creatorId}/payment`)}
-                    >
-                        <Heart size={16} color="#0d0d14" />
+            <CtaSection>
+                <TotalPrice>
+                    <TotalLabel>총 결제 금액</TotalLabel>
+                    <TotalAmount>₩{info.price.toLocaleString()}</TotalAmount>
+                </TotalPrice>
+                <BtnRow>
+                    <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
+                    <CtaBtn onClick={() => navigate(`/subscriptions/${creatorId}/payment`)}>
+                        <Heart size={16} />
                         구독 시작하기
-                    </button>
-                </div>
-            </div>
-        </div>
+                    </CtaBtn>
+                </BtnRow>
+            </CtaSection>
+        </Page>
     );
 }
-
-const styles = {
-    page: {
-        background: "#0d0d14",
-        minHeight: "100vh",
-        padding: "2rem",
-        fontFamily: "inherit",
-        color: "#e8e8f0",
-    },
-    loadingText: { color: "#717182", fontSize: "14px" },
-    errorText: { color: "#ff4d4d", fontSize: "14px" },
-    creatorHeader: {
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-        marginBottom: "2rem",
-    },
-    creatorAvatar: {
-        width: "42px",
-        height: "42px",
-        borderRadius: "50%",
-        background: "#00d4ff",
-        color: "#0d0d14",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "16px",
-        fontWeight: 500,
-        flexShrink: 0,
-    },
-    creatorName: { fontSize: "17px", fontWeight: 500, color: "#e8e8f0", margin: 0 },
-    creatorCta: { fontSize: "17px", color: "#717182", margin: "2px 0 0",textAlign:"left" },
-    priceCard: {
-        background: "#1a1a24",
-        border: "1px solid rgba(0,212,255,0.2)",
-        borderRadius: "12px",
-        padding: "1.5rem",
-        marginBottom: "1.5rem",
-    },
-    priceLabel: { fontSize: "13px", color: "#717182", marginBottom: "0.5rem" },
-    priceAmount: { fontSize: "36px", fontWeight: 500, color: "#00d4ff" },
-    pricePeriod: { fontSize: "16px", color: "#717182" },
-    priceDesc: { fontSize: "13px", color: "#a0a0b8", marginTop: "0.75rem" },
-    dateRange: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "0.5rem",
-        marginTop: "1rem",
-        paddingTop: "1rem",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-        fontSize: "13px",
-        color: "#717182",
-    },
-    sectionTitle: {
-        fontSize: "15px",
-        fontWeight: 500,
-        color: "#00d4ff",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.5rem",
-        marginBottom: "1rem",
-    },
-    benefitCard: {
-        background: "#1a1a24",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "10px",
-        padding: "1rem 1.25rem",
-        marginBottom: "0.75rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "0.75rem",
-    },
-    benefitIcon: {
-        width: "36px",
-        height: "36px",
-        borderRadius: "8px",
-        background: "rgba(0,212,255,0.1)",
-        border: "1px solid rgba(0,212,255,0.2)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-    },
-    benefitText: { fontSize: "14px" },
-    postCountBadge: {
-        display: "inline-flex",
-        alignItems: "center",
-        gap: "0.4rem",
-        padding: "0.3rem 0.75rem",
-        background: "rgba(255,215,0,0.1)",
-        border: "1px solid rgba(255,215,0,0.3)",
-        borderRadius: "20px",
-        fontSize: "12px",
-        color: "#ffd700",
-        marginBottom: "1rem",
-    },
-    postItem: {
-        background: "#1a1a24",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: "10px",
-        padding: "1rem 1.25rem",
-        marginBottom: "0.5rem",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-    postTitle: { fontSize: "14px", lineHeight: 1.4 },
-    postLock: {
-        width: "28px",
-        height: "28px",
-        borderRadius: "6px",
-        background: "rgba(255,215,0,0.1)",
-        border: "1px solid rgba(255,215,0,0.3)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-        marginLeft: "1rem",
-    },
-    ctaSection: {
-        marginTop: "2rem",
-        paddingTop: "1.5rem",
-        borderTop: "1px solid rgba(255,255,255,0.08)",
-    },
-    totalPrice: {
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginBottom: "1rem",
-    },
-    totalLabel: { fontSize: "14px", color: "#717182" },
-    totalAmount: { fontSize: "20px", fontWeight: 500, color: "#e8e8f0" },
-    btnRow: { display: "flex", gap: "0.75rem" },
-    cancelBtn: {
-        flex: 1,
-        padding: "1rem",
-        background: "#ffffff",
-        color: "#0d0d14",
-        border: "none",
-        borderRadius: "10px",
-        fontSize: "15px",
-        fontWeight: 500,
-        cursor: "pointer",
-    },
-    ctaBtn: {
-        flex: 1,
-        padding: "1rem",
-        background: "#00d4ff",
-        color: "#0d0d14",
-        border: "none",
-        borderRadius: "10px",
-        fontSize: "15px",
-        fontWeight: 500,
-        cursor: "pointer",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "0.5rem",
-    },
-    topHeader: {
-        marginBottom: "2rem",
-        paddingBottom: "1.5rem",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-    },
-    topTitle: { fontSize: "22px", fontWeight: 500, color: "#ffffff", margin: 0 },
-    topSubtitle: { fontSize: "13px", color: "#717182", marginTop: "6px" },
-};

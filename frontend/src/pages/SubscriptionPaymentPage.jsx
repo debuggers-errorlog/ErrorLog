@@ -1,7 +1,206 @@
-import { useParams, useNavigate , useLocation } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { CreditCard, Shield, CheckCircle } from "lucide-react";
+import styled from "styled-components";
 import { subscribe } from '../api/subscriptionApi';
 import { cancelPayment } from '../api/paymentApi';
+
+const Page = styled.div`
+  background: ${({ theme }) => theme.colors.bg};
+  min-height: 100vh;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Header = styled.div`
+  background: ${({ theme }) => theme.colors.accent};
+  padding: 1.25rem 2rem;
+  text-align: center;
+`;
+
+const HeaderTitle = styled.h2`
+  font-size: 18px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.bg};
+  margin: 0;
+`;
+
+const OrderCard = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  margin: 1.5rem;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 1.25rem;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const OrderRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+`;
+
+const OrderLabel = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const OrderValue = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const Divider = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+  margin: 0.25rem 0;
+`;
+
+const TotalCard = styled.div`
+  background: ${({ theme }) => theme.colors.accentDim};
+  border: 1px solid ${({ theme }) => theme.colors.accent}33;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  margin: 0 1.5rem 1.5rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const TotalAmount = styled.span`
+  font-size: 32px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.accent};
+  margin-top: 0.25rem;
+`;
+
+const VatText = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 0.25rem 0 0;
+`;
+
+const SectionTitle = styled.div`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  padding: 0 1.5rem;
+  margin-bottom: 0.75rem;
+`;
+
+const PaymentMethod = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.accent}4d;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  margin: 0 1.5rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const MethodLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const RadioActive = styled.div`
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid ${({ theme }) => theme.colors.accent};
+  background: ${({ theme }) => theme.colors.accentDim};
+  flex-shrink: 0;
+`;
+
+const CardIcon = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => theme.colors.accentDim};
+  border: 1px solid ${({ theme }) => theme.colors.accent}33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const MethodName = styled.p`
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  color: ${({ theme }) => theme.colors.text};
+`;
+
+const MethodDesc = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 2px 0 0;
+`;
+
+const NoticeBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 1.5rem;
+  padding: 0.75rem 1rem;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+`;
+
+const NoticeText = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const BtnArea = styled.div`
+  padding: 1.5rem;
+  margin-top: 1rem;
+`;
+
+const BtnRow = styled.div`
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+`;
+
+const CancelBtn = styled.button`
+  flex: 1;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.text};
+  color: ${({ theme }) => theme.colors.bg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+`;
+
+const CtaBtn = styled.button`
+  flex: 1;
+  padding: 1rem;
+  background: ${({ theme }) => theme.colors.accent};
+  color: ${({ theme }) => theme.colors.bg};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+`;
+
+const FooterText = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-align: center;
+  margin: 0;
+`;
 
 export function SubscriptionPaymentPage() {
   const { creatorId } = useParams();
@@ -30,7 +229,6 @@ export function SubscriptionPaymentPage() {
     }
   };
 
-  // expiredAt 있으면 만료일 기준, 없으면 오늘 기준
   const startDate = expiredAt ? new Date(expiredAt) : new Date();
   const endDate = new Date(startDate);
   endDate.setMonth(endDate.getMonth() + 1);
@@ -38,223 +236,64 @@ export function SubscriptionPaymentPage() {
       `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 
   return (
-      <div style={styles.page}>
-        {/* 헤더 */}
-        <div style={styles.header}>
-          <h2 style={styles.headerTitle}>결제하기</h2>
-        </div>
+      <Page>
+        <Header>
+          <HeaderTitle>결제하기</HeaderTitle>
+        </Header>
 
-        {/* 주문 정보 */}
-        <div style={styles.orderCard}>
-          <div style={styles.orderRow}>
-            <span style={styles.orderLabel}>크리에이터</span>
-            <span style={styles.orderValue}>김개발</span>
-          </div>
-          <div style={styles.divider} />
-          <div style={styles.orderRow}>
-            <span style={styles.orderLabel}>구독 기간</span>
-            <span style={styles.orderValue}>1개월</span>
-          </div>
-          <div style={styles.divider} />
-          <div style={styles.orderRow}>
-            <span style={styles.orderLabel}>이용 기간</span>
-            <span style={styles.orderValue}>
-            {formatDate(startDate)} ~ {formatDate(endDate)}
-          </span>
-          </div>
-        </div>
+        <OrderCard>
+          <OrderRow>
+            <OrderLabel>크리에이터</OrderLabel>
+            <OrderValue>김개발</OrderValue>
+          </OrderRow>
+          <Divider />
+          <OrderRow>
+            <OrderLabel>구독 기간</OrderLabel>
+            <OrderValue>1개월</OrderValue>
+          </OrderRow>
+          <Divider />
+          <OrderRow>
+            <OrderLabel>이용 기간</OrderLabel>
+            <OrderValue>{formatDate(startDate)} ~ {formatDate(endDate)}</OrderValue>
+          </OrderRow>
+        </OrderCard>
 
-        {/* 총 결제 금액 */}
-        <div style={styles.totalCard}>
-          <span style={styles.totalLabel}>총 결제 금액</span>
-          <span style={styles.totalAmount}>₩3,900</span>
-          <p style={styles.vatText}>부가세 포함</p>
-        </div>
+        <TotalCard>
+          <TotalLabel>총 결제 금액</TotalLabel>
+          <TotalAmount>₩3,900</TotalAmount>
+          <VatText>부가세 포함</VatText>
+        </TotalCard>
 
-        {/* 결제 수단 */}
-        <div style={styles.sectionTitle}>결제 수단</div>
-        <div style={styles.paymentMethod}>
-          <div style={styles.methodLeft}>
-            <div style={styles.radioActive} />
-            <div style={styles.cardIcon}>
-              <CreditCard size={18} color="#00d4ff" />
-            </div>
+        <SectionTitle>결제 수단</SectionTitle>
+        <PaymentMethod>
+          <MethodLeft>
+            <RadioActive />
+            <CardIcon>
+              <CreditCard size={18} />
+            </CardIcon>
             <div>
-              <p style={styles.methodName}>신용카드</p>
-              <p style={styles.methodDesc}>안전한 카드 결제</p>
+              <MethodName>신용카드</MethodName>
+              <MethodDesc>안전한 카드 결제</MethodDesc>
             </div>
-          </div>
-          <CheckCircle size={18} color="#00d4ff" />
-        </div>
+          </MethodLeft>
+          <CheckCircle size={18} />
+        </PaymentMethod>
 
-        {/* 안내 문구 */}
-        <div style={styles.noticeBox}>
-          <Shield size={14} color="#717182" />
-          <span style={styles.noticeText}>
-          결제 버튼 클릭 시 PG사의 안전한 결제창으로 이동합니다
-        </span>
-        </div>
+        <NoticeBox>
+          <Shield size={14} />
+          <NoticeText>결제 버튼 클릭 시 PG사의 안전한 결제창으로 이동합니다</NoticeText>
+        </NoticeBox>
 
-        {/* 버튼 */}
-        <div style={styles.btnArea}>
-          <div style={styles.btnRow}>
-            <button style={styles.cancelBtn} onClick={handleCancel}>
-              취소
-            </button>
-            <button style={styles.ctaBtn} onClick={handlePayment}>
-              <CreditCard size={16} color="#0d0d14" />
+        <BtnArea>
+          <BtnRow>
+            <CancelBtn onClick={handleCancel}>취소</CancelBtn>
+            <CtaBtn onClick={handlePayment}>
+              <CreditCard size={16} />
               ₩3,900 결제하기
-            </button>
-          </div>
-          <p style={styles.footerText}>구독 후 즉시 모든 프리미엄 콘텐츠에 접근할 수 있습니다</p>
-        </div>
-      </div>
+            </CtaBtn>
+          </BtnRow>
+          <FooterText>구독 후 즉시 모든 프리미엄 콘텐츠에 접근할 수 있습니다</FooterText>
+        </BtnArea>
+      </Page>
   );
 }
-
-const styles = {
-  page: {
-    background: "#0d0d14",
-    minHeight: "100vh",
-    padding: "0",
-    fontFamily: "inherit",
-    color: "#e8e8f0",
-  },
-  header: {
-    background: "#00d4ff",
-    padding: "1.25rem 2rem",
-    textAlign: "center",
-  },
-  headerTitle: {
-    fontSize: "18px",
-    fontWeight: 500,
-    color: "#0d0d14",
-    margin: 0,
-  },
-  orderCard: {
-    background: "#1a1a24",
-    margin: "1.5rem",
-    borderRadius: "12px",
-    padding: "1.25rem",
-    border: "1px solid rgba(255,255,255,0.08)",
-  },
-  orderRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: "0.5rem 0",
-  },
-  orderLabel: { fontSize: "14px", color: "#717182" },
-  orderValue: { fontSize: "14px", color: "#e8e8f0" },
-  divider: {
-    borderTop: "1px solid rgba(255,255,255,0.06)",
-    margin: "0.25rem 0",
-  },
-  totalCard: {
-    background: "rgba(0,212,255,0.08)",
-    border: "1px solid rgba(0,212,255,0.2)",
-    borderRadius: "12px",
-    margin: "0 1.5rem 1.5rem",
-    padding: "1.25rem",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-end",
-  },
-  totalLabel: { fontSize: "13px", color: "#717182" },
-  totalAmount: { fontSize: "32px", fontWeight: 500, color: "#00d4ff", marginTop: "0.25rem" },
-  vatText: { fontSize: "12px", color: "#717182", margin: "0.25rem 0 0" },
-  sectionTitle: {
-    fontSize: "14px",
-    fontWeight: 500,
-    color: "#e8e8f0",
-    padding: "0 1.5rem",
-    marginBottom: "0.75rem",
-  },
-  paymentMethod: {
-    background: "#1a1a24",
-    border: "1px solid rgba(0,212,255,0.3)",
-    borderRadius: "12px",
-    margin: "0 1.5rem",
-    padding: "1rem 1.25rem",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  methodLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
-  },
-  radioActive: {
-    width: "18px",
-    height: "18px",
-    borderRadius: "50%",
-    border: "2px solid #00d4ff",
-    background: "rgba(0,212,255,0.2)",
-    flexShrink: 0,
-  },
-  cardIcon: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "8px",
-    background: "rgba(0,212,255,0.1)",
-    border: "1px solid rgba(0,212,255,0.2)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  methodName: { fontSize: "14px", fontWeight: 500, margin: 0 },
-  methodDesc: { fontSize: "12px", color: "#717182", margin: "2px 0 0" },
-  noticeBox: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    margin: "1rem 1.5rem",
-    padding: "0.75rem 1rem",
-    background: "#1a1a24",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "8px",
-  },
-  noticeText: { fontSize: "12px", color: "#717182" },
-  btnArea: {
-    padding: "1.5rem",
-    marginTop: "1rem",
-  },
-  btnRow: {
-    display: "flex",
-    gap: "0.75rem",
-    marginBottom: "1rem",
-  },
-  cancelBtn: {
-    flex: 1,
-    padding: "1rem",
-    background: "#ffffff",
-    color: "#0d0d14",
-    border: "none",
-    borderRadius: "10px",
-    fontSize: "15px",
-    fontWeight: 500,
-    cursor: "pointer",
-  },
-  ctaBtn: {
-    flex: 1,
-    padding: "1rem",
-    background: "#00d4ff",
-    color: "#0d0d14",
-    border: "none",
-    borderRadius: "10px",
-    fontSize: "15px",
-    fontWeight: 500,
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "0.5rem",
-  },
-  footerText: {
-    fontSize: "12px",
-    color: "#717182",
-    textAlign: "center",
-    margin: 0,
-  },
-};
