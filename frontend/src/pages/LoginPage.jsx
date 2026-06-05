@@ -121,6 +121,27 @@ export default function LoginPage() {
           >
             비밀번호를 잊으셨나요?
           </button>
+
+          {/* 소셜 로그인 */}
+          <div className="flex items-center gap-3 my-5">
+            <div className="flex-1 h-px bg-border" />
+            <span className="text-xs text-muted-foreground">또는 소셜 계정으로</span>
+            <div className="flex-1 h-px bg-border" />
+          </div>
+          <div className="flex gap-2">
+            {[
+              { label: '구글', bg: '#444', color: '#fff', abbr: 'G' },
+            ].map((s) => (
+                <button key={s.label}
+                        type="button"
+                        onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border border-border bg-input-background text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+              <span className="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                    style={{ background: s.bg, color: s.color }}>{s.abbr}</span>
+                  {s.label}
+                </button>
+            ))}
+          </div>
         </form>
 
       </div>

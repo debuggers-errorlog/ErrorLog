@@ -23,8 +23,15 @@ public class User {
     @Column(nullable = false, unique = true, length = 100)
     private String nickname;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Provider provider;
+
+    @Column(name = "provider_id", length = 255)
+    private String providerId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -51,6 +58,7 @@ public class User {
         this.createdAt = LocalDateTime.now();
         if (this.role == null) this.role = Role.USER;
         if (this.status == null) this.status = Status.ACTIVE;
+        if (this.provider == null) this.provider = Provider.LOCAL;
     }
 
     public void updateNickname(String nickname) {
@@ -71,11 +79,7 @@ public class User {
         this.deletedAt = LocalDateTime.now();
     }
 
-    public enum Role {
-        ADMIN, USER
-    }
-
-    public enum Status {
-        ACTIVE, SUSPENDED, DELETED
-    }
+    public enum Role { ADMIN, USER }
+    public enum Status { ACTIVE, SUSPENDED, DELETED }
+    public enum Provider { LOCAL, GOOGLE }
 }
