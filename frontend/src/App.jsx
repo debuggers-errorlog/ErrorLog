@@ -14,11 +14,11 @@ function App() {
             <GlobalStyle />
             <BrowserRouter>
                 <Routes>
-                    <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
-                    <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
-                    <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
-                    <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
-                    <Route path="/settlement" element={<SettlementPage />} />
+                    <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} /> {/*구독 결제 전 정보 화면*/}
+                    <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} /> {/*구독 결제 화면*/}
+                    <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} /> {/*구독 관리 화면*/}
+                    <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />  {/*구독 플랜 설정 화면*/}
+                    <Route path="/settlement" element={<SettlementPage />} /> {/*정산 화면*/}
                 </Routes>
             </BrowserRouter>
         </ThemeProvider>
