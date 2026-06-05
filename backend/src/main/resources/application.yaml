@@ -1,6 +1,36 @@
 spring:
   application:
     name: backend
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+
+server:
+  port: 8080
+
+errorlog:
+  cors:
+    allowed-origins: http://localhost:5173
+  s3:
+    enabled: ${S3_ENABLED:false}
+    bucket: ${S3_BUCKET:}
+    region: ${AWS_REGION:ap-northeast-2}
+    access-key: ${AWS_ACCESS_KEY_ID:}
+    secret-key: ${AWS_SECRET_ACCESS_KEY:}
+    endpoint: ${S3_ENDPOINT:}
+    public-url-base: ${S3_PUBLIC_URL_BASE:}
+  storage:
+    local-dir: uploads
+    public-url-base: http://localhost:8080/uploads
 
   datasource:
     url: jdbc:mysql://localhost:3306/Errorlog?serverTimezone=Asia/Seoul&characterEncoding=UTF-8

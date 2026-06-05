@@ -6,6 +6,18 @@
 out/
 gen/
 
+### Java/Spring Build ###
+target/
+build/
+.gradle/
+bin/
+
+### Node.js (프론트엔드용) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 ### OS ###
 .DS_Store
 Thumbs.db
