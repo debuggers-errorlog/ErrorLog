@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.errorlog.backend.domain.report.entity.QReport.report;
+import static com.errorlog.backend.domain.user.entity.QUser.user;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,19 +34,17 @@ public class ReportQueryRepository {
                 .select(new QReportListResponseDto(
                         report.id,
                         report.reporterId,
-                        // reporterNickname: users 조인 전이라 일단 null. 조인 살리면 user.nickname 으로 교체.
-                        Expressions.nullExpression(String.class),
+                        user.nickname,
                         targetTypeExpression(),   // USER/POST/COMMENT 파생
                         targetIdExpression(),      // 채워진 대상 id
-                        Expressions.nullExpression(String.class), // targetSummary: 조인 후 채움
+                        Expressions.constant("신고 대상 요약"),
                         report.reasonCategory,
                         report.reasonDetail,
                         report.status,
                         report.createdAt
                 ))
                 .from(report)
-                // .leftJoin(user).on(user.id.eq(report.reporterId))               // reporterNickname 채우려면
-                // .leftJoin(post).on(post.id.eq(report.reportedPostId))           // 게시글 제목 채우려면
+                .leftJoin(user).on(user.id.eq(report.reporterId))
                 .where(
                         statusEq(cond.getStatus()),
                         targetTypeEq(cond.getTargetType()),
