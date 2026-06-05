@@ -18,8 +18,9 @@ DROP TABLE IF EXISTS `subscriptions`;
 DROP TABLE IF EXISTS `follows`;
 DROP TABLE IF EXISTS `question_requests`;
 DROP TABLE IF EXISTS `tags`;
-DROP TABLE IF EXISTS `users`;
 DROP TABLE IF EXISTS `payments`;
+DROP TABLE IF EXISTS `users`;
+
 
 CREATE TABLE `users` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
