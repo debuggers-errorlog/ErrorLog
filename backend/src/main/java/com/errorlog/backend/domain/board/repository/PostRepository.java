@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.repository;
+package com.errorlog.backend.domain.board.repository;
 
 import java.util.Optional;
 
@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.domain.enums.PostStatus;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
 
 public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificationExecutor<Post> {
 

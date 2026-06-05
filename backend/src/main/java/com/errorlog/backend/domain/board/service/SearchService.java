@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -6,14 +6,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.errorlog.backend.board.domain.dto.PostSummaryResponse;
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.domain.entity.Tag;
-import com.errorlog.backend.board.domain.enums.SearchScope;
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
-import com.errorlog.backend.board.repository.PostRepository;
-import com.errorlog.backend.board.repository.PostSearchRepository;
-import com.errorlog.backend.board.repository.PostSpecification;
+import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.domain.enums.SearchScope;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.repository.PostRepository;
+import com.errorlog.backend.domain.board.repository.PostSearchRepository;
+import com.errorlog.backend.domain.board.repository.PostSpecification;
 import com.errorlog.backend.common.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;

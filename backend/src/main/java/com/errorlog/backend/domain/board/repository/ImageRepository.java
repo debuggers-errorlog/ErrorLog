@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.repository;
+package com.errorlog.backend.domain.board.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -7,8 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.errorlog.backend.board.domain.entity.Image;
-import com.errorlog.backend.board.domain.enums.ImageTargetType;
+import com.errorlog.backend.domain.board.domain.entity.Image;
+import com.errorlog.backend.domain.board.domain.enums.ImageTargetType;
 
 public interface ImageRepository extends JpaRepository<Image, Long> {
 

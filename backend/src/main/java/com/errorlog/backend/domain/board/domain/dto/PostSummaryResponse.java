@@ -1,12 +1,12 @@
-package com.errorlog.backend.board.domain.dto;
+package com.errorlog.backend.domain.board.domain.dto;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.domain.entity.Tag;
-import com.errorlog.backend.board.domain.enums.PostVisibility;
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 
 public record PostSummaryResponse(
 		Long id,

@@ -1,6 +1,6 @@
-package com.errorlog.backend.board.domain.vo;
+package com.errorlog.backend.domain.board.domain.vo;
 
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 
 public record TroubleshootingMeta(
 		TroubleshootingCategory category,

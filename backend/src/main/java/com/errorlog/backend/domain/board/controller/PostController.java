@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.controller;
+package com.errorlog.backend.domain.board.controller;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.errorlog.backend.board.domain.dto.PostCreateRequest;
-import com.errorlog.backend.board.domain.dto.PostResponse;
-import com.errorlog.backend.board.domain.dto.PostSummaryResponse;
-import com.errorlog.backend.board.domain.dto.PostUpdateRequest;
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
-import com.errorlog.backend.board.service.PostService;
+import com.errorlog.backend.domain.board.domain.dto.PostCreateRequest;
+import com.errorlog.backend.domain.board.domain.dto.PostResponse;
+import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
+import com.errorlog.backend.domain.board.domain.dto.PostUpdateRequest;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.service.PostService;
 import com.errorlog.backend.common.dto.PageResponse;
 
 import jakarta.validation.Valid;

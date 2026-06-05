@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import java.util.Locale;
 import java.util.Map;

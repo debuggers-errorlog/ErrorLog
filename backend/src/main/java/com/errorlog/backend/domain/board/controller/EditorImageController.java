@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.controller;
+package com.errorlog.backend.domain.board.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.errorlog.backend.board.domain.dto.EditorImageUploadResponse;
-import com.errorlog.backend.board.service.EditorImageService;
+import com.errorlog.backend.domain.board.domain.dto.EditorImageUploadResponse;
+import com.errorlog.backend.domain.board.service.EditorImageService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -1,11 +1,11 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import java.io.InputStream;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
-import com.errorlog.backend.board.port.ImageStoragePort;
+import com.errorlog.backend.domain.board.port.ImageStoragePort;
 import com.errorlog.backend.config.S3Properties;
 
 import lombok.RequiredArgsConstructor;

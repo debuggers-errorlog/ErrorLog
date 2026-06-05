@@ -1,6 +1,6 @@
-package com.errorlog.backend.board.domain.dto;
+package com.errorlog.backend.domain.board.domain.dto;
 
-import com.errorlog.backend.board.domain.entity.Image;
+import com.errorlog.backend.domain.board.domain.entity.Image;
 
 public record ImageResponse(
 		Long id,

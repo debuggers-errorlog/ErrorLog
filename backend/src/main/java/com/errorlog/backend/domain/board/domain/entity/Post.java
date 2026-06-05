@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.domain.entity;
+package com.errorlog.backend.domain.board.domain.entity;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -7,9 +7,9 @@ import java.util.Set;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
-import com.errorlog.backend.board.domain.enums.PostStatus;
-import com.errorlog.backend.board.domain.enums.PostVisibility;
-import com.errorlog.backend.board.domain.vo.TroubleshootingMeta;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
+import com.errorlog.backend.domain.board.domain.vo.TroubleshootingMeta;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

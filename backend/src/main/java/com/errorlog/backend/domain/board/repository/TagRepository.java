@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.repository;
+package com.errorlog.backend.domain.board.repository;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.errorlog.backend.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
 

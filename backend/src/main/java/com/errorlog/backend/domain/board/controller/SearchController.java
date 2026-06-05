@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.controller;
+package com.errorlog.backend.domain.board.controller;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.errorlog.backend.board.domain.dto.PostSummaryResponse;
-import com.errorlog.backend.board.domain.enums.SearchScope;
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
-import com.errorlog.backend.board.service.SearchService;
+import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
+import com.errorlog.backend.domain.board.domain.enums.SearchScope;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.service.SearchService;
 import com.errorlog.backend.common.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;

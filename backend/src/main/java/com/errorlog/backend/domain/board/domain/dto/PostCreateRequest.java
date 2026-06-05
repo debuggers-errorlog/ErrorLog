@@ -1,9 +1,9 @@
-package com.errorlog.backend.board.domain.dto;
+package com.errorlog.backend.domain.board.domain.dto;
 
 import java.util.List;
 
-import com.errorlog.backend.board.domain.enums.PostVisibility;
-import com.errorlog.backend.board.domain.vo.TroubleshootingMeta;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
+import com.errorlog.backend.domain.board.domain.vo.TroubleshootingMeta;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;

@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.stub;
+package com.errorlog.backend.domain.board.stub;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
-import com.errorlog.backend.board.port.ImageStoragePort;
+import com.errorlog.backend.domain.board.port.ImageStoragePort;
 
 @Component
 @ConditionalOnProperty(prefix = "errorlog.s3", name = "enabled", havingValue = "false", matchIfMissing = true)
