@@ -1,12 +1,12 @@
-package com.errorlog.backend.board.repository;
+package com.errorlog.backend.domain.board.repository;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.domain.entity.Tag;
-import com.errorlog.backend.board.domain.enums.PostStatus;
-import com.errorlog.backend.board.domain.enums.PostVisibility;
-import com.errorlog.backend.board.domain.enums.TroubleshootingCategory;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
+import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;

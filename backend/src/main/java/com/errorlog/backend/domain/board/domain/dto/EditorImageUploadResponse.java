@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.domain.dto;
+package com.errorlog.backend.domain.board.domain.dto;
 
 public record EditorImageUploadResponse(String url) {
 }

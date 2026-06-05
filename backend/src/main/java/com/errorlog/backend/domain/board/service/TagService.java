@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,9 +11,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.errorlog.backend.board.domain.dto.TagResponse;
-import com.errorlog.backend.board.domain.entity.Tag;
-import com.errorlog.backend.board.repository.TagRepository;
+import com.errorlog.backend.domain.board.domain.dto.TagResponse;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.repository.TagRepository;
 
 import lombok.RequiredArgsConstructor;
 

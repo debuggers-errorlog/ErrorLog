@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.domain.enums;
+package com.errorlog.backend.domain.board.domain.enums;
 
 public enum PostVisibility {
 	PUBLIC,

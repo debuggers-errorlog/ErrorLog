@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import java.io.IOException;
 import java.util.List;
@@ -8,14 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.errorlog.backend.board.domain.dto.ImageResponse;
-import com.errorlog.backend.board.domain.entity.Image;
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.domain.enums.ImageTargetType;
-import com.errorlog.backend.board.domain.enums.PostStatus;
-import com.errorlog.backend.board.port.ImageStoragePort;
-import com.errorlog.backend.board.repository.ImageRepository;
-import com.errorlog.backend.board.repository.PostRepository;
+import com.errorlog.backend.domain.board.domain.dto.ImageResponse;
+import com.errorlog.backend.domain.board.domain.entity.Image;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.domain.enums.ImageTargetType;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
+import com.errorlog.backend.domain.board.port.ImageStoragePort;
+import com.errorlog.backend.domain.board.repository.ImageRepository;
+import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.common.exception.ApiException;
 import com.errorlog.backend.common.exception.ErrorCode;
 

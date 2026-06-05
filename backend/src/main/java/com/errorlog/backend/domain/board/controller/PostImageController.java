@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.controller;
+package com.errorlog.backend.domain.board.controller;
 
 import java.util.List;
 
@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.errorlog.backend.board.domain.dto.ImageResponse;
-import com.errorlog.backend.board.service.PostImageService;
+import com.errorlog.backend.domain.board.domain.dto.ImageResponse;
+import com.errorlog.backend.domain.board.service.PostImageService;
 
 import lombok.RequiredArgsConstructor;
 

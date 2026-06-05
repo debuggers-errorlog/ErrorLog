@@ -1,8 +1,8 @@
-package com.errorlog.backend.board.domain.entity;
+package com.errorlog.backend.domain.board.domain.entity;
 
 import java.time.LocalDateTime;
 
-import com.errorlog.backend.board.domain.enums.ImageTargetType;
+import com.errorlog.backend.domain.board.domain.enums.ImageTargetType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

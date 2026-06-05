@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.controller;
+package com.errorlog.backend.domain.board.controller;
 
 import java.util.List;
 
@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.errorlog.backend.board.domain.dto.TagResponse;
-import com.errorlog.backend.board.service.TagService;
+import com.errorlog.backend.domain.board.domain.dto.TagResponse;
+import com.errorlog.backend.domain.board.service.TagService;
 
 import lombok.RequiredArgsConstructor;
 

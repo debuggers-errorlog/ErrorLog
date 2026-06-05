@@ -1,6 +1,6 @@
-package com.errorlog.backend.board.domain.dto;
+package com.errorlog.backend.domain.board.domain.dto;
 
-import com.errorlog.backend.board.domain.entity.Tag;
+import com.errorlog.backend.domain.board.domain.entity.Tag;
 
 public record TagResponse(Long id, String name) {
 

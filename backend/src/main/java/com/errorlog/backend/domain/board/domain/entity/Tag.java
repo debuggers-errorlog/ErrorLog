@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.domain.entity;
+package com.errorlog.backend.domain.board.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

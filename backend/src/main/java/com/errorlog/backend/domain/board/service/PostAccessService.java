@@ -1,9 +1,9 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import org.springframework.stereotype.Service;
 
-import com.errorlog.backend.board.domain.entity.Post;
-import com.errorlog.backend.board.port.SubscriberAccessPort;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.port.SubscriberAccessPort;
 
 import lombok.RequiredArgsConstructor;
 

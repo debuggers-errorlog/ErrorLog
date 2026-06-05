@@ -27,7 +27,7 @@ mysql -u root -p < sql/seed-dev.sql
 ## 패키지 구조
 
 ```
-com.errorlog.backend.board
+com.errorlog.backend.domain.board
 ├── controller   REST API
 ├── service      비즈니스 로직
 ├── repository   JPA Repository

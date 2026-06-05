@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.service;
+package com.errorlog.backend.domain.board.service;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.errorlog.backend.board.domain.dto.EditorImageUploadResponse;
-import com.errorlog.backend.board.port.ImageStoragePort;
+import com.errorlog.backend.domain.board.domain.dto.EditorImageUploadResponse;
+import com.errorlog.backend.domain.board.port.ImageStoragePort;
 import com.errorlog.backend.common.exception.ApiException;
 import com.errorlog.backend.common.exception.ErrorCode;
 

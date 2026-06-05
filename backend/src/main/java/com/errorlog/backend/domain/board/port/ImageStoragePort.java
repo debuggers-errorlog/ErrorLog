@@ -1,4 +1,4 @@
-package com.errorlog.backend.board.port;
+package com.errorlog.backend.domain.board.port;
 
 import java.io.InputStream;
 
