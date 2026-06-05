@@ -109,6 +109,11 @@ CREATE TABLE `posts` (
     `user_id` BIGINT NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `content` TEXT NOT NULL,
+    `troubleshooting_meta` JSON NULL COMMENT '트러블슈팅 구조화 메타',
+    `meta_category` VARCHAR(20) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.category'))) STORED,
+    `meta_framework` VARCHAR(50) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.environment.framework'))) STORED,
+    `meta_error_type` VARCHAR(120) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.error.type'))) STORED,
+    `meta_error_message` TEXT AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.error.message'))) STORED,
     `visibility` ENUM('PUBLIC','SUBSCRIBERS') NOT NULL DEFAULT 'PUBLIC',
     `status` ENUM('ACTIVE','DELETED','HIDDEN') NOT NULL DEFAULT 'ACTIVE',
     `view_count` INT NOT NULL DEFAULT 0,
@@ -118,7 +123,14 @@ CREATE TABLE `posts` (
     `hidden_at` DATETIME NULL COMMENT '숨김 처리 시에만 기록',
     PRIMARY KEY (`id`),
     CONSTRAINT `FK_USERS_TO_POSTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    INDEX `idx_posts_created_at` (`created_at`)
+    INDEX `idx_posts_created_at` (`created_at`),
+    INDEX `idx_posts_user_id` (`user_id`),
+    INDEX `idx_posts_status_visibility_created` (`status`, `visibility`, `created_at`),
+    INDEX `idx_posts_meta_category` (`meta_category`),
+    INDEX `idx_posts_meta_framework` (`meta_framework`),
+    INDEX `idx_posts_meta_error_type` (`meta_error_type`),
+    FULLTEXT INDEX `ft_posts_title_content` (`title`, `content`),
+    FULLTEXT INDEX `ft_posts_meta_error_message` (`meta_error_message`)
 );
 
 CREATE TABLE `post_tags` (
@@ -126,7 +138,8 @@ CREATE TABLE `post_tags` (
     `tag_id` BIGINT NOT NULL,
     PRIMARY KEY (`post_id`, `tag_id`),
     CONSTRAINT `FK_POSTS_TO_POST_TAGS` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
-    CONSTRAINT `FK_TAGS_TO_POST_TAGS` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
+    CONSTRAINT `FK_TAGS_TO_POST_TAGS` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
+    INDEX `idx_post_tags_tag_id` (`tag_id`)
 );
 
 
