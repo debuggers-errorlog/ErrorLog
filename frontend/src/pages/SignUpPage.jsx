@@ -45,7 +45,7 @@ export default function SignUpPage() {
     if (!form.email) return setError('이메일을 입력해주세요.')
     setSendingCode(true)
     try {
-      await sendVerificationEmail(form.email)
+      await sendVerificationEmail(form.email, 'SIGNUP')
       setCodeSent(true)
       startTimer()
     } catch (err) {

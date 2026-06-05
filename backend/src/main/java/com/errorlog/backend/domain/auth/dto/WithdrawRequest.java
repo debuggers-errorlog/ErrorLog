@@ -1,9 +1,5 @@
 package com.errorlog.backend.domain.auth.dto;
 
-import jakarta.validation.constraints.NotBlank;
-
 public record WithdrawRequest(
-
-        @NotBlank(message = "비밀번호를 입력해주세요.")
-        String password
+        String password  // LOCAL 유저만 필수, GOOGLE 유저는 null 가능
 ) {}
