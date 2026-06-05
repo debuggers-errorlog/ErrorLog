@@ -30,9 +30,15 @@ INSERT INTO `follows` (`follower_id`, `following_id`) VALUES
 INSERT INTO `question_requests` (`id`, `requester_id`, `receiver_id`, `title`, `content`, `status`) VALUES
 (1, 2, 1, '시큐리티 필터 체인 에러 건으로 요청드립니다.', '콘솔에 자꾸 AccessDenied가 뜨는데 조언이 필요합니다.', 'ACCEPTED');
 
--- 8. 게시글 데이터 (요청하신 대로 일반 유저가 작성한 글)
-INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `visibility`, `status`) VALUES
-(1, 2, '스프링 부트 컨텍스트 로드 에러 원인이 뭘까요?', '테스트 코드를 돌리는데 자꾸 Context 로드 실패가 뜹니다. 도와주세요!', 'PUBLIC', 'ACTIVE');
+-- 8. 게시글 데이터 (검색 메타 포함)
+INSERT INTO `posts` (`id`, `user_id`, `title`, `content`, `troubleshooting_meta`, `visibility`, `status`) VALUES
+(1, 2, '스프링 부트 컨텍스트 로드 에러 원인이 뭘까요?', '테스트 코드를 돌리는데 자꾸 Context 로드 실패가 뜹니다. 도와주세요!',
+ JSON_OBJECT(
+   'category', 'RUNTIME',
+   'environment', JSON_OBJECT('framework', 'Spring Boot'),
+   'error', JSON_OBJECT('type', 'ApplicationContext', 'message', 'Context load failed'),
+   'symptom', '테스트 실행 시 ApplicationContext 로드 실패'
+ ), 'PUBLIC', 'ACTIVE');
 
 -- 9. 게시글 태그 매핑 데이터
 INSERT INTO `post_tags` (`post_id`, `tag_id`) VALUES
