@@ -3,6 +3,8 @@ import LoginPage from './pages/LoginPage'
 import SignUpPage from './pages/SignUpPage'
 import MyPage from './pages/MyPage'
 import PasswordResetPage from './pages/PasswordResetPage'
+import OAuthCallbackPage from './pages/OAuthCallbackPage'
+import OAuthAdditionalInfoPage from './pages/OAuthAdditionalInfoPage'
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('accessToken')
@@ -17,6 +19,8 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignUpPage />} />
           <Route path="/password-reset" element={<PasswordResetPage />} />
+          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+          <Route path="/oauth/additional-info" element={<OAuthAdditionalInfoPage />} />
           <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>

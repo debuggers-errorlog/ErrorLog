@@ -133,6 +133,8 @@ export default function LoginPage() {
               { label: '구글', bg: '#444', color: '#fff', abbr: 'G' },
             ].map((s) => (
                 <button key={s.label}
+                        type="button"
+                        onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-lg border border-border bg-input-background text-sm text-muted-foreground hover:text-foreground hover:border-border transition-colors">
               <span className="w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                     style={{ background: s.bg, color: s.color }}>{s.abbr}</span>

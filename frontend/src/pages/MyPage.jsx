@@ -64,9 +64,10 @@ export default function MyPage() {
   }
 
   const handleWithdraw = async () => {
-    if (!withdrawPassword) return setError('비밀번호를 입력해주세요.')
+    const isGoogle = profile.provider === 'GOOGLE'
+    if (!isGoogle && !withdrawPassword) return setError('비밀번호를 입력해주세요.')
     try {
-      await withdraw(withdrawPassword)
+      await withdraw(isGoogle ? null : withdrawPassword)
       localStorage.clear()
       navigate('/login')
     } catch (err) {
@@ -217,11 +218,15 @@ export default function MyPage() {
             <div className="bg-card border border-border rounded-xl p-6 max-w-sm w-full space-y-4">
               <h3 className="text-base font-medium text-foreground">회원탈퇴</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                탈퇴하시려면 비밀번호를 입력해주세요. 이 작업은 되돌릴 수 없습니다.
+                {profile.provider === 'GOOGLE'
+                  ? '탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.'
+                  : '탈퇴하시려면 비밀번호를 입력해주세요. 이 작업은 되돌릴 수 없습니다.'}
               </p>
-              <input type="password" value={withdrawPassword}
-                onChange={(e) => { setWithdrawPassword(e.target.value); setError('') }}
-                placeholder="비밀번호 입력" className={inputCls} />
+              {profile.provider !== 'GOOGLE' && (
+                <input type="password" value={withdrawPassword}
+                  onChange={(e) => { setWithdrawPassword(e.target.value); setError('') }}
+                  placeholder="비밀번호 입력" className={inputCls} />
+              )}
               {error && <p className="text-destructive text-sm">{error}</p>}
               <div className="flex gap-2">
                 <button onClick={() => setShowWithdraw(false)}

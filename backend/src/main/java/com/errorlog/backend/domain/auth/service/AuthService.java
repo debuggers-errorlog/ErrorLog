@@ -190,8 +190,11 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+        // 구글 유저는 비밀번호 검증 스킵 (토큰 인증 자체가 본인 확인)
+        if (user.getProvider() == User.Provider.LOCAL) {
+            if (request.password() == null || !passwordEncoder.matches(request.password(), user.getPassword())) {
+                throw new AppException(ErrorCode.INVALID_CREDENTIALS);
+            }
         }
 
         refreshTokenRepository.revokeAllByUserId(userId);

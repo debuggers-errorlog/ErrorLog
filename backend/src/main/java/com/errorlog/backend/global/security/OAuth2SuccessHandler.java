@@ -37,8 +37,26 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Optional<User> existing = userRepository.findByProviderAndProviderId(User.Provider.GOOGLE, providerId);
 
         if (existing.isPresent()) {
-            // 기존 유저 → 토큰 발급 후 메인으로
             User user = existing.get();
+
+            // 탈퇴한 유저면 신규 가입 페이지로
+            if (user.getStatus() == User.Status.DELETED) {
+                String tempToken = jwtUtil.generateTempToken(email, providerId);
+                log.info("구글 로그인 시도 (탈퇴 유저 → 신규 가입 유도): {}", email);
+                getRedirectStrategy().sendRedirect(request, response,
+                        frontendUrl + "/oauth/additional-info?tempToken=" + tempToken);
+                return;
+            }
+
+            // 정지된 유저면 로그인 페이지로
+            if (user.getStatus() == User.Status.SUSPENDED) {
+                log.warn("구글 로그인 시도 (정지 유저): {}", email);
+                getRedirectStrategy().sendRedirect(request, response,
+                        frontendUrl + "/login?error=suspended");
+                return;
+            }
+
+            // 정상 유저 → 토큰 발급 후 메인으로
             String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getRole().name());
             String refreshToken = jwtUtil.generateRefreshToken(user.getId(), user.getRole().name());
             log.info("구글 로그인 성공 (기존 유저): {}", email);
