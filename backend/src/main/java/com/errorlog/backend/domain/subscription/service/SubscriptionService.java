@@ -5,7 +5,6 @@ import com.errorlog.backend.domain.payment.enums.PaymentType;
 import com.errorlog.backend.domain.payment.service.PaymentService;
 import com.errorlog.backend.domain.subscription.Entity.Subscription;
 import com.errorlog.backend.domain.subscription.Entity.SubscriptionSettings;
-import com.errorlog.backend.domain.subscription.Entity.User;
 import com.errorlog.backend.domain.subscription.dto.FollowerResponse;
 import com.errorlog.backend.domain.subscription.dto.FollowingResponse;
 import com.errorlog.backend.domain.subscription.dto.SubscriptionListResponse;
@@ -13,7 +12,8 @@ import com.errorlog.backend.domain.subscription.dto.SubscriptionRequest;
 import com.errorlog.backend.domain.subscription.repository.SubscriptionQueryRepository;
 import com.errorlog.backend.domain.subscription.repository.SubscriptionRepository;
 import com.errorlog.backend.domain.subscription.repository.SubscriptionSettingsRepository;
-import com.errorlog.backend.domain.subscription.repository.UserRepository;
+import com.errorlog.backend.domain.user.entity.User;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ public class SubscriptionService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void subscribe(SubscriptionRequest request) {
+    public void subscribe(SubscriptionRequest request,Long subscriberId) {
 
         // 1. 크리에이터 플랜에서 price 조회
         SubscriptionSettings settings = subscriptionSettingsRepository
@@ -41,7 +41,7 @@ public class SubscriptionService {
 
         // 2. 결제 기록 저장 (PaymentService 호출)
         paymentService.record(
-                request.getSubscriberId(),
+                subscriberId,
                 request.getCreatorId(),
                 PaymentType.SUBSCRIPTION,
                 settings.getPrice(),
@@ -50,17 +50,15 @@ public class SubscriptionService {
 
         // 3. 구독 신규 or 재구독 처리
         subscriptionRepository
-                .findBySubscriberIdAndCreatorId(request.getSubscriberId(), request.getCreatorId())
+                .findBySubscriberIdAndCreatorId(subscriberId, request.getCreatorId())
                 .ifPresentOrElse(
                         subscription -> {
-                            System.out.println("renew 호출됨 - 현재 expiredAt: " + subscription.getExpiredAt());
                             subscription.renew();
-                            System.out.println("renew 후 expiredAt: " + subscription.getExpiredAt());
                             subscriptionRepository.save((subscription));
                         },
                          () -> subscriptionRepository.save(
                                 Subscription.builder()
-                                        .subscriberId(request.getSubscriberId())
+                                        .subscriberId(subscriberId)
                                         .creatorId(request.getCreatorId())
                                         .expiredAt(LocalDateTime.now().plusMonths(1))
                                         .build()

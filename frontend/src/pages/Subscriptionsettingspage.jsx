@@ -168,7 +168,10 @@ const MutedText = styled.p`
 
 export function SubscriptionSettingsPage() {
     const navigate = useNavigate();
+
     const creatorId = 1; // JWT 연동 후 제거
+    //const token = localStorage.getItem('accessToken');
+    //const creatorId = token ? jwtDecode(token).userId : null;
 
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");

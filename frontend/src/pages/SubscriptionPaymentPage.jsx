@@ -210,7 +210,7 @@ export function SubscriptionPaymentPage() {
 
   const handlePayment = async () => {
     try {
-      await subscribe(1, Number(creatorId)); // JWT 연동 후 제거
+      await subscribe(Number(creatorId));
       alert("구독 결제가 완료되었습니다!");
       navigate(`/creator/${creatorId}`); // 크리에이터 프로필 경로 확정 후 교체
     } catch {
@@ -220,7 +220,7 @@ export function SubscriptionPaymentPage() {
 
   const handleCancel = async () => {
     try {
-      await cancelPayment(1, Number(creatorId), Number(creatorId)); // JWT 연동 후 제거
+      await cancelPayment(Number(creatorId));
     } catch (e) {
       console.error(e);
     } finally {

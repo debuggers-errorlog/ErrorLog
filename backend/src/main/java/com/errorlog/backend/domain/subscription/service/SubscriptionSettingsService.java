@@ -27,13 +27,13 @@ public class SubscriptionSettingsService {
 
     // 플랜 등록
     @Transactional
-    public void createSettings(SubscriptionSettingsRequest request) {
-        if (subscriptionSettingsRepository.findByUserId(request.getUserId()).isPresent()) {
+    public void createSettings(SubscriptionSettingsRequest request, Long userId) {
+        if (subscriptionSettingsRepository.findByUserId(userId).isPresent()) {
             throw new IllegalArgumentException("이미 구독 플랜이 존재합니다.");
         }
         subscriptionSettingsRepository.save(
                 SubscriptionSettings.builder()
-                        .userId(request.getUserId())
+                        .userId(userId)
                         .price(request.getPrice())
                         .description(request.getDescription())
                         .build()

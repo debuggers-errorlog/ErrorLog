@@ -1,14 +1,14 @@
 package com.errorlog.backend.domain.subscription.service;
 
-import com.errorlog.backend.domain.subscription.Entity.Status;
+import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.subscription.Entity.SubscriptionSettings;
-import com.errorlog.backend.domain.subscription.Entity.Visibility;
 import com.errorlog.backend.domain.subscription.dto.PostSummary;
 import com.errorlog.backend.domain.subscription.dto.SubscriptionInfoResponse;
-import com.errorlog.backend.domain.subscription.repository.PostRepository;
 import com.errorlog.backend.domain.subscription.repository.SubscriptionSettingsRepository;
-import com.errorlog.backend.domain.subscription.Entity.User;
-import com.errorlog.backend.domain.subscription.repository.UserRepository;
+import com.errorlog.backend.domain.user.entity.User;
+import com.errorlog.backend.domain.user.repository.UserRepository;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,13 +37,13 @@ public class SubscriptionInfoService {
 
         // 3. 유료글 개수 조회
         long premiumPostCount = postRepository.countByUserIdAndVisibilityAndStatus(
-                creatorId, Visibility.SUBSCRIBERS, Status.ACTIVE
+                creatorId, PostVisibility.SUBSCRIBERS, PostStatus.ACTIVE
         );
 
         // 4. 최근 유료글 목록 조회
         List<PostSummary> recentPosts = postRepository
                 .findTop5ByUserIdAndVisibilityAndStatusOrderByCreatedAtDesc(
-                        creatorId, Visibility.SUBSCRIBERS, Status.ACTIVE
+                        creatorId, PostVisibility.SUBSCRIBERS, PostStatus.ACTIVE
                 )
                 .stream()
                 .map(post -> new PostSummary(post.getId(), post.getTitle()))

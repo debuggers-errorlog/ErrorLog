@@ -6,6 +6,5 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class SubscriptionRequest {
-    private Long subscriberId;
     private Long creatorId;
 }

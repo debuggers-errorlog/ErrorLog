@@ -3,6 +3,7 @@ package com.errorlog.backend.domain.board.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -26,4 +27,13 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
 	@EntityGraph(attributePaths = {"tags"})
 	Page<Post> findByUserIdAndStatus(Long userId, PostStatus status, Pageable pageable);
+
+
+	// 구독 결제전 정보 화면에서 유료글 목록 보여줄 때 사용합니다.
+	// 크리에이터의 유료글 개수
+	long countByUserIdAndVisibilityAndStatus(Long userId, PostVisibility visibility, PostStatus status);
+
+	// 크리에이터의 최근 유료글 목록
+	List<Post> findTop5ByUserIdAndVisibilityAndStatusOrderByCreatedAtDesc(Long userId, PostVisibility visibility, PostStatus status);
+
 }

@@ -185,12 +185,11 @@ export function SubscriptionManagePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = 2; // JWT 연동 후 제거
 
   useEffect(() => {
     async function fetchList() {
       try {
-        const { data } = await getSubscriptionList(userId);
+        const { data } = await getSubscriptionList();
         setData(data);
       } catch (e) {
         setError(e.message);

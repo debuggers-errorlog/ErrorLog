@@ -1,7 +1,5 @@
 package com.errorlog.backend.domain.payment.service;
 
-import com.errorlog.backend.domain.subscription.Entity.User; // merge후 user 도메인 엔티티로 변경
-import com.errorlog.backend.domain.subscription.repository.UserRepository; // merge후 user 도메인 repo로 변경
 import com.errorlog.backend.domain.payment.Entity.Payment;
 import com.errorlog.backend.domain.payment.dto.SettlementDetailResponse;
 import com.errorlog.backend.domain.payment.dto.SettlementResponse;
@@ -9,6 +7,8 @@ import com.errorlog.backend.domain.payment.enums.PaymentStatus;
 import com.errorlog.backend.domain.payment.enums.PaymentType;
 import com.errorlog.backend.domain.payment.repository.PaymentQueryRepository;
 import com.errorlog.backend.domain.payment.repository.PaymentRepository;
+import com.errorlog.backend.domain.user.entity.User;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -6,6 +6,7 @@ import com.errorlog.backend.domain.subscription.service.SubscriptionSettingsServ
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,8 +27,9 @@ public class SubscriptionSettingsController {
     // 플랜 등록
     @PostMapping
     public ResponseEntity<Void> createSettings(
-            @RequestBody SubscriptionSettingsRequest request) {
-        subscriptionSettingsService.createSettings(request);
+            @RequestBody SubscriptionSettingsRequest request,
+            @AuthenticationPrincipal Long userId) {
+        subscriptionSettingsService.createSettings(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -35,9 +37,9 @@ public class SubscriptionSettingsController {
     // 플랜 수정
     @PutMapping("/{creatorId}")
     public ResponseEntity<Void> updateSettings(
-            @PathVariable Long creatorId,
+            @AuthenticationPrincipal Long userId,
             @RequestBody SubscriptionSettingsRequest request) {
-        subscriptionSettingsService.updateSettings(creatorId, request);
+        subscriptionSettingsService.updateSettings(userId, request);
         return ResponseEntity.ok().build();
     }
 }

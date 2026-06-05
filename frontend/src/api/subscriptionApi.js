@@ -3,14 +3,14 @@ import client from './client';
 export const getSubscriptionInfo = (creatorId) =>
     client.get(`/subscriptions/${creatorId}/info`);
 
-export const subscribe = (subscriberId, creatorId) =>
-    client.post('/subscriptions', { subscriberId, creatorId });
+export const subscribe = (creatorId) =>
+    client.post('/subscriptions', { creatorId });
 
-export const getSubscriptionStatus = (subscriberId, creatorId) =>
-    client.get('/subscriptions/status', { params: { subscriberId, creatorId } });
+export const getSubscriptionStatus = (creatorId) =>
+    client.get('/subscriptions/status', { params: { creatorId } });
 
-export const getSubscriptionList = (userId) =>
-    client.get('/subscriptions/list', { params: { userId } });
+export const getSubscriptionList = () =>
+    client.get('/subscriptions/list');
 
 export const getSubscriptionSettings = (creatorId) =>
     client.get(`/subscription-settings/${creatorId}`);
