@@ -1,4 +1,4 @@
-import { Search, PenLine, User } from 'lucide-react';
+import { Search, PenLine, User, LogIn, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/Styled';
 import {
@@ -11,6 +11,7 @@ import {
 
 export default function Header({ searchValue, onSearchChange, onSearchSubmit }) {
   const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem('accessToken');
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && onSearchSubmit) {
@@ -38,14 +39,29 @@ export default function Header({ searchValue, onSearchChange, onSearchSubmit }) 
         </SearchBar>
 
         <HeaderActions>
-          <Button $variant="primary" onClick={() => navigate('/write')}>
-            <PenLine size={16} />
-            글 작성하기
-          </Button>
-          <Button $variant="ghost" onClick={() => navigate('/mypage')}>
-            <User size={16} />
-            마이페이지
-          </Button>
+          {isLoggedIn ? (
+            <>
+              <Button $variant="primary" onClick={() => navigate('/write')}>
+                <PenLine size={16} />
+                글 작성하기
+              </Button>
+              <Button $variant="ghost" onClick={() => navigate('/mypage')}>
+                <User size={16} />
+                마이페이지
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button $variant="ghost" onClick={() => navigate('/login')}>
+                <LogIn size={16} />
+                로그인
+              </Button>
+              <Button $variant="primary" onClick={() => navigate('/signup')}>
+                <UserPlus size={16} />
+                회원가입
+              </Button>
+            </>
+          )}
         </HeaderActions>
       </HeaderInner>
     </HeaderWrapper>
