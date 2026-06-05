@@ -20,9 +20,9 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.domain.vo.TroubleshootingMeta;
 import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.board.repository.PostSpecification;
-import com.errorlog.backend.common.dto.PageResponse;
-import com.errorlog.backend.common.exception.ApiException;
-import com.errorlog.backend.common.exception.ErrorCode;
+import com.errorlog.backend.global.dto.PageResponse;
+import com.errorlog.backend.global.exception.AppException;
+import com.errorlog.backend.global.exception.ErrorCode;
 
 import lombok.RequiredArgsConstructor;
 
@@ -109,18 +109,18 @@ public class PostService {
 
 	private Post findActivePost(Long postId) {
 		return postRepository.findByIdAndStatus(postId, PostStatus.ACTIVE)
-				.orElseThrow(() -> new ApiException(ErrorCode.POST_NOT_FOUND));
+				.orElseThrow(() -> new AppException(ErrorCode.POST_NOT_FOUND));
 	}
 
 	private void assertOwner(Post post, Long actorId) {
 		if (actorId == null || !post.isOwnedBy(actorId)) {
-			throw new ApiException(ErrorCode.FORBIDDEN);
+			throw new AppException(ErrorCode.FORBIDDEN);
 		}
 	}
 
 	private void validateMeta(TroubleshootingMeta meta) {
 		if (meta == null || meta.category() == null) {
-			throw new ApiException(ErrorCode.INVALID_REQUEST);
+			throw new AppException(ErrorCode.INVALID_REQUEST);
 		}
 
 		boolean hasErrorMessage = meta.error() != null
@@ -129,7 +129,7 @@ public class PostService {
 		boolean hasSymptom = meta.symptom() != null && !meta.symptom().isBlank();
 
 		if (!hasErrorMessage && !hasSymptom) {
-			throw new ApiException(ErrorCode.INVALID_REQUEST);
+			throw new AppException(ErrorCode.INVALID_REQUEST);
 		}
 	}
 }

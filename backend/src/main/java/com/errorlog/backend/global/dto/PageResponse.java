@@ -1,4 +1,4 @@
-package com.errorlog.backend.common.dto;
+package com.errorlog.backend.global.dto;
 
 import java.util.List;
 

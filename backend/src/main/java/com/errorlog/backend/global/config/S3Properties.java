@@ -1,4 +1,4 @@
-package com.errorlog.backend.config;
+package com.errorlog.backend.global.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

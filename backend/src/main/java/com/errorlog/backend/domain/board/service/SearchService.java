@@ -14,7 +14,7 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.board.repository.PostSearchRepository;
 import com.errorlog.backend.domain.board.repository.PostSpecification;
-import com.errorlog.backend.common.dto.PageResponse;
+import com.errorlog.backend.global.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
 

@@ -22,7 +22,7 @@ import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostUpdateRequest;
 import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.service.PostService;
-import com.errorlog.backend.common.dto.PageResponse;
+import com.errorlog.backend.global.dto.PageResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

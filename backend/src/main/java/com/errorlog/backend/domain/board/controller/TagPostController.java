@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
 import com.errorlog.backend.domain.board.service.PostService;
-import com.errorlog.backend.common.dto.PageResponse;
+import com.errorlog.backend.global.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
 

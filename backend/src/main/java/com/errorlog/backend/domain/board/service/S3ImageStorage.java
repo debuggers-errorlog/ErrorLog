@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import com.errorlog.backend.domain.board.port.ImageStoragePort;
-import com.errorlog.backend.config.S3Properties;
+import com.errorlog.backend.global.config.S3Properties;
 
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.core.sync.RequestBody;
