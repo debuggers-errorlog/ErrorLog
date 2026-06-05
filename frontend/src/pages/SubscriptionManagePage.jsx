@@ -8,7 +8,7 @@ export function SubscriptionManagePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = 1; // 로그인한 유저 ID로 교체 필요
+  const userId = 2; // 로그인한 유저 ID로 교체 필요
   // const token = localStorage.getItem('token');
   // const decoded = JSON.parse(atob(token.split('.')[1]));
   // const userId = decoded.userId;

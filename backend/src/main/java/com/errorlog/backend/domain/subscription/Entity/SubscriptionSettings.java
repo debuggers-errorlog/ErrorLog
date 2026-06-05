@@ -26,4 +26,9 @@ public class SubscriptionSettings {
 
     @Column(columnDefinition = "TEXT")
     private String description;
+
+    public void update(Long price, String description) {
+        this.price = price;
+        this.description = description;
+    }
 }
