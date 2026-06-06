@@ -506,7 +506,14 @@ export default function MyPage() {
           <Nav>
             {NAV_ITEMS.map((item) => (
               <NavItem key={item.key} $active={activeNav === item.key && !editMode}
-                onClick={() => { setActiveNav(item.key); setEditMode(false) }}>
+                onClick={() => {
+                  if (item.key === 'subscriptions') {
+                    navigate('/subscriptions/manage')
+                    return
+                  }
+                  setActiveNav(item.key)
+                  setEditMode(false)
+                }}>
                 {item.label}
               </NavItem>
             ))}
