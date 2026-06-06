@@ -1,16 +1,52 @@
-# React + Vite
+# ErrorLog Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React (Vite) + Styled-components 다크 모드 UI
 
-Currently, two official plugins are available:
+## 실행
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+백엔드 API 연동: `http://localhost:8080` (vite proxy)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 페이지
 
-## Expanding the ESLint configuration
+| 경로 | 설명 |
+|------|------|
+| `/` | 메인 피드 |
+| `/posts/:id` | 게시글 상세 |
+| `/write` | 글 작성 |
+| `/search?q=` | 검색 |
+| `/mypage` | 마이페이지 (mock) |
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 구조
+
+```
+src/
+├── theme/           GlobalStyle, theme tokens
+├── components/
+│   ├── layout/      Header, MainLayout
+│   ├── sidebar/     Category, Filter, WeeklyStats
+│   ├── post/        PostCard, PostFeed, WriteForm
+│   └── common/      Button, Badge, Card
+├── pages/           Home, Detail, Write, Search, MyPage
+├── mocks/           백엔드 미구현 데이터
+└── api/             board API 연동
+```
+
+## Mock vs API
+
+| 기능 | 상태 |
+|------|------|
+| 게시글 목록/상세/작성 | API (`/api/posts`) |
+| 태그/검색 | API (실패 시 mock) |
+| 이미지 업로드 | API (`/api/posts/{id}/images`) |
+| 작성자 닉네임/아바타 | **mock** → user 팀 |
+| 댓글 | **mock** → social 팀 |
+| 좋아요/북마크/공유 | **mock** → social 팀 |
+| 카테고리 UI 필터 | **mock** → board category 매핑 협의 |
+| 주간 통계 | **mock** → admin/analytics |
+| 마이페이지 | **mock** → user 팀 |
+| 구독 잠금 blur | API `locked` + subscription 팀 |

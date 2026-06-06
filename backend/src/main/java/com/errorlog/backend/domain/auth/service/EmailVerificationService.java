@@ -19,44 +19,54 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class EmailVerificationService {
 
+    public enum Purpose { SIGNUP, PASSWORD_RESET }
+
     private final JavaMailSender mailSender;
 
     @Value("${email.verification.expiration}")
     private long expirationSeconds;
 
-    // email → {code, expiredAt}
     private final Map<String, VerificationEntry> store = new ConcurrentHashMap<>();
 
-    public void sendVerificationCode(String email) {
+    public void sendVerificationCode(String email, Purpose purpose) {
         String code = generateCode();
         LocalDateTime expiredAt = LocalDateTime.now().plusSeconds(expirationSeconds);
-        store.put(email, new VerificationEntry(code, expiredAt));
+        store.put(key(email, purpose), new VerificationEntry(code, expiredAt));
 
-        sendEmail(email, code);
-        log.info("인증 코드 발송 완료: {}", email);
+        sendEmail(email, code, purpose);
+        log.info("인증 코드 발송 완료: {} ({})", email, purpose);
     }
 
-    public void verifyCode(String email, String inputCode) {
-        VerificationEntry entry = store.get(email);
+    public void verifyCode(String email, String inputCode, Purpose purpose) {
+        String key = key(email, purpose);
+        VerificationEntry entry = store.get(key);
 
         if (entry == null || LocalDateTime.now().isAfter(entry.expiredAt())) {
-            store.remove(email);
+            store.remove(key);
             throw new AppException(ErrorCode.EXPIRED_VERIFICATION_CODE);
         }
         if (!entry.code().equals(inputCode)) {
             throw new AppException(ErrorCode.INVALID_VERIFICATION_CODE);
         }
 
-        store.remove(email);
+        store.remove(key);
     }
 
-    private void sendEmail(String to, String code) {
+    private String key(String email, Purpose purpose) {
+        return purpose.name() + ":" + email;
+    }
+
+    private void sendEmail(String to, String code, Purpose purpose) {
+        String subject = purpose == Purpose.PASSWORD_RESET
+                ? "[Errorlog] 비밀번호 재설정 인증 코드"
+                : "[Errorlog] 이메일 인증 코드";
+
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
-        message.setSubject("[Errorlog] 이메일 인증 코드");
+        message.setSubject(subject);
         message.setText(
                 "안녕하세요. Errorlog입니다.\n\n" +
-                "이메일 인증 코드: " + code + "\n\n" +
+                "인증 코드: " + code + "\n\n" +
                 "코드는 " + (expirationSeconds / 60) + "분 후 만료됩니다.\n" +
                 "본인이 요청하지 않은 경우 이 메일을 무시하세요."
         );

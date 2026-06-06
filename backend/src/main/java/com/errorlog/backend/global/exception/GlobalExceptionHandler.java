@@ -1,6 +1,7 @@
 package com.errorlog.backend.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import com.errorlog.backend.global.dto.ErrorResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -41,6 +42,4 @@ public class GlobalExceptionHandler {
                 .internalServerError()
                 .body(new ErrorResponse("INTERNAL_SERVER_ERROR", "서버 오류가 발생했습니다."));
     }
-
-    public record ErrorResponse(String code, String message) {}
 }

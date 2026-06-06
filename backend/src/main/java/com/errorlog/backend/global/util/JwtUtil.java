@@ -36,6 +36,30 @@ public class JwtUtil {
         return buildToken(userId, role, refreshTokenExpiration);
     }
 
+    // OAuth 신규 유저용 임시 토큰 (10분)
+    public String generateTempToken(String email, String providerId) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("providerId", providerId)
+                .claim("type", "TEMP")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 600000))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String extractEmailFromTempToken(String token) {
+        return parseToken(token).getSubject();
+    }
+
+    public String extractProviderIdFromTempToken(String token) {
+        return parseToken(token).get("providerId", String.class);
+    }
+
+    public boolean isTempToken(String token) {
+        return "TEMP".equals(parseToken(token).get("type", String.class));
+    }
+
     private String buildToken(Long userId, String role, long expiration) {
         return Jwts.builder()
                 .subject(String.valueOf(userId))

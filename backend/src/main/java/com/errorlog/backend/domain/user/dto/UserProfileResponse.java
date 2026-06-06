@@ -9,7 +9,8 @@ public record UserProfileResponse(
         String bio,
         String link,
         String role,
-        String status
+        String status,
+        String provider
 ) {
     public static UserProfileResponse from(User user) {
         return new UserProfileResponse(
@@ -19,7 +20,8 @@ public record UserProfileResponse(
                 user.getBio(),
                 user.getLink(),
                 user.getRole().name(),
-                user.getStatus().name()
+                user.getStatus().name(),
+                user.getProvider().name()
         );
     }
 }

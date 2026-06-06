@@ -1,9 +1,12 @@
 package com.errorlog.backend.global.config;
 
 import com.errorlog.backend.domain.auth.service.TokenBlacklistService;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import com.errorlog.backend.global.security.JwtAuthenticationFilter;
+import com.errorlog.backend.global.security.OAuth2SuccessHandler;
 import com.errorlog.backend.global.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +25,15 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final TokenBlacklistService tokenBlacklistService;
+    private final UserRepository userRepository;
+
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
+    @Bean
+    public OAuth2SuccessHandler oAuth2SuccessHandler() {
+        return new OAuth2SuccessHandler(userRepository, jwtUtil, frontendUrl);
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -32,6 +44,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth -> oauth
+                        .successHandler(oAuth2SuccessHandler())
                 )
                 .addFilterBefore(
                         new JwtAuthenticationFilter(jwtUtil, tokenBlacklistService),

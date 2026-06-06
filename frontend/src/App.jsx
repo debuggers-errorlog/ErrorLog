@@ -1,122 +1,54 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
+import { theme } from './theme/theme';
+import { GlobalStyle } from './theme/GlobalStyle';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
+import MyPage from './pages/MyPage';
+import PasswordResetPage from './pages/PasswordResetPage';
+import OAuthCallbackPage from './pages/OAuthCallbackPage';
+import OAuthAdditionalInfoPage from './pages/OAuthAdditionalInfoPage';
+import HomePage from './pages/HomePage';
+import PostDetailPage from './pages/PostDetailPage';
+import WritePostPage from './pages/WritePostPage';
+import SearchPage from './pages/SearchPage';
+import { SubscriptionInfoPage } from './pages/SubscriptionInfoPage';
+import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage';
+import { SubscriptionManagePage } from './pages/SubscriptionManagePage';
+import { SettlementPage } from './pages/SettlementPage';
+import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage';
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem('accessToken');
+  return token ? children : <Navigate to="/login" replace />;
 }
 
-export default App
+export default function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <BrowserRouter>
+        <div className="dark">
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/password-reset" element={<PasswordResetPage />} />
+            <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+            <Route path="/oauth/additional-info" element={<OAuthAdditionalInfoPage />} />
+            <Route path="/" element={<HomePage />} />
+            <Route path="/posts/:postId" element={<PostDetailPage />} />
+            <Route path="/write" element={<WritePostPage />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
+            <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
+            <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
+            <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
+            <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
+            <Route path="/settlement" element={<SettlementPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
