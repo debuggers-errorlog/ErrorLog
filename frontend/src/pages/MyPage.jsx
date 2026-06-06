@@ -590,6 +590,7 @@ export default function MyPage() {
       const { data } = await updateMyProfile(payload)
       setProfile(data)
       setEditMode(false)
+      setActiveNav('summary')
       setForm({ nickname: data.nickname, password: '', bio: data.bio || '', link: data.link || '' })
     } catch (err) {
       setError(err.response?.data?.message || '수정에 실패했습니다.')
@@ -659,9 +660,6 @@ export default function MyPage() {
           </Nav>
 
           <SidebarBottom>
-            <SidebarAction onClick={() => { setActiveNav('edit'); setEditMode(true) }}>
-              프로필 편집
-            </SidebarAction>
             <SidebarAction onClick={handleLogout}>로그아웃</SidebarAction>
             <SidebarAction $danger onClick={() => setShowWithdraw(true)}>회원탈퇴</SidebarAction>
           </SidebarBottom>
