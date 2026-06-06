@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Search, PenLine, User, LogIn, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/Styled';
@@ -11,7 +12,18 @@ import {
 
 export default function Header({ searchValue, onSearchChange, onSearchSubmit }) {
   const navigate = useNavigate();
-  const isLoggedIn = !!localStorage.getItem('accessToken');
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
+
+  useEffect(() => {
+    const handleStorage = () => setIsLoggedIn(!!localStorage.getItem('accessToken'));
+    window.addEventListener('storage', handleStorage);
+    // 라우트 이동 시에도 반영되도록 주기적으로 체크
+    const interval = setInterval(handleStorage, 500);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      clearInterval(interval);
+    };
+  }, []);
 
   const handleSearchKeyDown = (e) => {
     if (e.key === 'Enter' && onSearchSubmit) {
