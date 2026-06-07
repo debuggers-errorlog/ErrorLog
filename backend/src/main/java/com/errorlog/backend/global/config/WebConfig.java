@@ -1,5 +1,6 @@
 package com.errorlog.backend.global.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -15,8 +16,8 @@ public class WebConfig implements WebMvcConfigurer {
 	@Value("${errorlog.s3.enabled:false}")
 	private boolean s3Enabled;
 
-	@Value("${errorlog.storage.local-dir:uploads}")
-	private String localUploadDir;
+	@Autowired(required = false)
+	private LocalStoragePaths localStoragePaths;
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
@@ -30,9 +31,9 @@ public class WebConfig implements WebMvcConfigurer {
 
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		if (!s3Enabled) {
+		if (!s3Enabled && localStoragePaths != null) {
 			registry.addResourceHandler("/uploads/**")
-					.addResourceLocations("file:" + localUploadDir + "/");
+					.addResourceLocations(localStoragePaths.resourceLocation());
 		}
 	}
 }

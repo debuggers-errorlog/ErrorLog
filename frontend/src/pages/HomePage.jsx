@@ -5,57 +5,38 @@ import CategorySidebar from '../components/sidebar/CategorySidebar';
 import FilterSidebar from '../components/sidebar/FilterSidebar';
 import WeeklyStats from '../components/sidebar/WeeklyStats';
 import PostFeed from '../components/post/PostFeed';
-import { CATEGORIES } from '../mocks/categories';
-import { WEEKLY_STATS } from '../mocks/stats';
-import { MOCK_POSTS } from '../mocks/posts';
 import { fetchPosts } from '../api/postApi';
-
-function mapApiPost(apiPost) {
-  const locked = apiPost.locked;
-  return {
-    id: apiPost.id,
-    authorId: apiPost.authorId,
-    author: { nickname: `User${apiPost.authorId}`, avatarColor: '#3b82f6' },
-    title: apiPost.title,
-    excerpt: apiPost.excerpt || '내용 미리보기 없음',
-    category: 'backend',
-    categoryLabel: apiPost.category || apiPost.troubleshootingMeta?.category || 'General',
-    categoryColor: '#58a6ff',
-    visibility: apiPost.visibility,
-    locked,
-    isPremium: apiPost.visibility === 'SUBSCRIBERS',
-    tags: apiPost.tags || [],
-    viewCount: apiPost.viewCount ?? 0,
-    commentCount: 0,
-    likeCount: 0,
-    createdAt: apiPost.createdAt?.slice?.(0, 10) ?? '',
-  };
-}
+import { useBoardSidebarData } from '../hooks/useBoardSidebarData';
+import { mapApiPost } from '../utils/postMapper';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const [posts, setPosts] = useState(MOCK_POSTS);
+  const { categories, weeklyStats } = useBoardSidebarData();
+  const [posts, setPosts] = useState([]);
+  const [loadError, setLoadError] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [showFree, setShowFree] = useState(true);
   const [showPremium, setShowPremium] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchPosts().then((data) => {
-      if (Array.isArray(data) && data.length > 0 && data[0].title) {
-        setPosts(data.map(mapApiPost));
-      }
-    });
-  }, []);
+    const params = activeCategory !== 'all' ? { category: activeCategory } : {};
+    fetchPosts(params)
+      .then((data) => {
+        setPosts(Array.isArray(data) ? data.map(mapApiPost) : []);
+        setLoadError('');
+      })
+      .catch(() => {
+        setPosts([]);
+        setLoadError('게시글을 불러오지 못했습니다.');
+      });
+  }, [activeCategory]);
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
-      const typeOk =
-        (showFree && !post.isPremium) || (showPremium && post.isPremium);
-      const catOk = activeCategory === 'all' || post.category === activeCategory;
-      return typeOk && catOk;
+      return (showFree && !post.isPremium) || (showPremium && post.isPremium);
     });
-  }, [posts, showFree, showPremium, activeCategory]);
+  }, [posts, showFree, showPremium]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
@@ -71,7 +52,7 @@ export default function HomePage() {
       leftSidebar={
         <>
           <CategorySidebar
-            categories={CATEGORIES}
+            categories={categories}
             activeId={activeCategory}
             onSelect={setActiveCategory}
           />
@@ -83,8 +64,9 @@ export default function HomePage() {
           />
         </>
       }
-      rightSidebar={<WeeklyStats stats={WEEKLY_STATS} />}
+      rightSidebar={<WeeklyStats stats={weeklyStats} />}
     >
+      {loadError && <p style={{ color: '#f85149', marginBottom: 16 }}>{loadError}</p>}
       <PostFeed posts={filteredPosts} />
     </MainLayout>
   );

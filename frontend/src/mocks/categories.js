@@ -1,26 +1,40 @@
 import {
   LayoutGrid,
-  Monitor,
-  Server,
-  Database,
-  Container,
-  Smartphone,
-  Cloud,
-  Gauge,
-  GitBranch,
   Bug,
+  Database,
+  Network,
+  Hammer,
+  Container,
+  Settings,
+  Gauge,
+  Shield,
+  CircleEllipsis,
 } from 'lucide-react';
 
-/** UI 카테고리 — 백엔드 TroubleshootingCategory와 1:1 매핑은 팀 협의 필요 */
-export const CATEGORIES = [
-  { id: 'all', label: '전체', icon: LayoutGrid, count: 1234 },
-  { id: 'frontend', label: 'Frontend', icon: Monitor, count: 342 },
-  { id: 'backend', label: 'Backend', icon: Server, count: 289 },
-  { id: 'database', label: 'Database', icon: Database, count: 156 },
-  { id: 'devops', label: 'DevOps', icon: Container, count: 98 },
-  { id: 'mobile', label: 'Mobile', icon: Smartphone, count: 67 },
-  { id: 'cloud', label: 'Cloud', icon: Cloud, count: 112 },
-  { id: 'performance', label: 'Performance', icon: Gauge, count: 45 },
-  { id: 'git', label: 'Git', icon: GitBranch, count: 34 },
-  { id: 'debugging', label: 'Debugging', icon: Bug, count: 91 },
+/** 백엔드 TroubleshootingCategory와 동일한 id 사용 */
+export const CATEGORY_DEFINITIONS = [
+  { id: 'all', label: '전체', icon: LayoutGrid },
+  { id: 'RUNTIME', label: 'Runtime', icon: Bug },
+  { id: 'DATABASE', label: 'Database', icon: Database },
+  { id: 'NETWORK', label: 'Network', icon: Network },
+  { id: 'BUILD', label: 'Build', icon: Hammer },
+  { id: 'DEPLOY', label: 'Deploy', icon: Container },
+  { id: 'CONFIG', label: 'Config', icon: Settings },
+  { id: 'PERFORMANCE', label: 'Performance', icon: Gauge },
+  { id: 'SECURITY', label: 'Security', icon: Shield },
+  { id: 'OTHER', label: 'Other', icon: CircleEllipsis },
 ];
+
+export function buildCategoriesWithCounts(stats) {
+  const counts = stats?.categoryCounts ?? {};
+  return CATEGORY_DEFINITIONS.map((category) => ({
+    ...category,
+    count:
+      category.id === 'all'
+        ? (stats?.totalPosts ?? 0)
+        : (counts[category.id] ?? 0),
+  }));
+}
+
+/** @deprecated API 연동 전 호환용 — buildCategoriesWithCounts 사용 */
+export const CATEGORIES = buildCategoriesWithCounts({ totalPosts: 0, categoryCounts: {} });

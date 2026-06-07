@@ -1,48 +1,45 @@
-import client from './client';
-import { MOCK_POSTS, MOCK_POST_DETAIL } from '../mocks/posts';
+import api from './axios';
+import { extractUploadUrl } from '../utils/imageUrl';
 
 export async function fetchPosts(params = {}) {
-  try {
-    const { data } = await client.get('/posts', { params });
-    return data.content ?? data;
-  } catch {
-    return MOCK_POSTS;
-  }
+  const { data } = await api.get('/posts', { params });
+  return data.content ?? data;
+}
+
+export async function fetchPostStats() {
+  const { data } = await api.get('/posts/stats');
+  return data;
 }
 
 export async function fetchPost(postId) {
-  try {
-    const { data } = await client.get(`/posts/${postId}`);
-    return data;
-  } catch {
-    return MOCK_POST_DETAIL;
-  }
+  const { data } = await api.get(`/posts/${postId}`);
+  return data;
 }
 
 export async function createPost(payload) {
-  const { data } = await client.post('/posts', payload);
+  const { data } = await api.post('/posts', payload);
   return data;
 }
 
 export async function updatePost(postId, payload) {
-  const { data } = await client.put(`/posts/${postId}`, payload);
+  const { data } = await api.put(`/posts/${postId}`, payload);
   return data;
 }
 
 export async function uploadPostImage(postId, file) {
   const form = new FormData();
   form.append('file', file);
-  const { data } = await client.post(`/posts/${postId}/images`, form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
+  const { data } = await api.post(`/posts/${postId}/images`, form);
   return data;
 }
 
 export async function uploadEditorImage(file) {
   const form = new FormData();
   form.append('file', file);
-  const { data } = await client.post('/images', form, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return data;
+  const { data } = await api.post('/images', form);
+  const url = extractUploadUrl(data);
+  if (!url) {
+    throw new Error('Upload response missing url');
+  }
+  return { url };
 }

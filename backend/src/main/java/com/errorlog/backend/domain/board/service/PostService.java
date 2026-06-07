@@ -1,9 +1,17 @@
 package com.errorlog.backend.domain.board.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -11,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.errorlog.backend.domain.board.domain.dto.PostCreateRequest;
 import com.errorlog.backend.domain.board.domain.dto.PostResponse;
+import com.errorlog.backend.domain.board.domain.dto.PostStatsResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostUpdateRequest;
 import com.errorlog.backend.domain.board.domain.entity.Post;
@@ -35,6 +44,7 @@ public class PostService {
 	private final TagService tagService;
 	private final PostAccessService postAccessService;
 	private final PostImageService postImageService;
+	private final PostEnrichmentService postEnrichmentService;
 
 	@Transactional(readOnly = true)
 	public PageResponse<PostSummaryResponse> listPosts(
@@ -52,10 +62,34 @@ public class PostService {
 				PostSpecification.byCategory(category),
 				PostSpecification.byFramework(framework));
 
-		Page<PostSummaryResponse> page = postRepository.findAll(spec, pageable)
-				.map(post -> PostSummaryResponse.from(post, postAccessService.isLocked(post, viewerId)));
+		Page<Post> postPage = postRepository.findAll(spec, pageable);
+		var summaries = postEnrichmentService.toSummaries(postPage.getContent(), viewerId, postAccessService);
+		return PageResponse.from(new PageImpl<>(summaries, pageable, postPage.getTotalElements()));
+	}
 
-		return PageResponse.from(page);
+	@Transactional(readOnly = true)
+	public PostStatsResponse getStats() {
+		PostStatus active = PostStatus.ACTIVE;
+		long totalPosts = postRepository.countByStatus(active);
+
+		ZoneId zone = ZoneId.of("Asia/Seoul");
+		LocalDateTime weekStart = LocalDate.now(zone)
+				.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+				.atStartOfDay();
+		long newPostsThisWeek = postRepository.countActiveSince(active, weekStart);
+
+		Map<String, Long> categoryCounts = new LinkedHashMap<>();
+		for (TroubleshootingCategory category : TroubleshootingCategory.values()) {
+			categoryCounts.put(category.name(), 0L);
+		}
+
+		for (Object[] row : postRepository.countGroupByCategory(active)) {
+			String categoryKey = row[0] != null ? row[0].toString() : TroubleshootingCategory.OTHER.name();
+			long count = (Long) row[1];
+			categoryCounts.merge(categoryKey, count, Long::sum);
+		}
+
+		return new PostStatsResponse(totalPosts, newPostsThisWeek, categoryCounts);
 	}
 
 	public PostResponse getPost(Long postId, Long viewerId) {
@@ -66,7 +100,7 @@ public class PostService {
 			postRepository.incrementViewCount(postId);
 		}
 
-		return PostResponse.from(post, locked, postImageService.listPostImages(postId, viewerId));
+		return postEnrichmentService.toDetail(post, locked, postImageService.listPostImages(postId, viewerId));
 	}
 
 	public PostResponse createPost(Long authorId, PostCreateRequest request) {
@@ -82,7 +116,7 @@ public class PostService {
 				tags);
 
 		Post saved = postRepository.save(post);
-		return PostResponse.from(saved, false, List.of());
+		return postEnrichmentService.toDetail(saved, false, List.of());
 	}
 
 	public PostResponse updatePost(Long postId, Long actorId, PostUpdateRequest request) {
@@ -98,7 +132,7 @@ public class PostService {
 				request.visibility(),
 				tags);
 
-		return PostResponse.from(post, false, postImageService.listPostImages(postId, actorId));
+		return postEnrichmentService.toDetail(post, false, postImageService.listPostImages(postId, actorId));
 	}
 
 	public void deletePost(Long postId, Long actorId) {

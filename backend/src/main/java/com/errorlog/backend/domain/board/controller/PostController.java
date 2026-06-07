@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.errorlog.backend.domain.board.domain.dto.PostCreateRequest;
 import com.errorlog.backend.domain.board.domain.dto.PostResponse;
+import com.errorlog.backend.domain.board.domain.dto.PostStatsResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostUpdateRequest;
 import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
@@ -43,6 +44,11 @@ public class PostController {
 			@AuthenticationPrincipal Long viewerId,
 			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		return postService.listPosts(authorId, tag, category, framework, viewerId, pageable);
+	}
+
+	@GetMapping("/stats")
+	public PostStatsResponse getStats() {
+		return postService.getStats();
 	}
 
 	@GetMapping("/{postId}")

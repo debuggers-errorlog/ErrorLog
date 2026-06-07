@@ -2,8 +2,8 @@ package com.errorlog.backend.domain.board.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,7 +25,7 @@ public class EditorImageController {
 	@PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public EditorImageUploadResponse uploadEditorImage(
-			@RequestHeader("X-User-Id") Long userId,
+			@AuthenticationPrincipal Long userId,
 			@RequestPart("file") MultipartFile file) {
 		return editorImageService.uploadEditorImage(userId, file);
 	}

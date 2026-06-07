@@ -1,5 +1,6 @@
 package com.errorlog.backend.domain.board.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,5 +36,23 @@ public interface PostRepository extends JpaRepository<Post, Long>, JpaSpecificat
 
 	// 크리에이터의 최근 유료글 목록
 	List<Post> findTop5ByUserIdAndVisibilityAndStatusOrderByCreatedAtDesc(Long userId, PostVisibility visibility, PostStatus status);
+
+	long countByStatus(PostStatus status);
+
+	@Query("""
+			SELECT p.metaCategory, COUNT(p)
+			FROM Post p
+			WHERE p.status = :status
+			GROUP BY p.metaCategory
+			""")
+	List<Object[]> countGroupByCategory(@Param("status") PostStatus status);
+
+	@Query("""
+			SELECT COUNT(p)
+			FROM Post p
+			WHERE p.status = :status
+			AND p.createdAt >= :since
+			""")
+	long countActiveSince(@Param("status") PostStatus status, @Param("since") LocalDateTime since);
 
 }

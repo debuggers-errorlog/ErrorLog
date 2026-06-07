@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 import api from '../api/axios'
+import { saveTokens } from '../utils/authSession'
 import Header from '../components/layout/Header'
 
 const PageWrapper = styled.div`
@@ -202,8 +203,7 @@ export default function OAuthAdditionalInfoPage() {
       const { data } = await api.post('/auth/oauth/additional-info', form, {
         headers: { Authorization: `Bearer ${tempToken}` },
       })
-      localStorage.setItem('accessToken', data.accessToken)
-      localStorage.setItem('refreshToken', data.refreshToken)
+      saveTokens(data.accessToken, data.refreshToken)
       navigate('/', { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || '정보 저장에 실패했습니다.')
