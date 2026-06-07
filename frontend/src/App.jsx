@@ -58,7 +58,6 @@ export default function App() {
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="content" element={<ContentManagement />} />
-                <Route path="settlement" element={<SettlementManagement />} />
                 <Route path="subscription" element={<SubscriptionManagement />} />
                 <Route path="questions" element={<QuestionManagement />} />
                 <Route path="reports" element={<ReportManagement />} />

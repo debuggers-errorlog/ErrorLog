@@ -1,25 +1,34 @@
-package com.errorlog.backend.domain.subscription.entity;
+package com.errorlog.backend.domain.subscription.Entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
-// TODO: 임시 placeholder.
 @Entity
 @Table(name = "subscription_settings")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class SubscriptionSettings {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", nullable = false, unique = true)
-    private Long userId;     // 구독 판매자(creator)
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
     private Long price;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    public void update(Long price, String description) {
+        this.price = price;
+        this.description = description;
+    }
 }

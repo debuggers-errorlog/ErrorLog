@@ -13,8 +13,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.errorlog.backend.domain.question.entity.QQuestionRequest.questionRequest;
-import static com.errorlog.backend.domain.subscription.entity.QSubscription.subscription;
-import static com.errorlog.backend.domain.subscription.entity.QSubscriptionSettings.subscriptionSettings;
+import static com.errorlog.backend.domain.subscription.Entity.QSubscription.subscription;
+import static com.errorlog.backend.domain.subscription.Entity.QSubscriptionSettings.subscriptionSettings;
 import static com.errorlog.backend.domain.user.entity.QUser.user;
 
 @Repository
@@ -34,10 +34,21 @@ public class DashboardQueryRepository {
         return c == null ? 0 : c;
     }
 
-    // 활성 유료 구독자 수 (expired_at > now)
+    // 활성 "구독자 수" = 만료 안 된 구독을 가진 서로 다른 사람 수
     public long countActiveSubscribers() {
-        Long c = queryFactory.select(subscription.count()).from(subscription)
+        Long c = queryFactory
+                .select(subscription.subscriberId.countDistinct())  // count() → subscriberId.countDistinct()
+                .from(subscription)
                 .where(subscription.expiredAt.gt(LocalDateTime.now()))
+                .fetchOne();
+        return c == null ? 0 : c;
+    }
+
+    // 만료된 구독 수 (만료일이 지난 것)
+    public long countExpiredSubscriptions() {
+        Long c = queryFactory.select(subscription.count())
+                .from(subscription)
+                .where(subscription.expiredAt.loe(LocalDateTime.now()))  // loe = <= now
                 .fetchOne();
         return c == null ? 0 : c;
     }

@@ -9,6 +9,10 @@ export const hidePost   = (id) => api.patch(`/admin/posts/${id}/hide`)
 export const showPost   = (id) => api.patch(`/admin/posts/${id}/show`)
 export const deletePost = (id) => api.delete(`/admin/posts/${id}`)
 
+export const getSubscriptionSummary = () => api.get('/admin/subscriptions/summary');
+export const getSubscriptions = ({ page = 0, size = 10, search = '', status = '' } = {}) =>
+    api.get('/admin/subscriptions', { params: { page, size, search, status } });
+
 export const getQuestionRequests   = (params) => api.get('/admin/question-requests', { params })
 export const cancelQuestionRequest = (id) => api.patch(`/admin/question-requests/${id}/cancel`)
 
