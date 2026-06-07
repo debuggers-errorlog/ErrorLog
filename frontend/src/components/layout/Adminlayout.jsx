@@ -65,7 +65,7 @@ const MenuLink = styled(NavLink)`
     background: ${({ theme }) => theme.colors.surfaceHover};
     color: ${({ theme }) => theme.colors.text};
   }
-  &.active {                                   /* NavLink가 자동으로 붙여주는 클래스 */
+  &.active {
     background: ${({ theme }) => theme.colors.accentDim};
     color: ${({ theme }) => theme.colors.accent};
     border-right-color: ${({ theme }) => theme.colors.accent};
