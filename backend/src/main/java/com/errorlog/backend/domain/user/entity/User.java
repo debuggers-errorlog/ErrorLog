@@ -82,4 +82,12 @@ public class User {
     public enum Role { ADMIN, USER }
     public enum Status { ACTIVE, SUSPENDED, DELETED }
     public enum Provider { LOCAL, GOOGLE }
+
+    public void suspend() {
+        this.status = Status.SUSPENDED;
+    }
+
+    public void restore() {
+        this.status = Status.ACTIVE;
+    }
 }

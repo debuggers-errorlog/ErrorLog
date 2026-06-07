@@ -10,7 +10,7 @@ import com.errorlog.backend.domain.question.entity.Answer.AuthorRole;
 import com.errorlog.backend.domain.question.entity.Question;
 import com.errorlog.backend.domain.question.entity.Question.QuestionStatus;
 import com.errorlog.backend.domain.question.entity.QuestionRequest;
-import com.errorlog.backend.domain.question.entity.QuestionRequest.RequestStatus;
+import com.errorlog.backend.domain.question.entity.QuestionRequest.Status;
 import com.errorlog.backend.domain.question.repository.AnswerRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRequestRepository;
@@ -118,7 +118,7 @@ public class QuestionService {
 
         if (!qr.getReceiverId().equals(mentorId))
             throw new IllegalArgumentException("해당 요청의 수신자가 아닙니다.");
-        if (qr.getStatus() != RequestStatus.PENDING)
+        if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청입니다.");
 
         // 은진님 PaymentService 주입받아서 호출
@@ -155,7 +155,7 @@ public class QuestionService {
         QuestionRequest qr = findRequest(requestId);
         if (!qr.getReceiverId().equals(mentorId))
             throw new IllegalArgumentException("해당 요청의 수신자가 아닙니다.");
-        if (qr.getStatus() != RequestStatus.PENDING)
+        if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청입니다.");
         qr.reject();
     }
@@ -166,7 +166,7 @@ public class QuestionService {
         QuestionRequest qr = findRequest(requestId);
         if (!qr.getRequesterId().equals(requesterId))
             throw new IllegalArgumentException("해당 요청의 요청자가 아닙니다.");
-        if (qr.getStatus() != RequestStatus.PENDING)
+        if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청은 취소할 수 없습니다.");
         qr.cancel();
     }

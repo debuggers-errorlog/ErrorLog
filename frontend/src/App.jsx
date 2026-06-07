@@ -17,7 +17,14 @@ import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage';
 import { SubscriptionManagePage } from './pages/SubscriptionManagePage';
 import { SettlementPage } from './pages/SettlementPage';
 import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage';
-
+import AdminLayout from './components/layout/Adminlayout.jsx'
+import Dashboard from './pages/admin/Dashboard.jsx'
+import UserManagement from './pages/admin/UserManagement.jsx'
+import ContentManagement from './pages/admin/ContentManagement.jsx'
+import SubscriptionManagement from './pages/admin/SubscriptionManagement.jsx'
+import QuestionManagement from './pages/admin/QuestionManagement.jsx'
+import ReportManagement from './pages/admin/ReportManagement.jsx'
+import AdminRoute from './components/admin/AdminRoute';
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('accessToken');
   return token ? children : <Navigate to="/login" replace />;
@@ -45,6 +52,15 @@ export default function App() {
             <Route path="/subscriptions/manage" element={<PrivateRoute><SubscriptionManagePage /></PrivateRoute>} />
             <Route path="/subscription-settings" element={<PrivateRoute><SubscriptionSettingsPage /></PrivateRoute>} />
             <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="content" element={<ContentManagement />} />
+                <Route path="subscription" element={<SubscriptionManagement />} />
+                <Route path="questions" element={<QuestionManagement />} />
+                <Route path="reports" element={<ReportManagement />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

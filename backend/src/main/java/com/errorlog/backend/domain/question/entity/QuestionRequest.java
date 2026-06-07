@@ -12,17 +12,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class QuestionRequest {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 팀원의 User 엔티티를 @ManyToOne으로 참조
-    // User 엔티티가 com.errorlog.backend.domain.user.entity.User 에 있다고 가정
     @Column(name = "requester_id", nullable = false)
-    private Long requesterId;   // 질문자 userId
+    private Long requesterId;   // 멘티
 
     @Column(name = "receiver_id", nullable = false)
-    private Long receiverId;    // 답변자(멘토) userId
+    private Long receiverId;    // 멘토
 
     @Column(nullable = false, length = 255)
     private String title;
@@ -33,18 +30,36 @@ public class QuestionRequest {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default
-    private RequestStatus status = RequestStatus.PENDING;
+    private Status status = Status.PENDING;
 
-    @Column(nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    // ── 상태 변경 메서드 ──────────────────────────────
-    public void accept()  { this.status = RequestStatus.ACCEPTED;  }
-    public void reject()  { this.status = RequestStatus.REJECTED;  }
-    public void cancel()  { this.status = RequestStatus.CANCELLED; }
 
-    public enum RequestStatus {
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.status == null) {
+            this.status = Status.PENDING;
+        }
+    }
+
+    public void accept() {
+        this.status = Status.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = Status.REJECTED;
+    }
+
+    public void cancel() {   // 관리자 개입: 묵은 요청 취소
+        this.status = Status.CANCELLED;
+    }
+
+    public enum Status {
         PENDING,    // 대기 중
         ACCEPTED,   // 수락됨
         REJECTED,   // 거절됨

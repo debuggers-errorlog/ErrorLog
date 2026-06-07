@@ -8,7 +8,7 @@ import com.errorlog.backend.domain.question.entity.Answer.AuthorRole;
 import com.errorlog.backend.domain.question.entity.Question;
 import com.errorlog.backend.domain.question.entity.Question.QuestionStatus;
 import com.errorlog.backend.domain.question.entity.QuestionRequest;
-import com.errorlog.backend.domain.question.entity.QuestionRequest.RequestStatus;
+import com.errorlog.backend.domain.question.entity.QuestionRequest.Status;
 import com.errorlog.backend.domain.question.repository.AnswerRepository;
 import com.errorlog.backend.domain.question.repository.ImageRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRepository;
@@ -84,7 +84,7 @@ class QuestionServiceTest {
                 .receiverId(RECEIVER_ID)
                 .title("스프링 질문입니다")
                 .content("JPA 연관관계 설정이 헷갈려요")
-                .status(RequestStatus.PENDING)
+                .status(Status.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -94,7 +94,7 @@ class QuestionServiceTest {
                 .receiverId(RECEIVER_ID)
                 .title("스프링 질문입니다")
                 .content("JPA 연관관계 설정이 헷갈려요")
-                .status(RequestStatus.PENDING)
+                .status(Status.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
 
@@ -148,7 +148,7 @@ class QuestionServiceTest {
             assertThat(result.getId()).isEqualTo(REQUEST_ID);
             assertThat(result.getRequesterId()).isEqualTo(REQUESTER_ID);
             assertThat(result.getReceiverId()).isEqualTo(RECEIVER_ID);
-            assertThat(result.getStatus()).isEqualTo(RequestStatus.PENDING);
+            assertThat(result.getStatus()).isEqualTo(Status.PENDING);
             assertThat(result.getTitle()).isEqualTo("스프링 질문입니다");
 
             // save 가 1번 호출됐는지 확인
@@ -258,7 +258,7 @@ class QuestionServiceTest {
                     .receiverId(RECEIVER_ID)
                     .title("이미 처리된 요청")
                     .content("내용")
-                    .status(RequestStatus.ACCEPTED)
+                    .status(Status.ACCEPTED)
                     .createdAt(LocalDateTime.now())
                     .build();
 

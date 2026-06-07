@@ -1,6 +1,6 @@
 package com.errorlog.backend.domain.question.dto;
 
-import com.errorlog.backend.domain.question.entity.QuestionRequest.RequestStatus;
+import com.errorlog.backend.domain.question.entity.QuestionRequest.Status;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -38,7 +38,7 @@ public class QuestionRequestDto {
         private Long receiverId;
         private String receiverNickname;
         private String title;
-        private RequestStatus status;
+        private Status status;
         private LocalDateTime createdAt;
     }
 
@@ -53,7 +53,7 @@ public class QuestionRequestDto {
         private String receiverNickname;
         private String title;
         private String content;
-        private RequestStatus status;
+        private Status status;
         private LocalDateTime createdAt;
         private List<String> imageUrls;
 
