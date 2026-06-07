@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, PenLine, User, LogIn, UserPlus } from 'lucide-react';
+import { Search, PenLine, User, LogIn, UserPlus , Shield} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../common/Styled';
 import {
@@ -10,12 +10,30 @@ import {
   HeaderActions,
 } from './Header.styles';
 
+function getIsAdmin() {
+  const token = localStorage.getItem('accessToken');
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(
+        atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+    );
+    const role = payload.role ?? payload.auth ?? payload.authorities ?? payload.roles;
+    return JSON.stringify(role ?? '').includes('ADMIN');
+  } catch {
+    return false;
+  }
+}
+
 export default function Header({ searchValue, onSearchChange, onSearchSubmit }) {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('accessToken'));
+  const [isAdmin, setIsAdmin] = useState(getIsAdmin());
 
   useEffect(() => {
-    const handleStorage = () => setIsLoggedIn(!!localStorage.getItem('accessToken'));
+    const handleStorage = () => {
+      setIsLoggedIn(!!localStorage.getItem('accessToken'));
+      setIsAdmin(getIsAdmin());
+    }
     window.addEventListener('storage', handleStorage);
     // 라우트 이동 시에도 반영되도록 주기적으로 체크
     const interval = setInterval(handleStorage, 500);
@@ -53,6 +71,12 @@ export default function Header({ searchValue, onSearchChange, onSearchSubmit }) 
         <HeaderActions>
           {isLoggedIn ? (
             <>
+              {isAdmin && (
+                  <Button $variant="ghost" onClick={() => navigate('/admin')}>
+                    <Shield size={16} />
+                    관리자
+                  </Button>
+              )}
               <Button $variant="primary" onClick={() => navigate('/write')}>
                 <PenLine size={16} />
                 글 작성하기

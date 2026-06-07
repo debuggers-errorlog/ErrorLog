@@ -14,11 +14,13 @@ import { CATEGORIES } from '../mocks/categories';
 import { MOCK_POST_DETAIL } from '../mocks/posts';
 import { MOCK_COMMENTS } from '../mocks/comments';
 import { fetchPost } from '../api/postApi';
+import ReportModal from '../components/report/ReportModal.jsx'
 
 export default function PostDetailPage() {
   const { postId } = useParams();
   const [post, setPost] = useState(MOCK_POST_DETAIL);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [reportOpen, setReportOpen] = useState(false)
 
   useEffect(() => {
     fetchPost(postId).then((data) => {
@@ -52,7 +54,16 @@ export default function PostDetailPage() {
       <CommentSection>
         <h2>댓글 {MOCK_COMMENTS.length}</h2>
         <textarea placeholder="댓글을 입력하세요..." />
-        <Button $variant="primary">댓글 작성</Button>
+        <div className="flex items-center gap-2">
+          <Button $variant="primary">댓글 작성</Button>
+          <Button $variant="primary" onClick={() => setReportOpen(true)}>게시글 신고</Button>
+        </div>
+        <ReportModal
+            open={reportOpen}
+            onClose={() => setReportOpen(false)}
+            targetType="POST"     // 댓글이면 "COMMENT", 회원이면 "USER"
+            targetId={post.id}    // 각각 comment.id / user.id
+        />
 
         <CommentList>
           {MOCK_COMMENTS.map((comment) => (

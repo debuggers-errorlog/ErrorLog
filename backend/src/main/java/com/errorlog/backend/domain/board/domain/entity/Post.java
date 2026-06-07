@@ -141,4 +141,15 @@ public class Post {
 	public boolean isSubscriberOnly() {
 		return visibility == PostVisibility.SUBSCRIBERS;
 	}
+
+	public void hide() {
+		this.status = PostStatus.HIDDEN;
+		this.hiddenAt = LocalDateTime.now();
+		this.updatedAt = this.hiddenAt;
+	}
+	public void show() {
+		this.status = PostStatus.ACTIVE;
+		this.hiddenAt = null;
+		this.updatedAt = LocalDateTime.now();
+	}
 }
