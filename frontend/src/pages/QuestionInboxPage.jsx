@@ -1,348 +1,294 @@
-/**
- * QuestionInboxPage.jsx
- *
- * "내 질문 요청" 목록 페이지입니다.
- * - 보낸 요청 탭  : 내가 다른 멘토에게 보낸 요청 목록 (취소 가능)
- * - 받은 요청 탭  : 멘토인 내가 받은 요청 목록 (수락 / 거절 가능)
- *
- * 상태(Status) 종류:
- *   PENDING  → 대기 중  (수락/거절/취소 가능)
- *   ACCEPTED → 수락됨   → questions 레코드가 생성됨
- *   REJECTED → 거절됨
- *   CANCELED → 취소됨
- *
- * 라우팅: /questions/inbox
- * App.jsx 에 아래 라우트를 추가해야 합니다:
- *   import QuestionInboxPage from './pages/QuestionInboxPage'
- *   <Route path="/questions/inbox" element={<PrivateRoute><QuestionInboxPage /></PrivateRoute>} />
- */
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
+import Header from '../components/layout/Header'
 import {
     getSentRequests,
     getReceivedRequests,
     acceptRequest,
     rejectRequest,
     cancelRequest,
-} from '../api/questionApi';
-import MainLayout from '../components/layout/MainLayout';
+} from '../api/questionApi'
 
-// ── 상태별 배지 색상 설정 ──────────────────────────────────────
 const STATUS_MAP = {
-    PENDING:  { label: '대기 중',  bg: 'rgba(240,180,41,0.15)', color: '#f0b429' },
-    ACCEPTED: { label: '수락됨',  bg: 'rgba(63,185,80,0.15)',  color: '#3fb950' },
-    REJECTED: { label: '거절됨',  bg: 'rgba(248,81,73,0.15)',  color: '#f85149' },
-    CANCELED: { label: '취소됨',  bg: 'rgba(110,118,129,0.15)', color: '#6e7681' },
-};
-
-// ── 스타일 ──────────────────────────────────────────────────────
+    PENDING:  { label: '대기 중',  color: '#f0b429', bg: 'rgba(240,180,41,0.15)' },
+    ACCEPTED: { label: '수락됨',  color: '#3fb950', bg: 'rgba(63,185,80,0.15)'  },
+    REJECTED: { label: '거절됨',  color: '#f85149', bg: 'rgba(248,81,73,0.15)'  },
+    CANCELLED: { label: '취소됨',  color: '#6e7681', bg: 'rgba(110,118,129,0.15)' },
+}
 
 const PageWrapper = styled.div`
-  max-width: 740px;
-  margin: 0 auto;
-  padding: 32px 16px;
-`;
+    min-height: 100vh;
+    background: ${({ theme }) => theme.colors.bg};
+`
 
-const PageTitle = styled.h1`
-  font-size: 20px;
-  font-weight: 700;
-  color: ${({ theme }) => theme.colors.text};
-  margin-bottom: 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+const Container = styled.div`
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px;
+`
 
-  &::before {
-    content: '';
-    width: 4px;
-    height: 20px;
-    background: ${({ theme }) => theme.colors.accent};
-    border-radius: 2px;
-  }
-`;
+const PageTitle = styled.h2`
+    font-size: 18px;
+    font-weight: 700;
+    color: ${({ theme }) => theme.colors.text};
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &::before {
+        content: '';
+        width: 4px;
+        height: 18px;
+        background: ${({ theme }) => theme.colors.accent};
+        border-radius: 2px;
+    }
+`
 
 const TabRow = styled.div`
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
-  margin-bottom: 20px;
-`;
+    display: flex;
+    border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+    margin-bottom: 20px;
+`
 
-const Tab = styled.button`
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.accent : theme.colors.textMuted};
-  border-bottom: 2px solid
-    ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
-  background: transparent;
-  cursor: pointer;
-  transition: color 0.15s;
-`;
+const TabBtn = styled.button`
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ $active, theme }) => $active ? theme.colors.accent : theme.colors.textMuted};
+    border-bottom: 2px solid ${({ $active, theme }) => $active ? theme.colors.accent : 'transparent'};
+    background: transparent;
+    cursor: pointer;
+    transition: color 0.15s;
+`
 
-const RequestList = styled.ul`
+const CardList = styled.ul`
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-`;
+  gap: 10px;
+`
 
-const RequestCard = styled.li`
+const Card = styled.li`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.lg};
-  padding: 16px 20px;
+  padding: 16px 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   cursor: pointer;
   transition: border-color 0.15s, background 0.15s;
-
   &:hover {
     border-color: ${({ theme }) => theme.colors.borderLight};
     background: ${({ theme }) => theme.colors.surfaceHover};
   }
-`;
+`
 
 const CardBody = styled.div`
-  flex: 1;
-  min-width: 0;               /* flex 자식이 overflow: hidden 되려면 필요 */
-`;
+    flex: 1;
+    min-width: 0;
+`
 
 const CardTitle = styled.p`
-  font-size: 15px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.colors.text};
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.colors.text};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`
 
 const CardMeta = styled.p`
-  font-size: 12px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  margin-top: 4px;
-`;
+    font-size: 12px;
+    color: ${({ theme }) => theme.colors.textMuted};
+    margin-top: 3px;
+`
 
 const StatusBadge = styled.span`
-  flex-shrink: 0;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${({ $bg }) => $bg};
-  color: ${({ $color }) => $color};
-`;
+    flex-shrink: 0;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: ${({ $bg }) => $bg};
+    color: ${({ $color }) => $color};
+`
 
 const ActionRow = styled.div`
-  flex-shrink: 0;
-  display: flex;
-  gap: 8px;
-`;
+    flex-shrink: 0;
+    display: flex;
+    gap: 6px;
+`
 
 const ActionBtn = styled.button`
-  padding: 6px 14px;
-  border-radius: ${({ theme }) => theme.radius.md};
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
+    padding: 5px 12px;
+    border-radius: ${({ theme }) => theme.radius.sm};
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    &:hover { opacity: 0.85; }
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
 
-  background: ${({ $variant, theme }) => {
-    if ($variant === 'accept')  return theme.colors.success;
-    if ($variant === 'reject')  return theme.colors.danger;
-    return 'transparent';
-}};
-  color: ${({ $variant, theme }) => {
-    if ($variant === 'accept' || $variant === 'reject') return '#fff';
-    return theme.colors.textMuted;
-}};
-  border-color: ${({ $variant, theme }) =>
-    $variant === 'cancel' ? theme.colors.borderLight : 'transparent'};
+    background: ${({ $variant, theme }) => {
+        if ($variant === 'accept') return theme.colors.success
+        if ($variant === 'reject') return theme.colors.danger
+        return 'transparent'
+    }};
+    color: ${({ $variant, theme }) =>
+            $variant === 'cancel' ? theme.colors.textMuted : '#fff'};
+    border: ${({ $variant, theme }) =>
+            $variant === 'cancel' ? `1px solid ${theme.colors.borderLight}` : 'none'};
+`
 
-  &:hover {
-    opacity: 0.85;
-  }
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 0;
-  color: ${({ theme }) => theme.colors.textMuted};
+const EmptyText = styled.p`
   font-size: 14px;
-`;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-align: center;
+  padding: 48px 0;
+`
 
-// ── 날짜 포맷 헬퍼 ──────────────────────────────────────────────
-function formatDate(isoString) {
-    if (!isoString) return '';
-    const d = new Date(isoString);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const ErrorMsg = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.danger};
+  margin-bottom: 8px;
+`
+
+function fmtDate(iso) {
+    if (!iso) return ''
+    const d = new Date(iso)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// ── 컴포넌트 ────────────────────────────────────────────────────
 
 export default function QuestionInboxPage() {
-    // 탭: 'received'(받은 요청) | 'sent'(보낸 요청)
-    const [tab, setTab] = useState('received');
-    const [items, setItems] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+    const navigate = useNavigate()
+    const [tab, setTab] = useState('received')   // 'received' | 'sent'
+    const [items, setItems] = useState([])
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState('')
 
-    // 탭이 바뀔 때마다 목록을 새로 불러옵니다.
     useEffect(() => {
         async function load() {
-            setLoading(true);
+            setLoading(true)
+            setError('')
             try {
-                const list =
-                    tab === 'received'
-                        ? await getReceivedRequests()
-                        : await getSentRequests();
-                setItems(list ?? []);
+                const list = tab === 'received'
+                    ? await getReceivedRequests()
+                    : await getSentRequests()
+                setItems(list ?? [])
             } catch {
-                setItems([]);
+                setItems([])
+                setError('목록을 불러오지 못했습니다.')
             } finally {
-                setLoading(false);
+                setLoading(false)
             }
         }
-        load();
-    }, [tab]);
+        load()
+    }, [tab])
 
-    // 수락 버튼 핸들러
     async function handleAccept(e, requestId) {
-        // 카드 클릭(navigate) 이벤트가 함께 실행되지 않도록 막기
-        e.stopPropagation();
+        e.stopPropagation()   // 카드 클릭(navigate)과 이벤트 분리
         try {
-            const question = await acceptRequest(requestId);
-            // 수락 성공 → 생성된 질문 채팅 페이지로 바로 이동
-            navigate(`/questions/${question.id}`);
+            const question = await acceptRequest(requestId)
+            navigate(`/questions/${question.id}`)
         } catch (err) {
-            alert(err.response?.data?.message || '수락에 실패했습니다.');
+            setError(err.response?.data?.message || '수락에 실패했습니다.')
         }
     }
 
-    // 거절 버튼 핸들러
     async function handleReject(e, requestId) {
-        e.stopPropagation();
-        if (!window.confirm('요청을 거절하시겠습니까?')) return;
+        e.stopPropagation()
         try {
-            await rejectRequest(requestId);
-            // 목록에서 해당 항목의 상태만 변경
+            await rejectRequest(requestId)
             setItems((prev) =>
-                prev.map((it) =>
-                    it.id === requestId ? { ...it, status: 'REJECTED' } : it
-                )
-            );
+                prev.map((it) => it.id === requestId ? { ...it, status: 'REJECTED' } : it)
+            )
         } catch (err) {
-            alert(err.response?.data?.message || '거절에 실패했습니다.');
+            setError(err.response?.data?.message || '거절에 실패했습니다.')
         }
     }
 
-    // 취소 버튼 핸들러
     async function handleCancel(e, requestId) {
-        e.stopPropagation();
-        if (!window.confirm('요청을 취소하시겠습니까?')) return;
+        e.stopPropagation()
         try {
-            await cancelRequest(requestId);
+            await cancelRequest(requestId)
             setItems((prev) =>
-                prev.map((it) =>
-                    it.id === requestId ? { ...it, status: 'CANCELED' } : it
-                )
-            );
+                prev.map((it) => it.id === requestId ? { ...it, status: 'CANCELLED' } : it)
+            )
         } catch (err) {
-            alert(err.response?.data?.message || '취소에 실패했습니다.');
+            setError(err.response?.data?.message || '취소에 실패했습니다.')
         }
     }
-
-    // 카드 클릭 시 요청 상세 페이지로 이동
-    function handleCardClick(item) {
-        navigate(`/questions/requests/${item.id}`);
-    }
-
-    const statusInfo = (status) => STATUS_MAP[status] ?? { label: status, bg: '#333', color: '#ccc' };
 
     return (
-        <MainLayout>
-            <PageWrapper>
+        <PageWrapper>
+            <Header />
+            <Container>
                 <PageTitle>질문 요청 관리</PageTitle>
 
                 <TabRow>
-                    <Tab $active={tab === 'received'} onClick={() => setTab('received')}>
+                    <TabBtn $active={tab === 'received'} onClick={() => setTab('received')}>
                         받은 요청
-                    </Tab>
-                    <Tab $active={tab === 'sent'} onClick={() => setTab('sent')}>
+                    </TabBtn>
+                    <TabBtn $active={tab === 'sent'} onClick={() => setTab('sent')}>
                         보낸 요청
-                    </Tab>
+                    </TabBtn>
                 </TabRow>
 
-                {loading && <EmptyState>불러오는 중...</EmptyState>}
+                {error && <ErrorMsg>{error}</ErrorMsg>}
 
-                {!loading && items.length === 0 && (
-                    <EmptyState>
+                {loading ? (
+                    <EmptyText>불러오는 중...</EmptyText>
+                ) : items.length === 0 ? (
+                    <EmptyText>
                         {tab === 'received' ? '받은 요청이 없습니다.' : '보낸 요청이 없습니다.'}
-                    </EmptyState>
-                )}
-
-                {!loading && items.length > 0 && (
-                    <RequestList>
+                    </EmptyText>
+                ) : (
+                    <CardList>
                         {items.map((item) => {
-                            const s = statusInfo(item.status);
-                            const isPending = item.status === 'PENDING';
+                            const s = STATUS_MAP[item.status] ?? { label: item.status, color: '#ccc', bg: '#333' }
+                            const isPending = item.status === 'PENDING'
 
                             return (
-                                <RequestCard key={item.id} onClick={() => handleCardClick(item)}>
+                                <Card key={item.id} onClick={() => navigate(`/questions/requests/${item.id}`)}>
                                     <CardBody>
                                         <CardTitle>{item.title}</CardTitle>
                                         <CardMeta>
                                             {tab === 'received'
-                                                ? `${item.requesterNickname} · ${formatDate(item.createdAt)}`
-                                                : `→ ${item.receiverNickname} · ${formatDate(item.createdAt)}`}
+                                                ? `${item.requesterNickname} · ${fmtDate(item.createdAt)}`
+                                                : `→ ${item.receiverNickname} · ${fmtDate(item.createdAt)}`}
                                         </CardMeta>
                                     </CardBody>
 
-                                    <StatusBadge $bg={s.bg} $color={s.color}>
-                                        {s.label}
-                                    </StatusBadge>
+                                    <StatusBadge $bg={s.bg} $color={s.color}>{s.label}</StatusBadge>
 
-                                    {/* PENDING 상태일 때만 액션 버튼 표시 */}
                                     {isPending && (
                                         <ActionRow>
                                             {tab === 'received' ? (
                                                 <>
-                                                    <ActionBtn
-                                                        $variant="accept"
-                                                        onClick={(e) => handleAccept(e, item.id)}
-                                                    >
+                                                    <ActionBtn $variant="accept" onClick={(e) => handleAccept(e, item.id)}>
                                                         수락
                                                     </ActionBtn>
-                                                    <ActionBtn
-                                                        $variant="reject"
-                                                        onClick={(e) => handleReject(e, item.id)}
-                                                    >
+                                                    <ActionBtn $variant="reject" onClick={(e) => handleReject(e, item.id)}>
                                                         거절
                                                     </ActionBtn>
                                                 </>
                                             ) : (
-                                                <ActionBtn
-                                                    $variant="cancel"
-                                                    onClick={(e) => handleCancel(e, item.id)}
-                                                >
+                                                <ActionBtn $variant="cancel" onClick={(e) => handleCancel(e, item.id)}>
                                                     취소
                                                 </ActionBtn>
                                             )}
                                         </ActionRow>
                                     )}
-                                </RequestCard>
-                            );
+                                </Card>
+                            )
                         })}
-                    </RequestList>
+                    </CardList>
                 )}
-            </PageWrapper>
-        </MainLayout>
-    );
+            </Container>
+        </PageWrapper>
+    )
 }
