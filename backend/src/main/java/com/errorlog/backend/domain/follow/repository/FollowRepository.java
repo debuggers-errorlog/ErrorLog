@@ -2,6 +2,9 @@ package com.errorlog.backend.domain.follow.repository;
 
 import com.errorlog.backend.domain.follow.entity.Follow;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
+
+import java.util.List;
 
 public interface FollowRepository extends JpaRepository<Follow, Long> {
 
@@ -9,6 +12,9 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     void deleteByFollower_IdAndFollowing_Id(Long followerId, Long followingId);
 
-    long countByFollowing_Id(Long userId);  // 해당 유저의 팔로워 수
-    long countByFollower_Id(Long userId);    // 해당 유저가 팔로잉하는 수
+    long countByFollowing_Id(Long userId);
+    long countByFollower_Id(Long userId);
+
+    @EntityGraph(attributePaths = {"following"})
+    List<Follow> findByFollower_Id(Long followerId);
 }

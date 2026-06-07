@@ -15,7 +15,7 @@ api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config
-    if (err.response?.status === 401 && !original._retry) {
+    if (err.response?.status === 401 && !original._retry && !original.url?.includes('/auth/login')) {
       original._retry = true
       try {
         const refreshToken = localStorage.getItem('refreshToken')
@@ -28,7 +28,7 @@ api.interceptors.response.use(
         return api(original)
       } catch {
         localStorage.clear()
-        window.location.href = '/login'
+        window.location.href = '/login?session=expired'
       }
     }
     return Promise.reject(err)

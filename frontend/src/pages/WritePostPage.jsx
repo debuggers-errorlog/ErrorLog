@@ -20,7 +20,6 @@ import {
 import MarkdownEditor from '../components/post/MarkdownEditor';
 import { FRAMEWORKS } from '../mocks/frameworks';
 import { createPost } from '../api/postApi';
-import { setUserId } from '../api/client';
 
 const TROUBLESHOOTING_CATEGORIES = [
   { value: 'RUNTIME', label: 'Runtime' },
@@ -45,9 +44,6 @@ export default function WritePostPage() {
   const [visibility, setVisibility] = useState('PUBLIC');
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    setUserId(1);
-  }, []);
 
   const addTag = () => {
     const trimmed = tagInput.trim().replace(/^#/, '');
