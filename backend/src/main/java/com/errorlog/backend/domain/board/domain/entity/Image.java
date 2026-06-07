@@ -51,4 +51,14 @@ public class Image {
 		image.createdAt = LocalDateTime.now();
 		return image;
 	}
+
+	public static Image createRequestImage(Long requestId, String imagePath, int imageSeq) {
+		Image image = new Image();
+		image.targetType = ImageTargetType.REQUEST;
+		image.targetId = requestId;
+		image.imagePath = imagePath;
+		image.imageSeq = imageSeq;
+		image.createdAt = LocalDateTime.now();
+		return image;
+	}
 }

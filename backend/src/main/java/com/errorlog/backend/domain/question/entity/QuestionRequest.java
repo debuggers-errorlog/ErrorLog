@@ -55,7 +55,7 @@ public class QuestionRequest {
         this.status = Status.REJECTED;
     }
 
-    public void cancel() {   // 관리자 개입: 묵은 요청 취소
+    public void cancel() {
         this.status = Status.CANCELLED;
     }
 

@@ -1,6 +1,6 @@
 package com.errorlog.backend.domain.question.controller;
 
-import com.errorlog.backend.domain.question.entity.Image;
+import com.errorlog.backend.domain.board.domain.enums.ImageTargetType;
 import com.errorlog.backend.domain.question.service.ImageService;
 import com.errorlog.backend.global.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class ImageController {
      */
     @PostMapping("/{targetType}/{targetId}")
     public ResponseEntity<ApiResponse<List<String>>> upload(
-            @PathVariable Image.TargetType targetType,
+            @PathVariable ImageTargetType targetType,
             @PathVariable Long targetId,
             @RequestParam("files") List<MultipartFile> files) throws IOException {
 

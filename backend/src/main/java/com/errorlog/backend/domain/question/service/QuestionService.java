@@ -1,7 +1,11 @@
 package com.errorlog.backend.domain.question.service;
 
-import com.errorlog.backend.domain.question.entity.Image;
-import com.errorlog.backend.domain.question.repository.ImageRepository;
+import com.errorlog.backend.domain.board.domain.entity.Image;
+import com.errorlog.backend.domain.board.domain.enums.ImageTargetType;
+import com.errorlog.backend.domain.board.repository.ImageRepository;
+import com.errorlog.backend.domain.payment.enums.PaymentStatus;
+import com.errorlog.backend.domain.payment.enums.PaymentType;
+import com.errorlog.backend.domain.payment.service.PaymentService;
 import com.errorlog.backend.domain.question.dto.AnswerDto;
 import com.errorlog.backend.domain.question.dto.QuestionDto;
 import com.errorlog.backend.domain.question.dto.QuestionRequestDto;
@@ -34,6 +38,8 @@ public class QuestionService {
     private final AnswerRepository answerRepo;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
+    private final PaymentService paymentService;
+    private final QuestionRequestStatusUpdater statusUpdater;
 
     private String getNickname(Long userId) {
         return userRepository.findById(userId)
@@ -49,6 +55,9 @@ public class QuestionService {
     public QuestionRequestDto.RequestItem sendRequest(
             Long requesterId, QuestionRequestDto.SendRequest dto) {
 
+        if (requesterId.equals(dto.getReceiverId()))
+            throw new IllegalArgumentException("자기 자신에게 질문 요청을 보낼 수 없습니다.");
+
         QuestionRequest saved = requestRepo.save(
                 QuestionRequest.builder()
                         .requesterId(requesterId)
@@ -57,15 +66,14 @@ public class QuestionService {
                         .content(dto.getContent())
                         .build()
         );
+
         if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
             List<Image> images = new ArrayList<>();
             for (int i = 0; i < dto.getImageUrls().size(); i++) {
-                images.add(Image.builder()
-                        .targetType(Image.TargetType.REQUEST)
-                        .targetId(saved.getId())
-                        .imagePath(dto.getImageUrls().get(i))
-                        .imageSeq(i + 1)
-                        .build());
+                images.add(Image.createRequestImage(
+                        saved.getId(),
+                        dto.getImageUrls().get(i),
+                        i + 1));
             }
             imageRepository.saveAll(images);
         }
@@ -90,6 +98,12 @@ public class QuestionService {
         QuestionRequest qr = findRequest(requestId);
         checkRequestParticipant(qr, userId);
 
+        List<String> imageUrls = imageRepository
+                .findByTargetTypeAndTargetIdOrderByImageSeqAsc(ImageTargetType.REQUEST, requestId)
+                .stream()
+                .map(Image::getImagePath)
+                .collect(Collectors.toList());
+
         return QuestionRequestDto.RequestDetail.builder()
                 .id(qr.getId())
                 .requesterId(qr.getRequesterId())
@@ -100,6 +114,7 @@ public class QuestionService {
                 .content(qr.getContent())
                 .status(qr.getStatus())
                 .createdAt(qr.getCreatedAt())
+                .imageUrls(imageUrls)
                 .build();
     }
 
@@ -111,8 +126,7 @@ public class QuestionService {
      * [답변자] 요청 수락 → questions 레코드 생성
      */
     @Transactional
-    public QuestionDto.QuestionDetail acceptRequest(
-            Long requestId, Long mentorId, QuestionDto.AcceptRequest dto) {
+    public QuestionDto.QuestionDetail acceptRequest(Long requestId, Long mentorId) {
 
         QuestionRequest qr = findRequest(requestId);
 
@@ -120,18 +134,6 @@ public class QuestionService {
             throw new IllegalArgumentException("해당 요청의 수신자가 아닙니다.");
         if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청입니다.");
-
-        // 은진님 PaymentService 주입받아서 호출
-//        boolean paymentSuccess = paymentService.processQuestionPayment(
-//                requestId,
-//                qr.getRequesterId()
-//        );
-//
-//        // 결제 실패 → 자동 거절
-//        if (!paymentSuccess) {
-//            qr.reject();
-//            throw new IllegalStateException("결제 실패로 요청이 거절되었습니다.");
-//        }
 
         // 결제 성공 → 수락
         qr.accept();
@@ -141,11 +143,25 @@ public class QuestionService {
                         .requestId(qr.getId())
                         .userId(qr.getRequesterId())
                         .mentorId(qr.getReceiverId())
-                        .title(dto.getTitle())
-                        .content(dto.getContent())
+                        .title(qr.getTitle())
+                        .content(qr.getContent())
                         .build()
         );
 
+        try {
+            paymentService.record(
+                    qr.getRequesterId(),
+                    question.getId(),
+                    PaymentType.QUESTION,
+                    0L,                  // 가격 확정되면 교체
+                    PaymentStatus.PAID
+            );
+        } catch (Exception e) {
+            // 결제 실패 → 별도 트랜잭션으로 REJECTED 커밋
+            statusUpdater.rejectByPaymentFailure(requestId);
+            // 현재 트랜잭션 롤백됨
+            throw new IllegalStateException("결제 실패로 요청이 거절되었습니다.");
+        }
         return toQuestionDetail(question, List.of());
     }
 

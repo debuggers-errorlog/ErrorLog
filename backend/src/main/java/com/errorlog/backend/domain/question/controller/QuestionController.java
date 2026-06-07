@@ -24,7 +24,7 @@ public class QuestionController {
 
     @PostMapping("/requests")
     public ResponseEntity<ApiResponse<QuestionRequestDto.RequestItem>> sendRequest(
-            @AuthenticationPrincipal Long userId,           // TODO: CustomUserDetails 로 교체
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody QuestionRequestDto.SendRequest dto) {
 
         return ResponseEntity.ok(
@@ -62,12 +62,11 @@ public class QuestionController {
     @PostMapping("/requests/{requestId}/accept")
     public ResponseEntity<ApiResponse<QuestionDto.QuestionDetail>> acceptRequest(
             @PathVariable Long requestId,
-            @AuthenticationPrincipal Long userId,
-            @Valid @RequestBody QuestionDto.AcceptRequest dto) {
+            @AuthenticationPrincipal Long userId) {
 
         return ResponseEntity.ok(
                 ApiResponse.ok("요청을 수락했습니다.",
-                        questionService.acceptRequest(requestId, userId, dto)));
+                        questionService.acceptRequest(requestId, userId)));
     }
 
     @PostMapping("/requests/{requestId}/reject")

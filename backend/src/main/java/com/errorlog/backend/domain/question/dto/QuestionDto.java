@@ -10,16 +10,6 @@ import java.util.List;
 
 public class QuestionDto {
 
-    /* ── 수락 시 질문 생성 요청 (답변자가 호출) ─────── */
-    @Getter
-    public static class AcceptRequest {
-        @NotBlank(message = "제목은 필수입니다.")
-        private String title;
-
-        @NotBlank(message = "내용은 필수입니다.")
-        private String content;
-    }
-
     /* ── 질문 목록 아이템 ───────────────────────────── */
     @Getter
     @Builder
