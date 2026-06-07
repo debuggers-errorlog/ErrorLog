@@ -10,8 +10,10 @@ import com.errorlog.backend.domain.question.entity.Question.QuestionStatus;
 import com.errorlog.backend.domain.question.entity.QuestionRequest;
 import com.errorlog.backend.domain.question.entity.QuestionRequest.RequestStatus;
 import com.errorlog.backend.domain.question.repository.AnswerRepository;
+import com.errorlog.backend.domain.question.repository.ImageRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRequestRepository;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,6 +52,12 @@ class QuestionServiceTest {
     @Mock
     private AnswerRepository answerRepo;
 
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private ImageRepository imageRepository;
+
     @InjectMocks
     private QuestionService questionService;
 
@@ -67,6 +75,19 @@ class QuestionServiceTest {
     @BeforeEach
     void setUp() {
         // 테스트마다 초기화되는 공통 데이터
+        lenient().when(userRepository.findById(any(Long.class)))
+                .thenReturn(Optional.empty());
+
+        pendingRequest = QuestionRequest.builder()
+                .id(REQUEST_ID)
+                .requesterId(REQUESTER_ID)
+                .receiverId(RECEIVER_ID)
+                .title("스프링 질문입니다")
+                .content("JPA 연관관계 설정이 헷갈려요")
+                .status(RequestStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
         pendingRequest = QuestionRequest.builder()
                 .id(REQUEST_ID)
                 .requesterId(REQUESTER_ID)

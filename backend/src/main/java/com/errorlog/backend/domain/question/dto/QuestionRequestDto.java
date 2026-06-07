@@ -3,10 +3,12 @@ package com.errorlog.backend.domain.question.dto;
 import com.errorlog.backend.domain.question.entity.QuestionRequest.RequestStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class QuestionRequestDto {
 
@@ -21,6 +23,9 @@ public class QuestionRequestDto {
 
         @NotBlank(message = "내용은 필수입니다.")
         private String content;
+
+        @Size(max = 10, message = "이미지는 최대 10장까지 첨부할 수 있습니다.")
+        private List<String> imageUrls;
     }
 
     /* ── 목록 응답 (한 건) ──────────────────────────── */
@@ -50,5 +55,7 @@ public class QuestionRequestDto {
         private String content;
         private RequestStatus status;
         private LocalDateTime createdAt;
+        private List<String> imageUrls;
+
     }
 }

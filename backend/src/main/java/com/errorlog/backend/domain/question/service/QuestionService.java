@@ -1,5 +1,7 @@
 package com.errorlog.backend.domain.question.service;
 
+import com.errorlog.backend.domain.question.entity.Image;
+import com.errorlog.backend.domain.question.repository.ImageRepository;
 import com.errorlog.backend.domain.question.dto.AnswerDto;
 import com.errorlog.backend.domain.question.dto.QuestionDto;
 import com.errorlog.backend.domain.question.dto.QuestionRequestDto;
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,7 @@ public class QuestionService {
     private final QuestionRepository questionRepo;
     private final AnswerRepository answerRepo;
     private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
 
     private String getNickname(Long userId) {
         return userRepository.findById(userId)
@@ -53,6 +57,19 @@ public class QuestionService {
                         .content(dto.getContent())
                         .build()
         );
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            List<Image> images = new ArrayList<>();
+            for (int i = 0; i < dto.getImageUrls().size(); i++) {
+                images.add(Image.builder()
+                        .targetType(Image.TargetType.REQUEST)
+                        .targetId(saved.getId())
+                        .imagePath(dto.getImageUrls().get(i))
+                        .imageSeq(i + 1)
+                        .build());
+            }
+            imageRepository.saveAll(images);
+        }
+
         return toRequestItem(saved);
     }
 
@@ -104,6 +121,19 @@ public class QuestionService {
         if (qr.getStatus() != RequestStatus.PENDING)
             throw new IllegalStateException("이미 처리된 요청입니다.");
 
+        // 은진님 PaymentService 주입받아서 호출
+//        boolean paymentSuccess = paymentService.processQuestionPayment(
+//                requestId,
+//                qr.getRequesterId()
+//        );
+//
+//        // 결제 실패 → 자동 거절
+//        if (!paymentSuccess) {
+//            qr.reject();
+//            throw new IllegalStateException("결제 실패로 요청이 거절되었습니다.");
+//        }
+
+        // 결제 성공 → 수락
         qr.accept();
 
         Question question = questionRepo.save(

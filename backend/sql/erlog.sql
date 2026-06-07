@@ -231,7 +231,7 @@ CREATE TABLE `answers` (
 
 CREATE TABLE IF NOT EXISTS `images` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `target_type` ENUM('POST', 'COMMENT', 'QUESTION', 'ANSWER') NOT NULL,
+    `target_type` ENUM('POST', 'COMMENT', 'QUESTION', 'ANSWER', 'REQUEST') NOT NULL,
     `target_id` BIGINT NOT NULL,
     `image_path` VARCHAR(255) NOT NULL,
     `image_seq` INT NOT NULL DEFAULT 1,
