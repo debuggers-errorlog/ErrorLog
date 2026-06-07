@@ -1,16 +1,15 @@
 package com.errorlog.backend.domain.question.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import java.time.LocalDateTime;
 
-// TODO: 임시 placeholder. question 도메인 담당자 실제 엔티티로 교체 예정.
 @Entity
 @Table(name = "question_requests")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor
 public class QuestionRequest {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,20 +29,40 @@ public class QuestionRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Status status;
+    @Builder.Default
+    private Status status = Status.PENDING;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        if (this.status == null) this.status = Status.PENDING;
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.status == null) {
+            this.status = Status.PENDING;
+        }
     }
 
-    public void cancel() {   // 관리자 개입: 묵은 요청 취소
+    public void accept() {
+        this.status = Status.ACCEPTED;
+    }
+
+    public void reject() {
+        this.status = Status.REJECTED;
+    }
+
+    public void cancel() {
         this.status = Status.CANCELLED;
     }
 
-    public enum Status { PENDING, ACCEPTED, REJECTED, CANCELLED }
+    public enum Status {
+        PENDING,    // 대기 중
+        ACCEPTED,   // 수락됨
+        REJECTED,   // 거절됨
+        CANCELLED   // 질문자가 취소
+    }
 }

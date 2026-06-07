@@ -7,7 +7,6 @@ use Errorlog;
 DROP TABLE IF EXISTS `images`;
 DROP TABLE IF EXISTS `answers`;
 DROP TABLE IF EXISTS `questions`;
-DROP TABLE IF EXISTS `reports`;
 DROP TABLE IF EXISTS `comments`;
 DROP TABLE IF EXISTS `likes`;
 DROP TABLE IF EXISTS `post_tags`;
@@ -17,24 +16,19 @@ DROP TABLE IF EXISTS `subscription_settings`;
 DROP TABLE IF EXISTS `subscriptions`;
 DROP TABLE IF EXISTS `follows`;
 DROP TABLE IF EXISTS `question_requests`;
+DROP TABLE IF EXISTS `reports`;
 DROP TABLE IF EXISTS `tags`;
-DROP TABLE IF EXISTS `payments`;
 DROP TABLE IF EXISTS `users`;
-
 
 CREATE TABLE `users` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `email` VARCHAR(100) NOT NULL,
     `nickname` VARCHAR(100) NOT NULL,
-    `password` VARCHAR(255),
+    `password` VARCHAR(255) NOT NULL,
     `role` ENUM('ADMIN','USER') NOT NULL DEFAULT 'USER' COMMENT 'USER / ADMIN',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     `deleted_at` DATETIME,
-    `provider` ENUM('LOCAL', 'GOOGLE') NOT NULL DEFAULT 'LOCAL',
-    `provider_id` VARCHAR(255),
     `status` ENUM('ACTIVE', 'SUSPENDED', 'DELETED') NOT NULL DEFAULT 'ACTIVE',
-    `bio` VARCHAR(150),
-    `link` VARCHAR(255),
     PRIMARY KEY (`id`),
     CONSTRAINT `UQ_USERS_EMAIL` UNIQUE (`email`),
     CONSTRAINT `UQ_USERS_NICKNAME` UNIQUE (`nickname`)
@@ -106,16 +100,26 @@ CREATE TABLE `question_requests` (
     CONSTRAINT `FK_USERS_TO_QUESTION_REQUESTS_REC` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`)
 );
 
+CREATE TABLE `reports` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `reporter_id` BIGINT NOT NULL,
+    `target_id` BIGINT NOT NULL,
+    `reason_category` VARCHAR(50) NOT NULL,
+    `reason_detail` TEXT NOT NULL,
+    `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `UQ_REPORTS` UNIQUE (`reporter_id`, `target_id`),
+    CONSTRAINT `FK_USERS_TO_REPORTS_REPORTER` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`id`),
+    CONSTRAINT `FK_USERS_TO_REPORTS_TARGET` FOREIGN KEY (`target_id`) REFERENCES `users` (`id`)
+);
+
+
 CREATE TABLE `posts` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `user_id` BIGINT NOT NULL,
     `title` VARCHAR(255) NOT NULL,
     `content` TEXT NOT NULL,
-    `troubleshooting_meta` JSON NULL COMMENT '트러블슈팅 구조화 메타',
-    `meta_category` VARCHAR(20) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.category'))) STORED,
-    `meta_framework` VARCHAR(50) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.environment.framework'))) STORED,
-    `meta_error_type` VARCHAR(120) AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.error.type'))) STORED,
-    `meta_error_message` TEXT AS (JSON_UNQUOTE(JSON_EXTRACT(`troubleshooting_meta`, '$.error.message'))) STORED,
     `visibility` ENUM('PUBLIC','SUBSCRIBERS') NOT NULL DEFAULT 'PUBLIC',
     `status` ENUM('ACTIVE','DELETED','HIDDEN') NOT NULL DEFAULT 'ACTIVE',
     `view_count` INT NOT NULL DEFAULT 0,
@@ -125,14 +129,7 @@ CREATE TABLE `posts` (
     `hidden_at` DATETIME NULL COMMENT '숨김 처리 시에만 기록',
     PRIMARY KEY (`id`),
     CONSTRAINT `FK_USERS_TO_POSTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    INDEX `idx_posts_created_at` (`created_at`),
-    INDEX `idx_posts_user_id` (`user_id`),
-    INDEX `idx_posts_status_visibility_created` (`status`, `visibility`, `created_at`),
-    INDEX `idx_posts_meta_category` (`meta_category`),
-    INDEX `idx_posts_meta_framework` (`meta_framework`),
-    INDEX `idx_posts_meta_error_type` (`meta_error_type`),
-    FULLTEXT INDEX `ft_posts_title_content` (`title`, `content`),
-    FULLTEXT INDEX `ft_posts_meta_error_message` (`meta_error_message`)
+    INDEX `idx_posts_created_at` (`created_at`)
 );
 
 CREATE TABLE `post_tags` (
@@ -140,8 +137,7 @@ CREATE TABLE `post_tags` (
     `tag_id` BIGINT NOT NULL,
     PRIMARY KEY (`post_id`, `tag_id`),
     CONSTRAINT `FK_POSTS_TO_POST_TAGS` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE,
-    CONSTRAINT `FK_TAGS_TO_POST_TAGS` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE,
-    INDEX `idx_post_tags_tag_id` (`tag_id`)
+    CONSTRAINT `FK_TAGS_TO_POST_TAGS` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE
 );
 
 
@@ -160,30 +156,6 @@ CREATE TABLE `comments` (
     CONSTRAINT `FK_POSTS_TO_COMMENTS` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`),
     CONSTRAINT `FK_USERS_TO_COMMENTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
     CONSTRAINT `FK_COMMENTS_TO_COMMENTS` FOREIGN KEY (`parent_id`) REFERENCES `comments` (`id`)
-);
-
-CREATE TABLE `reports` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `reporter_id` BIGINT NOT NULL,
-    `reported_user_id` BIGINT NULL,
-    `reported_post_id` BIGINT NULL,
-    `reported_comment_id` BIGINT NULL,
-    `reason_category` VARCHAR(50) NOT NULL,
-    `reason_detail` VARCHAR(1000) NULL,
-    `status` VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `processed_at` DATETIME NULL COMMENT '처리/반려한 시각',
-    PRIMARY KEY (`id`),
-    CONSTRAINT `FK_REPORTS_REPORTER`     FOREIGN KEY (`reporter_id`)         REFERENCES `users` (`id`),
-    CONSTRAINT `FK_REPORTS_TARGET_USER`    FOREIGN KEY (`reported_user_id`)    REFERENCES `users` (`id`),
-    CONSTRAINT `FK_REPORTS_TARGET_POST`    FOREIGN KEY (`reported_post_id`)    REFERENCES `posts` (`id`),
-    CONSTRAINT `FK_REPORTS_TARGET_COMMENT` FOREIGN KEY (`reported_comment_id`) REFERENCES `comments` (`id`),
-    CONSTRAINT `UQ_REPORTS_USER`    UNIQUE (`reporter_id`, `reported_user_id`),
-    CONSTRAINT `UQ_REPORTS_POST`    UNIQUE (`reporter_id`, `reported_post_id`),
-    CONSTRAINT `UQ_REPORTS_COMMENT` UNIQUE (`reporter_id`, `reported_comment_id`),
-    CONSTRAINT `CK_REPORTS_ONE_TARGET` CHECK (
-        (`reported_user_id` IS NOT NULL) + (`reported_post_id` IS NOT NULL) + (`reported_comment_id` IS NOT NULL) = 1
-    )
 );
 
 CREATE TABLE `likes` (
@@ -220,7 +192,7 @@ CREATE TABLE `questions` (
 CREATE TABLE `answers` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `question_id` BIGINT NOT NULL,
-    `author_id`   BIGINT NOT NULL,   
+    `author_id`   BIGINT NOT NULL,   -- 답변 작성자 (닉네임 표시용)
     `author_role` VARCHAR(10)  NOT NULL,
     `content` TEXT NOT NULL,
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -231,7 +203,7 @@ CREATE TABLE `answers` (
 
 CREATE TABLE IF NOT EXISTS `images` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `target_type` ENUM('POST', 'COMMENT', 'QUESTION', 'ANSWER', 'REQUEST') NOT NULL,
+    `target_type` ENUM('POST', 'COMMENT', 'QUESTION', 'ANSWER') NOT NULL,
     `target_id` BIGINT NOT NULL,
     `image_path` VARCHAR(255) NOT NULL,
     `image_seq` INT NOT NULL DEFAULT 1,
@@ -239,15 +211,3 @@ CREATE TABLE IF NOT EXISTS `images` (
     PRIMARY KEY (`id`),
     INDEX `idx_target` (`target_type`, `target_id`)
 );
-
-CREATE TABLE `payments` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,     -- 결제 고유 ID
-    `user_id` BIGINT NOT NULL,                  -- 결제자(구독자/질문자) ID
-    `target_id` BIGINT NOT NULL,                -- 구독일 경우 플랜ID, 질문일 경우 질문글ID
-    `payment_type` VARCHAR(20) NOT NULL,        -- 'SUBSCRIPTION' 또는 'QUESTION'
-    `price` BIGINT NOT NULL,                   -- 결제 금액
-    `status` ENUM('PAID', 'FAILED') NOT NULL,      -- 'PAID'(성공), 'FAILED'(실패)
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP, -- 결제 생성일
-    CONSTRAINT `FK_USERS_TO_PAYMENTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
-);
-commit;

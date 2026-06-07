@@ -4,5 +4,6 @@ public enum ImageTargetType {
 	POST,
 	COMMENT,
 	QUESTION,
-	ANSWER
+	ANSWER,
+	REQUEST
 }
