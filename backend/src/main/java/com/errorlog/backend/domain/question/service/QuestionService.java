@@ -104,6 +104,13 @@ public class QuestionService {
                 .map(Image::getImagePath)
                 .collect(Collectors.toList());
 
+        Long questionId = null;
+        if (qr.getStatus() == Status.ACCEPTED) {
+            questionId = questionRepo.findByRequestId(qr.getId())
+                    .map(Question::getId)
+                    .orElse(null);
+        }
+
         return QuestionRequestDto.RequestDetail.builder()
                 .id(qr.getId())
                 .requesterId(qr.getRequesterId())
@@ -115,6 +122,7 @@ public class QuestionService {
                 .status(qr.getStatus())
                 .createdAt(qr.getCreatedAt())
                 .imageUrls(imageUrls)
+                .questionId(questionId)
                 .build();
     }
 
@@ -185,6 +193,16 @@ public class QuestionService {
         if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청은 취소할 수 없습니다.");
         qr.cancel();
+    }
+
+    /** [답변자] 요청 완료 */
+    @Transactional
+    public void closeQuestion(Long questionId, Long userId) {
+        Question q = findQuestion(questionId);
+        checkQuestionParticipant(q, userId);
+        if (q.getStatus() != QuestionStatus.ACTIVE)
+            throw new IllegalStateException("이미 종료된 질문입니다.");
+        q.close();
     }
 
     /* ═══════════════════════════════════════════════════

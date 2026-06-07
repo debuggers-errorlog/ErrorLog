@@ -146,4 +146,12 @@ public class QuestionController {
         questionService.deleteAnswer(answerId, userId);
         return ResponseEntity.ok(ApiResponse.ok("답변을 삭제했습니다.", null));
     }
+
+    @PostMapping("/{questionId}/close")
+    public ResponseEntity<ApiResponse<Void>> closeQuestion(
+            @PathVariable Long questionId,
+            @AuthenticationPrincipal Long userId) {
+        questionService.closeQuestion(questionId, userId);
+        return ResponseEntity.ok(ApiResponse.ok("질문이 종료되었습니다.", null));
+    }
 }
