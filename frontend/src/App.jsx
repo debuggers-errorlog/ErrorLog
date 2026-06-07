@@ -14,7 +14,7 @@ import HomePage from './pages/HomePage';
 import PostDetailPage from './pages/PostDetailPage';
 import WritePostPage from './pages/WritePostPage';
 import SearchPage from './pages/SearchPage';
-import AdminLayout from './pages/admin/AdminLayout.jsx'
+import AdminLayout from './components/layout/Adminlayout.jsx'
 import Dashboard from './pages/admin/Dashboard.jsx'
 import UserManagement from './pages/admin/UserManagement.jsx'
 import ContentManagement from './pages/admin/ContentManagement.jsx'
@@ -23,6 +23,8 @@ import SubscriptionManagement from './pages/admin/SubscriptionManagement.jsx'
 import QuestionManagement from './pages/admin/QuestionManagement.jsx'
 import ReportManagement from './pages/admin/ReportManagement.jsx'
 
+// 관리자 확인용 컴포넌트
+import AdminRoute from './components/admin/AdminRoute';
 
 // 로그인 여부 확인용 컴포넌트
 function PrivateRoute({ children }) {
@@ -52,17 +54,18 @@ export default function App() {
 
               {/* 보호된 경로 */}
               <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
-                {/* 관리자 페이지 */}
-                <Route path="/admin" element={<PrivateRoute><AdminLayout /></PrivateRoute>}>
-                    <Route index element={<Navigate to="dashboard" replace />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="users" element={<UserManagement />} />
-                    <Route path="content" element={<ContentManagement />} />
-                    <Route path="settlement" element={<SettlementManagement />} />
-                    <Route path="subscription" element={<SubscriptionManagement />} />
-                    <Route path="questions" element={<QuestionManagement />} />
-                    <Route path="reports" element={<ReportManagement />} />
-                </Route>
+
+              {/* 관리자 페이지 */}
+              <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+                  <Route index element={<Navigate to="dashboard" replace />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="content" element={<ContentManagement />} />
+                  <Route path="settlement" element={<SettlementManagement />} />
+                  <Route path="subscription" element={<SubscriptionManagement />} />
+                  <Route path="questions" element={<QuestionManagement />} />
+                  <Route path="reports" element={<ReportManagement />} />
+              </Route>
 
               {/* 잘못된 경로 접근 시 홈으로 이동 */}
               <Route path="*" element={<Navigate to="/" replace />} />

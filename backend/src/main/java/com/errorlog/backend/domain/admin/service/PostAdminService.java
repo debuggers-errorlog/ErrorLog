@@ -3,8 +3,8 @@ package com.errorlog.backend.domain.admin.service;
 import com.errorlog.backend.domain.admin.dto.PostListResponseDto;
 import com.errorlog.backend.domain.admin.dto.PostSearchConditionDto;
 import com.errorlog.backend.domain.admin.repository.PostAdminQueryRepository;
-import com.errorlog.backend.domain.post.entity.Post;
-import com.errorlog.backend.domain.post.repository.PostRepository;
+import com.errorlog.backend.domain.board.domain.entity.Post;
+import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.global.exception.AppException;
 import com.errorlog.backend.global.exception.ErrorCode;
 import org.springframework.data.domain.Page;
@@ -36,7 +36,7 @@ public class PostAdminService {
     public void showPost(Long postId)   { findPostOrThrow(postId).show(); }
 
     @Transactional
-    public void deletePost(Long postId) { findPostOrThrow(postId).softDelete(); }
+    public void deletePost(Long postId) { findPostOrThrow(postId).markDeleted(); }
 
     private Post findPostOrThrow(Long postId) {
         return postRepository.findById(postId)

@@ -3,7 +3,8 @@ package com.errorlog.backend.domain.admin.repository;
 import com.errorlog.backend.domain.admin.dto.PostListResponseDto;
 import com.errorlog.backend.domain.admin.dto.PostSearchConditionDto;
 import com.errorlog.backend.domain.admin.dto.QPostListResponseDto;
-import com.errorlog.backend.domain.post.entity.Post;
+import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
+import com.errorlog.backend.domain.board.domain.enums.PostStatus;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.errorlog.backend.domain.post.entity.QPost.post;
+import static com.errorlog.backend.domain.board.domain.entity.QPost.post;
 import static com.errorlog.backend.domain.user.entity.QUser.user;
 
 @Repository
@@ -77,11 +78,11 @@ public class PostAdminQueryRepository {
         return (title == null || title.isBlank()) ? null : post.title.contains(title);
     }
 
-    private BooleanExpression statusEq(Post.Status status) {
+    private BooleanExpression statusEq(PostStatus status) {
         return status == null ? null : post.status.eq(status);
     }
 
-    private BooleanExpression visibilityEq(Post.Visibility visibility) {
+    private BooleanExpression visibilityEq(PostVisibility visibility) {
         return visibility == null ? null : post.visibility.eq(visibility);
     }
 
