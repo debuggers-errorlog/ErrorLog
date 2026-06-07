@@ -1,6 +1,184 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import styled from 'styled-components'
 import api from '../api/axios'
+import Header from '../components/layout/Header'
+
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  background: ${({ theme }) => theme.colors.bg};
+  display: flex;
+`
+
+const SidePanel = styled.div`
+  width: 280px;
+  flex-shrink: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border-right: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  @media (max-width: 768px) { display: none; }
+`
+
+const Logo = styled.p`
+  font-family: ${({ theme }) => theme.font.mono};
+  font-size: 18px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.accent};
+  margin-bottom: 4px;
+`
+
+const LogoSub = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.5;
+  margin-bottom: 32px;
+`
+
+const FeatureList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+`
+
+const FeatureItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+`
+
+const FeatureDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  flex-shrink: 0;
+  margin-top: 6px;
+`
+
+const FeatureTitle = styled.p`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 2px;
+`
+
+const FeatureDesc = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.5;
+`
+
+const Copyright = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`
+
+const FormSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 32px;
+  max-width: 440px;
+  margin: 0 auto;
+  width: 100%;
+`
+
+const Subtitle = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 4px;
+`
+
+const Title = styled.h1`
+  font-size: 22px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 24px;
+`
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`
+
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`
+
+const Label = styled.label`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+`
+
+const OptionalBadge = styled.span`
+  font-size: 12px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.colors.textMuted};
+`
+
+const NicknameWrapper = styled.div`
+  position: relative;
+  span {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: ${({ theme }) => theme.colors.textMuted};
+    font-size: 14px;
+  }
+  input { padding-left: 24px; }
+`
+
+const Input = styled.input`
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+  &::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
+  &:focus { border-color: ${({ theme }) => theme.colors.accent}; }
+`
+
+const Hint = styled.p`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 2px;
+`
+
+const SubmitButton = styled.button`
+  padding: 11px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.accent};
+  color: #0b0e14;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.5; }
+`
+
+const ErrorMsg = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.danger};
+`
+
+const FEATURES = [
+  { color: '#00c2ff', title: '무료 · PRO 게시글', desc: '공개 범위를 선택해서 게시글을 발행할 수 있어요' },
+  { color: '#f0b429', title: '크리에이터 구독', desc: '관심 전문가를 구독하고 PRO 전용 글을 받아보세요' },
+  { color: '#00c2ff', title: '전문가 질문', desc: '특정 크리에이터에게 직접 질문할 수 있어요' },
+]
 
 export default function OAuthAdditionalInfoPage() {
   const navigate = useNavigate()
@@ -26,7 +204,7 @@ export default function OAuthAdditionalInfoPage() {
       })
       localStorage.setItem('accessToken', data.accessToken)
       localStorage.setItem('refreshToken', data.refreshToken)
-      navigate('/mypage', { replace: true })
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err.response?.data?.message || '정보 저장에 실패했습니다.')
     } finally {
@@ -34,53 +212,62 @@ export default function OAuthAdditionalInfoPage() {
     }
   }
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-lg bg-input-background text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 text-sm transition-shadow'
-
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <p className="text-muted-foreground text-sm mb-1">거의 다 왔어요!</p>
-        <h1 className="text-2xl font-medium text-foreground mb-6">프로필을 완성해 주세요</h1>
+    <>
+      <Header />
+      <PageWrapper>
+        <SidePanel>
+          <Logo>&gt;_ errorLog</Logo>
+          <LogoSub>함께 성장하는 개발자 커뮤니티</LogoSub>
+          <FeatureList>
+            {FEATURES.map((f) => (
+              <FeatureItem key={f.title}>
+                <FeatureDot $color={f.color} />
+                <div>
+                  <FeatureTitle>{f.title}</FeatureTitle>
+                  <FeatureDesc>{f.desc}</FeatureDesc>
+                </div>
+              </FeatureItem>
+            ))}
+          </FeatureList>
+          <Copyright>© 2025 ErrorLog</Copyright>
+        </SidePanel>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">닉네임 *</label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">@</span>
-              <input type="text" name="nickname" value={form.nickname} onChange={handleChange}
-                placeholder="kimdev" required className={`pl-7 ${inputCls}`} />
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              errorlog.io/@{form.nickname || 'kimdev'} 로 공개됩니다
-            </p>
-          </div>
+        <FormSection>
+          <Subtitle>거의 다 왔어요!</Subtitle>
+          <Title>프로필을 완성해 주세요</Title>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              한 줄 소개 <span className="text-muted-foreground font-normal">(선택)</span>
-            </label>
-            <input type="text" name="bio" value={form.bio} onChange={handleChange}
-              placeholder="React · TypeScript 좋아하는 프론트엔드 개발자입니다"
-              className={inputCls} />
-          </div>
+          <Form onSubmit={handleSubmit}>
+            <Field>
+              <Label>닉네임 *</Label>
+              <NicknameWrapper>
+                <span>@</span>
+                <Input type="text" name="nickname" value={form.nickname}
+                  onChange={handleChange} placeholder="kimdev" required />
+              </NicknameWrapper>
+              <Hint>errorlog.io/@{form.nickname || 'kimdev'} 로 공개됩니다</Hint>
+            </Field>
 
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
-              GitHub / 블로그 <span className="text-muted-foreground font-normal">(선택)</span>
-            </label>
-            <input type="url" name="link" value={form.link} onChange={handleChange}
-              placeholder="https://github.com/" className={inputCls} />
-          </div>
+            <Field>
+              <Label>한 줄 소개 <OptionalBadge>(선택)</OptionalBadge></Label>
+              <Input type="text" name="bio" value={form.bio} onChange={handleChange}
+                placeholder="React · TypeScript 좋아하는 프론트엔드 개발자입니다" />
+            </Field>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+            <Field>
+              <Label>GitHub / 블로그 <OptionalBadge>(선택)</OptionalBadge></Label>
+              <Input type="url" name="link" value={form.link} onChange={handleChange}
+                placeholder="https://github.com/" />
+            </Field>
 
-          <button type="submit" disabled={loading}
-            className="w-full py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-            style={{ background: 'var(--neon-blue)', color: '#000' }}>
-            {loading ? '저장 중...' : '가입 완료'}
-          </button>
-        </form>
-      </div>
-    </div>
+            {error && <ErrorMsg>{error}</ErrorMsg>}
+
+            <SubmitButton type="submit" disabled={loading}>
+              {loading ? '저장 중...' : '가입 완료'}
+            </SubmitButton>
+          </Form>
+        </FormSection>
+      </PageWrapper>
+    </>
   )
 }

@@ -1,6 +1,206 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import styled from 'styled-components'
 import { sendVerificationEmail, resetPassword } from '../api/auth'
+import Header from '../components/layout/Header'
+
+const PageWrapper = styled.div`
+  min-height: 100vh;
+  background: ${({ theme }) => theme.colors.bg};
+  display: flex;
+`
+
+const SidePanel = styled.div`
+  width: 280px;
+  flex-shrink: 0;
+  background: ${({ theme }) => theme.colors.surface};
+  border-right: 1px solid ${({ theme }) => theme.colors.border};
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  @media (max-width: 768px) { display: none; }
+`
+
+const Logo = styled.p`
+  font-family: ${({ theme }) => theme.font.mono};
+  font-size: 18px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.accent};
+  margin-bottom: 4px;
+`
+
+const LogoSub = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.5;
+  margin-bottom: 32px;
+`
+
+const FeatureList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+`
+
+const FeatureItem = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+`
+
+const FeatureDot = styled.span`
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: ${({ $color }) => $color};
+  flex-shrink: 0;
+  margin-top: 6px;
+`
+
+const FeatureTitle = styled.p`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 2px;
+`
+
+const FeatureDesc = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.5;
+`
+
+const Copyright = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`
+
+const FormSection = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 40px 32px;
+  max-width: 440px;
+  margin: 0 auto;
+  width: 100%;
+`
+
+const BackLink = styled(Link)`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  display: inline-block;
+  margin-bottom: 32px;
+  transition: color 0.15s;
+  &:hover { color: ${({ theme }) => theme.colors.text}; }
+`
+
+const Subtitle = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 4px;
+`
+
+const Title = styled.h1`
+  font-size: 22px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 24px;
+`
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`
+
+const Field = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`
+
+const Label = styled.label`
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+`
+
+const InputRow = styled.div`
+  display: flex;
+  gap: 8px;
+`
+
+const Input = styled.input`
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+  &::placeholder { color: ${({ theme }) => theme.colors.textMuted}; }
+  &:focus { border-color: ${({ theme }) => theme.colors.accent}; }
+`
+
+const VerifyButton = styled.button`
+  padding: 10px 14px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  color: ${({ theme }) => theme.colors.text};
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+  &:hover { background: ${({ theme }) => theme.colors.surfaceHover}; }
+  &:disabled { opacity: 0.5; }
+`
+
+const TimerRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+`
+
+const TimerText = styled.span`
+  font-size: 12px;
+  color: ${({ $expired, theme }) => ($expired ? theme.colors.danger : theme.colors.textMuted)};
+  font-variant-numeric: tabular-nums;
+`
+
+const GridTwo = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+`
+
+const SubmitButton = styled.button`
+  padding: 11px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.colors.accent};
+  color: #0b0e14;
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.5; }
+`
+
+const ErrorMsg = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.danger};
+`
+
+const FEATURES = [
+  { color: '#00c2ff', title: '무료 게시글', desc: '누구나 트러블슈팅 경험을 공유할 수 있어요' },
+  { color: '#f0b429', title: '크리에이터 구독', desc: '특정 전문가를 구독하고 PRO 콘텐츠를 받아보세요' },
+  { color: '#00c2ff', title: '전문가 질문', desc: '크리에이터에게 직접 질문할 수 있어요' },
+]
 
 export default function PasswordResetPage() {
   const navigate = useNavigate()
@@ -25,7 +225,8 @@ export default function PasswordResetPage() {
 
   useEffect(() => () => clearInterval(timerRef.current), [])
 
-  const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
+  const formatTime = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -65,90 +266,77 @@ export default function PasswordResetPage() {
     }
   }
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-lg bg-input-background text-foreground placeholder:text-muted-foreground border border-border focus:outline-none focus:ring-2 text-sm transition-shadow'
-
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* 왼쪽 브랜드 패널 */}
-      <div className="hidden lg:flex w-72 flex-col flex-shrink-0 bg-card border-r border-border px-8 py-10">
-        <div className="mb-8">
-          <p className="font-mono text-lg font-medium tracking-tight" style={{ color: 'var(--neon-blue)' }}>&gt;_ errorLog</p>
-          <p className="text-muted-foreground text-xs mt-1 leading-relaxed">개발자들의 트러블슈팅 지식이 모이는 곳</p>
-        </div>
-        <div className="flex flex-col gap-5 flex-1">
-          {[
-            { color: 'var(--neon-blue)', title: '무료 게시글', desc: '누구나 트러블슈팅 경험을 공유할 수 있어요' },
-            { color: 'var(--gold)', title: '크리에이터 구독', desc: '특정 전문가를 구독하고 PRO 콘텐츠를 받아보세요' },
-            { color: 'var(--neon-blue)', title: '전문가 질문', desc: '크리에이터에게 직접 질문할 수 있어요' },
-          ].map((f) => (
-            <div key={f.title} className="flex items-start gap-3">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: f.color }} />
-              <div>
-                <p className="text-sm font-medium text-foreground">{f.title}</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{f.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground">© 2025 ErrorLog</p>
-      </div>
-
-      {/* 오른쪽 폼 */}
-      <div className="flex-1 flex flex-col justify-center px-8 py-10 max-w-md mx-auto w-full">
-        <Link to="/login" className="text-sm text-muted-foreground hover:text-foreground transition-colors mb-8 inline-block">
-          ← 로그인으로 돌아가기
-        </Link>
-
-        <p className="text-muted-foreground text-sm mb-1">이메일로 인증 후 재설정할 수 있어요</p>
-        <h1 className="text-2xl font-medium text-foreground mb-6">비밀번호 재설정</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">이메일</label>
-            <div className="flex gap-2">
-              <input type="email" name="email" value={form.email} onChange={handleChange}
-                placeholder="kim@example.com" required className={`flex-1 ${inputCls}`} />
-              <button type="button" onClick={handleSendCode} disabled={sendingCode}
-                className="px-3 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 whitespace-nowrap">
-                {sendingCode ? '발송 중...' : codeSent ? '재발송' : '인증'}
-              </button>
-            </div>
-            {codeSent && (
-              <>
-                <div className="flex items-center justify-between mt-1.5">
-                  <span className="text-xs text-muted-foreground">인증 코드가 발송되었습니다</span>
-                  <span className={`text-xs font-medium tabular-nums ${timeLeft <= 60 ? 'text-destructive' : 'text-muted-foreground'}`}>
-                    {timeLeft > 0 ? formatTime(timeLeft) : '만료됨'}
-                  </span>
+    <>
+      <Header />
+      <PageWrapper>
+        <SidePanel>
+          <Logo>&gt;_ errorLog</Logo>
+          <LogoSub>개발자들의 트러블슈팅 지식이 모이는 곳</LogoSub>
+          <FeatureList>
+            {FEATURES.map((f) => (
+              <FeatureItem key={f.title}>
+                <FeatureDot $color={f.color} />
+                <div>
+                  <FeatureTitle>{f.title}</FeatureTitle>
+                  <FeatureDesc>{f.desc}</FeatureDesc>
                 </div>
-                <input type="text" name="verificationCode" value={form.verificationCode} onChange={handleChange}
-                  placeholder="인증 코드 6자리" className={`mt-2 ${inputCls}`} />
-              </>
-            )}
-          </div>
+              </FeatureItem>
+            ))}
+          </FeatureList>
+          <Copyright>© 2025 ErrorLog</Copyright>
+        </SidePanel>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">새 비밀번호</label>
-              <input type="password" name="newPassword" value={form.newPassword} onChange={handleChange}
-                placeholder="••••••••" required className={inputCls} />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">비밀번호 확인</label>
-              <input type="password" name="newPasswordConfirm" value={form.newPasswordConfirm} onChange={handleChange}
-                placeholder="••••••••" required className={inputCls} />
-            </div>
-          </div>
+        <FormSection>
+          <BackLink to="/login">← 로그인으로 돌아가기</BackLink>
+          <Subtitle>이메일로 인증 후 재설정할 수 있어요</Subtitle>
+          <Title>비밀번호 재설정</Title>
 
-          {error && <p className="text-destructive text-sm">{error}</p>}
+          <Form onSubmit={handleSubmit}>
+            <Field>
+              <Label>이메일</Label>
+              <InputRow>
+                <Input type="email" name="email" value={form.email} onChange={handleChange}
+                  placeholder="kim@example.com" required />
+                <VerifyButton type="button" onClick={handleSendCode} disabled={sendingCode}>
+                  {sendingCode ? '발송 중...' : codeSent ? '재발송' : '인증'}
+                </VerifyButton>
+              </InputRow>
+              {codeSent && (
+                <>
+                  <TimerRow>
+                    <span style={{ fontSize: 12, color: '#8b949e' }}>인증 코드가 발송되었습니다</span>
+                    <TimerText $expired={timeLeft === 0}>
+                      {timeLeft > 0 ? formatTime(timeLeft) : '만료됨'}
+                    </TimerText>
+                  </TimerRow>
+                  <Input type="text" name="verificationCode" value={form.verificationCode}
+                    onChange={handleChange} placeholder="인증 코드 6자리" style={{ marginTop: 8 }} />
+                </>
+              )}
+            </Field>
 
-          <button type="submit" disabled={loading}
-            className="w-full py-2.5 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-            style={{ background: 'var(--neon-blue)', color: '#000' }}>
-            {loading ? '재설정 중...' : '비밀번호 재설정'}
-          </button>
-        </form>
-      </div>
-    </div>
+            <GridTwo>
+              <Field>
+                <Label>새 비밀번호</Label>
+                <Input type="password" name="newPassword" value={form.newPassword}
+                  onChange={handleChange} placeholder="••••••••" required />
+              </Field>
+              <Field>
+                <Label>비밀번호 확인</Label>
+                <Input type="password" name="newPasswordConfirm" value={form.newPasswordConfirm}
+                  onChange={handleChange} placeholder="••••••••" required />
+              </Field>
+            </GridTwo>
+
+            {error && <ErrorMsg>{error}</ErrorMsg>}
+
+            <SubmitButton type="submit" disabled={loading}>
+              {loading ? '재설정 중...' : '비밀번호 재설정'}
+            </SubmitButton>
+          </Form>
+        </FormSection>
+      </PageWrapper>
+    </>
   )
 }

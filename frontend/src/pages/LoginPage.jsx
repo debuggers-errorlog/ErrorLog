@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { login } from '../api/auth'
 import Header from '../components/layout/Header'
@@ -116,6 +116,17 @@ const Title = styled.h1`
   font-weight: 600;
   color: ${({ theme }) => theme.colors.text};
   margin-bottom: 24px;
+`
+
+const SessionBanner = styled.div`
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-left: 3px solid ${({ theme }) => theme.colors.accent};
+  border-radius: ${({ theme }) => theme.radius.md};
+  padding: 10px 14px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 16px;
 `
 
 const Form = styled.form`
@@ -242,6 +253,8 @@ const FEATURES = [
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const sessionExpired = searchParams.get('session') === 'expired'
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -270,69 +283,75 @@ export default function LoginPage() {
     <>
       <Header />
       <PageWrapper>
-      <SidePanel>
-        <Logo>&gt;_ errorLog</Logo>
-        <LogoSub>개발자들의 트러블슈팅 지식이 모이는 곳</LogoSub>
-        <FeatureList>
-          {FEATURES.map((f) => (
-            <FeatureItem key={f.title}>
-              <FeatureDot $color={f.color} />
-              <div>
-                <FeatureTitle>{f.title}</FeatureTitle>
-                <FeatureDesc>{f.desc}</FeatureDesc>
-              </div>
-            </FeatureItem>
-          ))}
-        </FeatureList>
-        <Copyright>© 2025 ErrorLog</Copyright>
-      </SidePanel>
+        <SidePanel>
+          <Logo>&gt;_ errorLog</Logo>
+          <LogoSub>개발자들의 트러블슈팅 지식이 모이는 곳</LogoSub>
+          <FeatureList>
+            {FEATURES.map((f) => (
+              <FeatureItem key={f.title}>
+                <FeatureDot $color={f.color} />
+                <div>
+                  <FeatureTitle>{f.title}</FeatureTitle>
+                  <FeatureDesc>{f.desc}</FeatureDesc>
+                </div>
+              </FeatureItem>
+            ))}
+          </FeatureList>
+          <Copyright>© 2025 ErrorLog</Copyright>
+        </SidePanel>
 
-      <FormSection>
-        <Tabs>
-          <Tab $active>로그인</Tab>
-          <Tab as={Link} to="/signup">회원가입</Tab>
-        </Tabs>
+        <FormSection>
+          <Tabs>
+            <Tab $active>로그인</Tab>
+            <Tab as={Link} to="/signup">회원가입</Tab>
+          </Tabs>
 
-        <Subtitle>다시 오셨군요!</Subtitle>
-        <Title>계정에 로그인하여 이어서 학습하세요</Title>
+          <Subtitle>다시 오셨군요!</Subtitle>
+          <Title>계정에 로그인하여 이어서 학습하세요</Title>
 
-        <Form onSubmit={handleSubmit}>
-          <Field>
-            <Label>이메일</Label>
-            <Input type="email" name="email" value={form.email} onChange={handleChange}
-              placeholder="kim@example.com" required />
-          </Field>
+          {sessionExpired && (
+            <SessionBanner>
+              세션이 만료되었습니다. 다시 로그인해주세요.
+            </SessionBanner>
+          )}
 
-          <Field>
-            <Label>비밀번호</Label>
-            <Input type="password" name="password" value={form.password} onChange={handleChange}
-              placeholder="••••••••" required />
-          </Field>
+          <Form onSubmit={handleSubmit}>
+            <Field>
+              <Label>이메일</Label>
+              <Input type="email" name="email" value={form.email} onChange={handleChange}
+                placeholder="kim@example.com" required />
+            </Field>
 
-          {error && <ErrorMsg>{error}</ErrorMsg>}
+            <Field>
+              <Label>비밀번호</Label>
+              <Input type="password" name="password" value={form.password} onChange={handleChange}
+                placeholder="••••••••" required />
+            </Field>
 
-          <SubmitButton type="submit" disabled={loading}>
-            {loading ? '로그인 중...' : '로그인'}
-          </SubmitButton>
+            {error && <ErrorMsg>{error}</ErrorMsg>}
 
-          <TextButton type="button" onClick={() => navigate('/password-reset')}>
-            비밀번호를 잊으셨나요?
-          </TextButton>
+            <SubmitButton type="submit" disabled={loading}>
+              {loading ? '로그인 중...' : '로그인'}
+            </SubmitButton>
 
-          <Divider><span>또는 소셜 계정으로</span></Divider>
+            <TextButton type="button" onClick={() => navigate('/password-reset')}>
+              비밀번호를 잊으셨나요?
+            </TextButton>
 
-          <SocialButton type="button"
-            onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}>
-            <GoogleBadge>G</GoogleBadge>
-            구글
-          </SocialButton>
-        </Form>
+            <Divider><span>또는 소셜 계정으로</span></Divider>
 
-        <BottomText>
-          계정이 없으신가요? <Link to="/signup">회원가입</Link>
-        </BottomText>
-      </FormSection>
-    </PageWrapper>
+            <SocialButton type="button"
+              onClick={() => window.location.href = 'http://localhost:8080/oauth2/authorization/google'}>
+              <GoogleBadge>G</GoogleBadge>
+              구글
+            </SocialButton>
+          </Form>
+
+          <BottomText>
+            계정이 없으신가요? <Link to="/signup">회원가입</Link>
+          </BottomText>
+        </FormSection>
+      </PageWrapper>
     </>
   )
 }

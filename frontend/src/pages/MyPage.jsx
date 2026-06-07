@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { getMyProfile, updateMyProfile, getMyPosts } from '../api/user'
+import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing } from '../api/user'
 import { logout, withdraw } from '../api/auth'
+import { getSubscriptionList } from '../api/subscriptionApi'
 import Header from '../components/layout/Header'
 
 const NAV_ITEMS = [
-  { key: 'summary', label: '활동 요약' },
+  { key: 'summary', label: '내 프로필' },
   { key: 'posts', label: '내 게시글' },
-  { key: 'answers', label: '내 답변' },
+  { key: 'following', label: '팔로우 목록' },
   { key: 'questions', label: '내 질문' },
   { key: 'subscriptions', label: '구독 관리' },
 ]
 
-/* ── Layout ── */
 const PageWrapper = styled.div`
   min-height: 100vh;
   background: ${({ theme }) => theme.colors.bg};
@@ -36,7 +36,6 @@ const Main = styled.main`
   overflow-y: auto;
 `
 
-/* ── Sidebar ── */
 const ProfileHeader = styled.div`
   text-align: center;
   padding-bottom: 20px;
@@ -125,7 +124,6 @@ const SidebarAction = styled.button`
   }
 `
 
-/* ── Section ── */
 const SectionTitle = styled.h2`
   font-size: 15px;
   font-weight: 700;
@@ -140,7 +138,82 @@ const SectionTitleRow = styled.div`
   margin-bottom: 20px;
 `
 
-/* ── Summary ── */
+const ProfileCard = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 24px;
+`
+
+const ProfileCardAvatar = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.accent};
+  flex-shrink: 0;
+`
+
+const ProfileCardInfo = styled.div`
+  flex: 1;
+`
+
+const ProfileCardName = styled.p`
+  font-size: 18px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 2px;
+`
+
+const ProfileCardEmail = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-bottom: 6px;
+`
+
+const ProfileCardBio = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 6px;
+  line-height: 1.5;
+`
+
+const ProfileCardLink = styled.a`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.accent};
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+`
+
+const ProfileCardEmpty = styled.span`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-style: italic;
+`
+
+const EditProfileBtn = styled.button`
+  padding: 8px 16px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  font-size: 13px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.colors.text};
+  background: transparent;
+  flex-shrink: 0;
+  transition: background 0.15s;
+  &:hover { background: ${({ theme }) => theme.colors.surfaceHover}; }
+`
+
 const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -169,13 +242,13 @@ const StatLabel = styled.p`
   color: ${({ theme }) => theme.colors.textMuted};
 `
 
-/* ── Posts ── */
 const PostCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.lg};
   padding: 16px;
   margin-bottom: 12px;
+  cursor: pointer;
   transition: border-color 0.15s;
   &:hover { border-color: ${({ theme }) => theme.colors.borderLight}; }
 `
@@ -264,7 +337,55 @@ const PageInfo = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
 `
 
-/* ── Form ── */
+const FollowCard = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+`
+
+const FollowAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.accent};
+  flex-shrink: 0;
+`
+
+const FollowInfo = styled.div`
+  flex: 1;
+`
+
+const FollowName = styled.p`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  margin-bottom: 2px;
+`
+
+const FollowBio = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`
+
+const FollowLink = styled.a`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.accent};
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+`
+
 const EditForm = styled.form`
   max-width: 440px;
   margin: 0 auto;
@@ -332,7 +453,6 @@ const EmptyText = styled.p`
   color: ${({ theme }) => theme.colors.textMuted};
 `
 
-/* ── Modal ── */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -411,7 +531,11 @@ export default function MyPage() {
   const [myPosts, setMyPosts] = useState([])
   const [postsPage, setPostsPage] = useState(0)
   const [postsTotalPages, setPostsTotalPages] = useState(0)
+  const [postsTotalElements, setPostsTotalElements] = useState(null)
   const [postsLoading, setPostsLoading] = useState(false)
+  const [followingList, setFollowingList] = useState([])
+  const [followingLoading, setFollowingLoading] = useState(false)
+  const [followingCount, setFollowingCount] = useState(null)
 
   useEffect(() => {
     getMyProfile()
@@ -420,6 +544,14 @@ export default function MyPage() {
         setForm({ nickname: data.nickname, password: '', bio: data.bio || '', link: data.link || '' })
       })
       .catch(() => navigate('/login'))
+
+    getMyPosts(0, 1)
+      .then(({ data }) => setPostsTotalElements(data.totalElements))
+      .catch(() => {})
+
+    getSubscriptionList()
+      .then(({ data }) => setFollowingCount(data.followingCount))
+      .catch(() => {})
   }, [navigate])
 
   useEffect(() => {
@@ -432,6 +564,14 @@ export default function MyPage() {
       })
       .finally(() => setPostsLoading(false))
   }, [activeNav, postsPage])
+
+  useEffect(() => {
+    if (activeNav !== 'following') return
+    setFollowingLoading(true)
+    getMyFollowing()
+      .then(({ data }) => setFollowingList(data))
+      .finally(() => setFollowingLoading(false))
+  }, [activeNav])
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -450,6 +590,7 @@ export default function MyPage() {
       const { data } = await updateMyProfile(payload)
       setProfile(data)
       setEditMode(false)
+      setActiveNav('summary')
       setForm({ nickname: data.nickname, password: '', bio: data.bio || '', link: data.link || '' })
     } catch (err) {
       setError(err.response?.data?.message || '수정에 실패했습니다.')
@@ -495,7 +636,6 @@ export default function MyPage() {
     <>
       <Header />
       <PageWrapper>
-        {/* 사이드바 */}
         <Sidebar>
           <ProfileHeader>
             <Avatar>{initials}</Avatar>
@@ -506,34 +646,55 @@ export default function MyPage() {
           <Nav>
             {NAV_ITEMS.map((item) => (
               <NavItem key={item.key} $active={activeNav === item.key && !editMode}
-                onClick={() => { setActiveNav(item.key); setEditMode(false) }}>
+                onClick={() => {
+                  if (item.key === 'subscriptions') {
+                    navigate('/subscriptions/manage')
+                    return
+                  }
+                  setActiveNav(item.key)
+                  setEditMode(false)
+                }}>
                 {item.label}
               </NavItem>
             ))}
           </Nav>
 
           <SidebarBottom>
-            <SidebarAction onClick={() => { setActiveNav('edit'); setEditMode(true) }}>
-              프로필 편집
-            </SidebarAction>
             <SidebarAction onClick={handleLogout}>로그아웃</SidebarAction>
             <SidebarAction $danger onClick={() => setShowWithdraw(true)}>회원탈퇴</SidebarAction>
           </SidebarBottom>
         </Sidebar>
 
-        {/* 메인 */}
         <Main>
-
-          {/* 활동 요약 */}
+          {/* 내 프로필 */}
           {activeNav === 'summary' && !editMode && (
             <>
+              <SectionTitle>내 프로필</SectionTitle>
+              <ProfileCard>
+                <ProfileCardAvatar>{initials}</ProfileCardAvatar>
+                <ProfileCardInfo>
+                  <ProfileCardName>{profile.nickname}</ProfileCardName>
+                  <ProfileCardEmail>{profile.email}</ProfileCardEmail>
+                  {profile.bio
+                    ? <ProfileCardBio>{profile.bio}</ProfileCardBio>
+                    : <ProfileCardEmpty>한 줄 소개가 없습니다.</ProfileCardEmpty>
+                  }
+                  {profile.link &&
+                    <ProfileCardLink href={profile.link} target="_blank" rel="noreferrer">
+                      {profile.link}
+                    </ProfileCardLink>
+                  }
+                </ProfileCardInfo>
+                <EditProfileBtn onClick={() => { setActiveNav('edit'); setEditMode(true) }}>
+                  프로필 편집
+                </EditProfileBtn>
+              </ProfileCard>
               <SectionTitle>활동 요약</SectionTitle>
               <StatsGrid>
-                <StatCard><StatValue $accent>-</StatValue><StatLabel>게시글</StatLabel></StatCard>
-                <StatCard><StatValue>-</StatValue><StatLabel>답변</StatLabel></StatCard>
-                <StatCard><StatValue $gold>-</StatValue><StatLabel>구독 중</StatLabel></StatCard>
+                <StatCard><StatValue $accent>{postsTotalElements ?? '-'}</StatValue><StatLabel>게시글</StatLabel></StatCard>
+                <StatCard><StatValue>-</StatValue><StatLabel>질문</StatLabel></StatCard>
+                <StatCard><StatValue $gold>{followingCount ?? '-'}</StatValue><StatLabel>구독 중</StatLabel></StatCard>
               </StatsGrid>
-              <EmptyText>최근 활동 내역이 여기에 표시됩니다.</EmptyText>
             </>
           )}
 
@@ -548,8 +709,7 @@ export default function MyPage() {
               ) : (
                 <>
                   {myPosts.map((post) => (
-                    <PostCard key={post.id} onClick={() => navigate(`/posts/${post.id}`)}
-                      style={{ cursor: 'pointer' }}>
+                    <PostCard key={post.id} onClick={() => navigate(`/posts/${post.id}`)}>
                       <PostTop>
                         <PostTitle>{post.title}</PostTitle>
                         <PostDate>{new Date(post.createdAt).toLocaleDateString('ko-KR')}</PostDate>
@@ -571,6 +731,33 @@ export default function MyPage() {
                     </Pagination>
                   )}
                 </>
+              )}
+            </>
+          )}
+
+          {/* 팔로우 목록 */}
+          {activeNav === 'following' && !editMode && (
+            <>
+              <SectionTitle>팔로우 목록</SectionTitle>
+              {followingLoading ? (
+                <EmptyText>불러오는 중...</EmptyText>
+              ) : followingList.length === 0 ? (
+                <EmptyText>팔로우하는 사용자가 없습니다.</EmptyText>
+              ) : (
+                followingList.map((user) => (
+                  <FollowCard key={user.userId}>
+                    <FollowAvatar>{user.nickname?.slice(0, 1).toUpperCase()}</FollowAvatar>
+                    <FollowInfo>
+                      <FollowName>@{user.nickname}</FollowName>
+                      {user.bio && <FollowBio>{user.bio}</FollowBio>}
+                      {user.link && (
+                        <FollowLink href={user.link} target="_blank" rel="noreferrer">
+                          {user.link}
+                        </FollowLink>
+                      )}
+                    </FollowInfo>
+                  </FollowCard>
+                ))
               )}
             </>
           )}
@@ -613,7 +800,7 @@ export default function MyPage() {
           )}
 
           {/* 플레이스홀더 */}
-          {!['summary', 'posts'].includes(activeNav) && !editMode && (
+          {!['summary', 'posts', 'following'].includes(activeNav) && !editMode && (
             <>
               <SectionTitle>{NAV_ITEMS.find(n => n.key === activeNav)?.label}</SectionTitle>
               <EmptyText>준비 중입니다.</EmptyText>
@@ -621,7 +808,6 @@ export default function MyPage() {
           )}
         </Main>
 
-        {/* 회원탈퇴 모달 */}
         {showWithdraw && (
           <Overlay>
             <Modal>

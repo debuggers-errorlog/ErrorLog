@@ -41,10 +41,10 @@ export default function App() {
             <Route path="/search" element={<SearchPage />} />
             <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
             <Route path="/subscriptions/:creatorId/info" element={<SubscriptionInfoPage />} />
-            <Route path="/subscriptions/:creatorId/payment" element={<SubscriptionPaymentPage />} />
-            <Route path="/subscriptions/manage" element={<SubscriptionManagePage />} />
-            <Route path="/subscription-settings" element={<SubscriptionSettingsPage />} />
-            <Route path="/settlement" element={<SettlementPage />} />
+            <Route path="/subscriptions/:creatorId/payment" element={<PrivateRoute><SubscriptionPaymentPage /></PrivateRoute>} />
+            <Route path="/subscriptions/manage" element={<PrivateRoute><SubscriptionManagePage /></PrivateRoute>} />
+            <Route path="/subscription-settings" element={<PrivateRoute><SubscriptionSettingsPage /></PrivateRoute>} />
+            <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

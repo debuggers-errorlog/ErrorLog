@@ -4,13 +4,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -40,7 +40,7 @@ public class PostController {
 			@RequestParam(required = false) String tag,
 			@RequestParam(required = false) TroubleshootingCategory category,
 			@RequestParam(required = false) String framework,
-			@RequestHeader(value = "X-User-Id", required = false) Long viewerId,
+			@AuthenticationPrincipal Long viewerId,
 			@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
 		return postService.listPosts(authorId, tag, category, framework, viewerId, pageable);
 	}
@@ -48,14 +48,14 @@ public class PostController {
 	@GetMapping("/{postId}")
 	public PostResponse getPost(
 			@PathVariable Long postId,
-			@RequestHeader(value = "X-User-Id", required = false) Long viewerId) {
+			@AuthenticationPrincipal Long viewerId) {
 		return postService.getPost(postId, viewerId);
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public PostResponse createPost(
-			@RequestHeader("X-User-Id") Long authorId,
+			@AuthenticationPrincipal Long authorId,
 			@Valid @RequestBody PostCreateRequest request) {
 		return postService.createPost(authorId, request);
 	}
@@ -63,7 +63,7 @@ public class PostController {
 	@PutMapping("/{postId}")
 	public PostResponse updatePost(
 			@PathVariable Long postId,
-			@RequestHeader("X-User-Id") Long actorId,
+			@AuthenticationPrincipal Long actorId,
 			@Valid @RequestBody PostUpdateRequest request) {
 		return postService.updatePost(postId, actorId, request);
 	}
@@ -72,7 +72,7 @@ public class PostController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deletePost(
 			@PathVariable Long postId,
-			@RequestHeader("X-User-Id") Long actorId) {
+			@AuthenticationPrincipal Long actorId) {
 		postService.deletePost(postId, actorId);
 	}
 }
