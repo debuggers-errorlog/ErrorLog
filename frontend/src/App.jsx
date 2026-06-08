@@ -25,6 +25,11 @@ import SubscriptionManagement from './pages/admin/SubscriptionManagement.jsx'
 import QuestionManagement from './pages/admin/QuestionManagement.jsx'
 import ReportManagement from './pages/admin/ReportManagement.jsx'
 import AdminRoute from './components/admin/AdminRoute';
+import QuestionDetailPage  from './pages/QuestionDetailPage'
+import QuestionInboxPage   from './pages/QuestionInboxPage'
+import QuestionRequestPage from './pages/QuestionRequestPage'
+import QuestionRequestDetailPage from './pages/QuestionRequestDetailPage'
+
 function PrivateRoute({ children }) {
   const token = localStorage.getItem('accessToken');
   return token ? children : <Navigate to="/login" replace />;
@@ -52,6 +57,11 @@ export default function App() {
             <Route path="/subscriptions/manage" element={<PrivateRoute><SubscriptionManagePage /></PrivateRoute>} />
             <Route path="/subscription-settings" element={<PrivateRoute><SubscriptionSettingsPage /></PrivateRoute>} />
             <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
+            <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
+            <Route path="/questions/inbox" element={<PrivateRoute><QuestionInboxPage /></PrivateRoute>} />
+            <Route path="/questions/requests/:requestId" element={<PrivateRoute><QuestionRequestDetailPage /></PrivateRoute>}/>
+            <Route path="/questions/request/:receiverId" element={<PrivateRoute><QuestionRequestPage /></PrivateRoute>} />
+            <Route path="/questions/:questionId"    element={<PrivateRoute><QuestionDetailPage /></PrivateRoute>} />
             <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
                 <Route index element={<Navigate to="dashboard" replace />} />
                 <Route path="dashboard" element={<Dashboard />} />

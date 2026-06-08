@@ -56,6 +56,7 @@ public class QuestionRequestDto {
         private Status status;
         private LocalDateTime createdAt;
         private List<String> imageUrls;
+        private Long questionId;
 
     }
 }

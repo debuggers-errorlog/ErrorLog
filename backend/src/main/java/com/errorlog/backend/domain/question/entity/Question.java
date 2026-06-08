@@ -51,8 +51,13 @@ public class Question {
         this.status    = QuestionStatus.DELETED;
         this.deletedAt = LocalDateTime.now();
     }
+    // ── 질문 답변 완료 ──────────────────────────────────
+    public void close() {
+        this.status = QuestionStatus.CLOSED;
+        this.updatedAt = LocalDateTime.now();
+    }
 
     public enum QuestionStatus {
-        ACTIVE, DELETED, HIDDEN
+        ACTIVE, CLOSED, DELETED, HIDDEN
     }
 }
