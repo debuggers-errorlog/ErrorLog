@@ -70,7 +70,7 @@ export default function PostDetailPage() {
     fetchLikeStatus(postId)
       .then((data) => {
         setLiked(data.liked);
-        setPost((prev) => (prev ? { ...prev, likeCount: data.count } : prev));
+        setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : prev));
       })
       .catch(() => {});
   }, [postId, loadComments]);
@@ -89,7 +89,7 @@ export default function PostDetailPage() {
     try {
       const data = await toggleLike(postId);
       setLiked(data.liked);
-      setPost((prev) => (prev ? { ...prev, likeCount: data.count } : prev));
+      setPost((prev) => (prev ? { ...prev, likeCount: data.likeCount } : prev));
     } catch {
       alert('좋아요 처리에 실패했습니다.');
     }
