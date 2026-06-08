@@ -839,7 +839,7 @@ export default function MyPage() {
                 <EmptyText>작성한 질문이 없습니다.</EmptyText>
               ) : (
                 myQuestions.map((q) => (
-                  <QuestionCard key={q.id}>
+                  <QuestionCard key={q.id} onClick={() => navigate(`/questions/${q.id}`)}>
                     <QuestionTop>
                       <QuestionTitle>{q.title}</QuestionTitle>
                       <QuestionBadge $status={q.status}>
