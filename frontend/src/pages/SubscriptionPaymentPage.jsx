@@ -7,13 +7,27 @@ import { cancelPayment } from '../api/paymentApi';
 const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
   min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
   color: ${({ theme }) => theme.colors.text};
+  box-sizing: border-box;
+`;
+
+const Content = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const CardWrapper = styled.div`
+  max-width: 480px;
+  margin: 0 auto;
 `;
 
 const Header = styled.div`
   background: ${({ theme }) => theme.colors.accent};
   padding: 1.25rem 2rem;
   text-align: center;
+  border-radius: ${({ theme }) => theme.radius.lg} ${({ theme }) => theme.radius.lg} 0 0;
 `;
 
 const HeaderTitle = styled.h2`
@@ -25,10 +39,11 @@ const HeaderTitle = styled.h2`
 
 const OrderCard = styled.div`
   background: ${({ theme }) => theme.colors.bgElevated};
-  margin: 1.5rem;
-  border-radius: ${({ theme }) => theme.radius.lg};
+  margin-top: 0;
+  border-radius: 0;
   padding: 1.25rem;
   border: 1px solid ${({ theme }) => theme.colors.border};
+  border-top: none;
 `;
 
 const OrderRow = styled.div`
@@ -56,8 +71,7 @@ const Divider = styled.div`
 const TotalCard = styled.div`
   background: ${({ theme }) => theme.colors.accentDim};
   border: 1px solid ${({ theme }) => theme.colors.accent}33;
-  border-radius: ${({ theme }) => theme.radius.lg};
-  margin: 0 1.5rem 1.5rem;
+  border-top: none;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -86,15 +100,13 @@ const SectionTitle = styled.div`
   font-size: 14px;
   font-weight: 500;
   color: ${({ theme }) => theme.colors.text};
-  padding: 0 1.5rem;
-  margin-bottom: 0.75rem;
+  margin: 1.25rem 0 0.75rem;
 `;
 
 const PaymentMethod = styled.div`
   background: ${({ theme }) => theme.colors.bgElevated};
   border: 1px solid ${({ theme }) => theme.colors.accent}4d;
   border-radius: ${({ theme }) => theme.radius.lg};
-  margin: 0 1.5rem;
   padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
@@ -144,7 +156,7 @@ const NoticeBox = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 1rem 1.5rem;
+  margin: 1rem 0;
   padding: 0.75rem 1rem;
   background: ${({ theme }) => theme.colors.bgElevated};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -157,7 +169,6 @@ const NoticeText = styled.span`
 `;
 
 const BtnArea = styled.div`
-  padding: 1.5rem;
   margin-top: 1rem;
 `;
 
@@ -212,7 +223,7 @@ export function SubscriptionPaymentPage() {
     try {
       await subscribe(Number(creatorId));
       alert("구독 결제가 완료되었습니다!");
-      navigate(`/creator/${creatorId}`); // 크리에이터 프로필 경로 확정 후 교체
+      navigate(`/creator/${creatorId}`);
     } catch {
       alert("결제에 실패했습니다.");
     }
@@ -225,7 +236,7 @@ export function SubscriptionPaymentPage() {
       console.error(e);
     } finally {
       alert("결제가 취소되었습니다.");
-      navigate(`/creator/${creatorId}`); // 크리에이터 프로필 경로 확정 후 교체
+      navigate(`/creator/${creatorId}`);
     }
   };
 
@@ -237,63 +248,67 @@ export function SubscriptionPaymentPage() {
 
   return (
       <Page>
-        <Header>
-          <HeaderTitle>결제하기</HeaderTitle>
-        </Header>
+        <Content>
+          <CardWrapper>
+            <Header>
+              <HeaderTitle>결제하기</HeaderTitle>
+            </Header>
 
-        <OrderCard>
-          <OrderRow>
-            <OrderLabel>크리에이터</OrderLabel>
-            <OrderValue>김개발</OrderValue>
-          </OrderRow>
-          <Divider />
-          <OrderRow>
-            <OrderLabel>구독 기간</OrderLabel>
-            <OrderValue>1개월</OrderValue>
-          </OrderRow>
-          <Divider />
-          <OrderRow>
-            <OrderLabel>이용 기간</OrderLabel>
-            <OrderValue>{formatDate(startDate)} ~ {formatDate(endDate)}</OrderValue>
-          </OrderRow>
-        </OrderCard>
+            <OrderCard>
+              <OrderRow>
+                <OrderLabel>크리에이터</OrderLabel>
+                <OrderValue>김개발</OrderValue>
+              </OrderRow>
+              <Divider />
+              <OrderRow>
+                <OrderLabel>구독 기간</OrderLabel>
+                <OrderValue>1개월</OrderValue>
+              </OrderRow>
+              <Divider />
+              <OrderRow>
+                <OrderLabel>이용 기간</OrderLabel>
+                <OrderValue>{formatDate(startDate)} ~ {formatDate(endDate)}</OrderValue>
+              </OrderRow>
+            </OrderCard>
 
-        <TotalCard>
-          <TotalLabel>총 결제 금액</TotalLabel>
-          <TotalAmount>₩3,900</TotalAmount>
-          <VatText>부가세 포함</VatText>
-        </TotalCard>
+            <TotalCard>
+              <TotalLabel>총 결제 금액</TotalLabel>
+              <TotalAmount>₩3,900</TotalAmount>
+              <VatText>부가세 포함</VatText>
+            </TotalCard>
 
-        <SectionTitle>결제 수단</SectionTitle>
-        <PaymentMethod>
-          <MethodLeft>
-            <RadioActive />
-            <CardIcon>
-              <CreditCard size={18} />
-            </CardIcon>
-            <div>
-              <MethodName>신용카드</MethodName>
-              <MethodDesc>안전한 카드 결제</MethodDesc>
-            </div>
-          </MethodLeft>
-          <CheckCircle size={18} />
-        </PaymentMethod>
+            <SectionTitle>결제 수단</SectionTitle>
+            <PaymentMethod>
+              <MethodLeft>
+                <RadioActive />
+                <CardIcon>
+                  <CreditCard size={18} />
+                </CardIcon>
+                <div>
+                  <MethodName>신용카드</MethodName>
+                  <MethodDesc>안전한 카드 결제</MethodDesc>
+                </div>
+              </MethodLeft>
+              <CheckCircle size={18} />
+            </PaymentMethod>
 
-        <NoticeBox>
-          <Shield size={14} />
-          <NoticeText>결제 버튼 클릭 시 PG사의 안전한 결제창으로 이동합니다</NoticeText>
-        </NoticeBox>
+            <NoticeBox>
+              <Shield size={14} />
+              <NoticeText>결제 버튼 클릭 시 PG사의 안전한 결제창으로 이동합니다</NoticeText>
+            </NoticeBox>
 
-        <BtnArea>
-          <BtnRow>
-            <CancelBtn onClick={handleCancel}>취소</CancelBtn>
-            <CtaBtn onClick={handlePayment}>
-              <CreditCard size={16} />
-              ₩3,900 결제하기
-            </CtaBtn>
-          </BtnRow>
-          <FooterText>구독 후 즉시 모든 프리미엄 콘텐츠에 접근할 수 있습니다</FooterText>
-        </BtnArea>
+            <BtnArea>
+              <BtnRow>
+                <CancelBtn onClick={handleCancel}>취소</CancelBtn>
+                <CtaBtn onClick={handlePayment}>
+                  <CreditCard size={16} />
+                  ₩3,900 결제하기
+                </CtaBtn>
+              </BtnRow>
+              <FooterText>구독 후 즉시 모든 프리미엄 콘텐츠에 접근할 수 있습니다</FooterText>
+            </BtnArea>
+          </CardWrapper>
+        </Content>
       </Page>
   );
 }

@@ -2,14 +2,22 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Save } from "lucide-react";
 import styled from "styled-components";
+import { jwtDecode } from "jwt-decode";
 import { getSubscriptionSettings, createSubscriptionSettings, updateSubscriptionSettings }
     from '../api/subscriptionApi';
 
 const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
   min-height: 100vh;
+  width: 100%;
   padding: 2rem;
   color: ${({ theme }) => theme.colors.text};
+  box-sizing: border-box;
+`;
+
+const Content = styled.div`
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const Header = styled.div`
@@ -50,7 +58,6 @@ const Card = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.lg};
   padding: 1.5rem;
-  max-width: 600px;
 `;
 
 const SectionTitle = styled.div`
@@ -86,6 +93,7 @@ const Input = styled.input`
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
+  box-sizing: border-box;
   &:focus {
     border-color: ${({ theme }) => theme.colors.accent};
   }
@@ -102,6 +110,7 @@ const Textarea = styled.textarea`
   outline: none;
   resize: vertical;
   min-height: 100px;
+  box-sizing: border-box;
   &:focus {
     border-color: ${({ theme }) => theme.colors.accent};
   }
@@ -169,9 +178,9 @@ const MutedText = styled.p`
 export function SubscriptionSettingsPage() {
     const navigate = useNavigate();
 
-    const creatorId = 1; // JWT 연동 후 제거
-    //const token = localStorage.getItem('accessToken');
-    //const creatorId = token ? jwtDecode(token).userId : null;
+    //const creatorId = 1; // JWT 연동 후 제거
+    const token = localStorage.getItem("accessToken");
+    const creatorId = token ? jwtDecode(token).userId : null;
 
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
@@ -217,58 +226,60 @@ export function SubscriptionSettingsPage() {
 
     return (
         <Page>
-            <Header>
-                <HeaderRow>
-                    <div>
-                        <Title>구독 플랜 설정</Title>
-                        <Subtitle>구독자에게 제공할 플랜을 설정하세요</Subtitle>
-                    </div>
-                    <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
-                </HeaderRow>
-            </Header>
+            <Content>
+                <Header>
+                    <HeaderRow>
+                        <div>
+                            <Title>구독 플랜 설정</Title>
+                            <Subtitle>구독자에게 제공할 플랜을 설정하세요</Subtitle>
+                        </div>
+                        <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
+                    </HeaderRow>
+                </Header>
 
-            <Card>
-                <SectionTitle>
-                    <Settings size={16} />
-                    플랜 정보
-                </SectionTitle>
+                <Card>
+                    <SectionTitle>
+                        <Settings size={16} />
+                        플랜 정보
+                    </SectionTitle>
 
-                <FormGroup>
-                    <Label>월 구독료 (원)</Label>
-                    <Input
-                        type="text"
-                        value={price}
-                        onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, "");
-                            setPrice(val);
-                        }}
-                        placeholder="예: 3900"
-                    />
-                </FormGroup>
+                    <FormGroup>
+                        <Label>월 구독료 (원)</Label>
+                        <Input
+                            type="text"
+                            value={price}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, "");
+                                setPrice(val);
+                            }}
+                            placeholder="예: 3900"
+                        />
+                    </FormGroup>
 
-                <FormGroup>
-                    <Label>플랜 설명</Label>
-                    <Textarea
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        placeholder="구독자에게 제공하는 혜택을 설명해주세요"
-                    />
-                </FormGroup>
+                    <FormGroup>
+                        <Label>플랜 설명</Label>
+                        <Textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            placeholder="구독자에게 제공하는 혜택을 설명해주세요"
+                        />
+                    </FormGroup>
 
-                {message && (
-                    message.type === "success"
-                        ? <SuccessMsg>{message.text}</SuccessMsg>
-                        : <ErrorMsg>{message.text}</ErrorMsg>
-                )}
+                    {message && (
+                        message.type === "success"
+                            ? <SuccessMsg>{message.text}</SuccessMsg>
+                            : <ErrorMsg>{message.text}</ErrorMsg>
+                    )}
 
-                <BtnRow>
-                    <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
-                    <SaveBtn onClick={handleSubmit}>
-                        <Save size={16} />
-                        {isExisting ? "수정하기" : "등록하기"}
-                    </SaveBtn>
-                </BtnRow>
-            </Card>
+                    <BtnRow>
+                        <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
+                        <SaveBtn onClick={handleSubmit}>
+                            <Save size={16} />
+                            {isExisting ? "수정하기" : "등록하기"}
+                        </SaveBtn>
+                    </BtnRow>
+                </Card>
+            </Content>
         </Page>
     );
 }
