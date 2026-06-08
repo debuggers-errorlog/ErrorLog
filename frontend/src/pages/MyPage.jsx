@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing } from '../api/user'
+import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing, getMyQuestions } from '../api/user'
 import { logout, withdraw } from '../api/auth'
 import { getSubscriptionList } from '../api/subscriptionApi'
 import Header from '../components/layout/Header'
@@ -337,6 +337,59 @@ const PageInfo = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
 `
 
+const QuestionCard = styled.div`
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 16px 20px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+  &:hover { border-color: ${({ theme }) => theme.colors.borderLight}; }
+`
+
+const QuestionTop = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+`
+
+const QuestionTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.colors.text};
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+`
+
+const QuestionBadge = styled.span`
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: ${({ $status, theme }) =>
+    $status === 'ACTIVE' ? 'rgba(0,194,255,0.15)' :
+    $status === 'DELETED' ? 'rgba(248,81,73,0.15)' :
+    'rgba(255,255,255,0.08)'};
+  color: ${({ $status, theme }) =>
+    $status === 'ACTIVE' ? theme.colors.accent :
+    $status === 'DELETED' ? theme.colors.danger :
+    theme.colors.textMuted};
+`
+
+const QuestionMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textMuted};
+`
+
 const FollowCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -536,6 +589,8 @@ export default function MyPage() {
   const [followingList, setFollowingList] = useState([])
   const [followingLoading, setFollowingLoading] = useState(false)
   const [followingCount, setFollowingCount] = useState(null)
+  const [myQuestions, setMyQuestions] = useState([])
+  const [questionsLoading, setQuestionsLoading] = useState(false)
 
   useEffect(() => {
     getMyProfile()
@@ -547,6 +602,10 @@ export default function MyPage() {
 
     getMyPosts(0, 1)
       .then(({ data }) => setPostsTotalElements(data.totalElements))
+      .catch(() => {})
+
+    getMyQuestions()
+      .then(({ data }) => setMyQuestions(data.data ?? data))
       .catch(() => {})
 
     getSubscriptionList()
@@ -571,6 +630,14 @@ export default function MyPage() {
     getMyFollowing()
       .then(({ data }) => setFollowingList(data))
       .finally(() => setFollowingLoading(false))
+  }, [activeNav])
+
+  useEffect(() => {
+    if (activeNav !== 'questions') return
+    setQuestionsLoading(true)
+    getMyQuestions()
+      .then(({ data }) => setMyQuestions(data.data ?? data))
+      .finally(() => setQuestionsLoading(false))
   }, [activeNav])
 
   const handleChange = (e) => {
@@ -692,7 +759,7 @@ export default function MyPage() {
               <SectionTitle>활동 요약</SectionTitle>
               <StatsGrid>
                 <StatCard><StatValue $accent>{postsTotalElements ?? '-'}</StatValue><StatLabel>게시글</StatLabel></StatCard>
-                <StatCard><StatValue>-</StatValue><StatLabel>질문</StatLabel></StatCard>
+                <StatCard><StatValue>{myQuestions.length || '-'}</StatValue><StatLabel>질문</StatLabel></StatCard>
                 <StatCard><StatValue $gold>{followingCount ?? '-'}</StatValue><StatLabel>구독 중</StatLabel></StatCard>
               </StatsGrid>
             </>
@@ -762,6 +829,37 @@ export default function MyPage() {
             </>
           )}
 
+          {/* 내 질문 */}
+          {activeNav === 'questions' && !editMode && (
+            <>
+              <SectionTitle>내 질문</SectionTitle>
+              {questionsLoading ? (
+                <EmptyText>불러오는 중...</EmptyText>
+              ) : myQuestions.length === 0 ? (
+                <EmptyText>작성한 질문이 없습니다.</EmptyText>
+              ) : (
+                myQuestions.map((q) => (
+                  <QuestionCard key={q.id}>
+                    <QuestionTop>
+                      <QuestionTitle>{q.title}</QuestionTitle>
+                      <QuestionBadge $status={q.status}>
+                        {q.status === 'ACTIVE' ? '진행중' :
+                         q.status === 'DELETED' ? '삭제됨' : q.status}
+                      </QuestionBadge>
+                    </QuestionTop>
+                    <QuestionMeta>
+                      <span>멘토: @{q.mentorNickname}</span>
+                      <span>답변 {q.answerCount}개</span>
+                      <span style={{ marginLeft: 'auto' }}>
+                        {new Date(q.createdAt).toLocaleDateString('ko-KR')}
+                      </span>
+                    </QuestionMeta>
+                  </QuestionCard>
+                ))
+              )}
+            </>
+          )}
+
           {/* 프로필 편집 */}
           {editMode && (
             <>
@@ -800,7 +898,7 @@ export default function MyPage() {
           )}
 
           {/* 플레이스홀더 */}
-          {!['summary', 'posts', 'following'].includes(activeNav) && !editMode && (
+          {!['summary', 'posts', 'following', 'questions', 'subscriptions'].includes(activeNav) && !editMode && (
             <>
               <SectionTitle>{NAV_ITEMS.find(n => n.key === activeNav)?.label}</SectionTitle>
               <EmptyText>준비 중입니다.</EmptyText>
