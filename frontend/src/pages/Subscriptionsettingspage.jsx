@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings, Save } from "lucide-react";
+import { Settings, Save, MessageCircle } from "lucide-react";
 import styled from "styled-components";
 import {
     getMySubscriptionSettings,
     saveMySubscriptionSettings,
 } from '../api/subscriptionApi';
+import {
+    getMyQuestionSettings,
+    saveMyQuestionSettings,
+} from '../api/questionSettingsApi';
 import { getCurrentUserId, isLoggedIn } from '../utils/authSession';
 
 const Page = styled.div`
@@ -60,6 +64,7 @@ const Card = styled.div`
   border: 1px solid ${({ theme }) => theme.colors.border};
   border-radius: ${({ theme }) => theme.radius.lg};
   padding: 1.5rem;
+  margin-bottom: 1.25rem;
 `;
 
 const SectionTitle = styled.div`
@@ -183,7 +188,12 @@ export function SubscriptionSettingsPage() {
 
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
-    const [isExisting, setIsExisting] = useState(false);
+    const [isSubscriptionExisting, setIsSubscriptionExisting] = useState(false);
+
+    const [questionPrice, setQuestionPrice] = useState("");
+    const [questionDescription, setQuestionDescription] = useState("");
+    const [isQuestionExisting, setIsQuestionExisting] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [message, setMessage] = useState(null);
 
@@ -201,21 +211,31 @@ export function SubscriptionSettingsPage() {
 
         async function fetchSettings() {
             try {
-                const { data } = await getMySubscriptionSettings();
-                if (data.userId === creatorId) {
-                    setPrice(String(data.price ?? ''));
-                    setDescription(data.description ?? '');
-                    setIsExisting(true);
-                } else {
-                    setIsExisting(false);
+                const [subscriptionRes, questionRes] = await Promise.allSettled([
+                    getMySubscriptionSettings(),
+                    getMyQuestionSettings(),
+                ]);
+
+                if (subscriptionRes.status === 'fulfilled') {
+                    const data = subscriptionRes.value.data;
+                    if (data.userId === creatorId) {
+                        setPrice(String(data.price ?? ''));
+                        setDescription(data.description ?? '');
+                        setIsSubscriptionExisting(true);
+                    }
+                }
+
+                if (questionRes.status === 'fulfilled') {
+                    const data = questionRes.value.data;
+                    if (data.userId === creatorId) {
+                        setQuestionPrice(String(data.price ?? ''));
+                        setQuestionDescription(data.description ?? '');
+                        setIsQuestionExisting(true);
+                    }
                 }
             } catch (e) {
-                if (e.response?.status === 404) {
-                    setIsExisting(false);
-                } else {
-                    console.error(e);
-                    setMessage({ type: 'error', text: '플랜 정보를 불러오지 못했습니다.' });
-                }
+                console.error(e);
+                setMessage({ type: 'error', text: '설정 정보를 불러오지 못했습니다.' });
             } finally {
                 setLoading(false);
             }
@@ -229,16 +249,27 @@ export function SubscriptionSettingsPage() {
             return;
         }
         if (!price || !description) {
-            setMessage({ type: "error", text: "가격과 설명을 입력해주세요." });
+            setMessage({ type: "error", text: "구독 플랜의 가격과 설명을 입력해주세요." });
+            return;
+        }
+        if (!questionPrice || !questionDescription) {
+            setMessage({ type: "error", text: "질문 단가와 설명을 입력해주세요." });
             return;
         }
         try {
-            await saveMySubscriptionSettings({
-                price: Number(price),
-                description,
-            });
-            setIsExisting(true);
-            setMessage({ type: "success", text: "구독 플랜이 저장되었습니다!" });
+            await Promise.all([
+                saveMySubscriptionSettings({
+                    price: Number(price),
+                    description,
+                }),
+                saveMyQuestionSettings({
+                    price: Number(questionPrice),
+                    description: questionDescription,
+                }),
+            ]);
+            setIsSubscriptionExisting(true);
+            setIsQuestionExisting(true);
+            setMessage({ type: "success", text: "구독 플랜과 질문 단가가 저장되었습니다!" });
         } catch (e) {
             const status = e.response?.status;
             if (status === 401) {
@@ -248,6 +279,8 @@ export function SubscriptionSettingsPage() {
             }
         }
     };
+
+    const isExisting = isSubscriptionExisting && isQuestionExisting;
 
     if (!creatorId) return null;
 
@@ -260,7 +293,7 @@ export function SubscriptionSettingsPage() {
                     <HeaderRow>
                         <div>
                             <Title>구독 플랜 설정</Title>
-                            <Subtitle>구독자에게 제공할 플랜을 설정하세요</Subtitle>
+                            <Subtitle>구독 플랜과 1:1 질문 단가를 함께 설정하세요</Subtitle>
                         </div>
                         <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
                     </HeaderRow>
@@ -293,6 +326,35 @@ export function SubscriptionSettingsPage() {
                             placeholder="구독자에게 제공하는 혜택을 설명해주세요"
                         />
                     </FormGroup>
+                </Card>
+
+                <Card>
+                    <SectionTitle>
+                        <MessageCircle size={16} />
+                        1:1 질문 단가
+                    </SectionTitle>
+
+                    <FormGroup>
+                        <Label>1회 질문료 (원)</Label>
+                        <Input
+                            type="text"
+                            value={questionPrice}
+                            onChange={(e) => {
+                                const val = e.target.value.replace(/[^0-9]/g, "");
+                                setQuestionPrice(val);
+                            }}
+                            placeholder="예: 5900"
+                        />
+                    </FormGroup>
+
+                    <FormGroup>
+                        <Label>질문 답변 안내</Label>
+                        <Textarea
+                            value={questionDescription}
+                            onChange={(e) => setQuestionDescription(e.target.value)}
+                            placeholder="질문자에게 제공하는 답변 범위를 설명해주세요"
+                        />
+                    </FormGroup>
 
                     {message && (
                         message.type === "success"
@@ -304,7 +366,7 @@ export function SubscriptionSettingsPage() {
                         <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
                         <SaveBtn onClick={handleSubmit}>
                             <Save size={16} />
-                            {isExisting ? "수정하기" : "등록하기"}
+                            {isExisting ? "전체 수정하기" : "전체 등록하기"}
                         </SaveBtn>
                     </BtnRow>
                 </Card>

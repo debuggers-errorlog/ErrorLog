@@ -40,6 +40,7 @@ public class QuestionRequestDto {
         private String title;
         private Status status;
         private LocalDateTime createdAt;
+        private Long questionPrice;
     }
 
     /* ── 상세 응답 ──────────────────────────────────── */
@@ -57,6 +58,6 @@ public class QuestionRequestDto {
         private LocalDateTime createdAt;
         private List<String> imageUrls;
         private Long questionId;
-
+        private Long questionPrice;
     }
 }

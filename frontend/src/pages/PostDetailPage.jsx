@@ -142,6 +142,13 @@ export default function PostDetailPage() {
     navigate(`/subscriptions/${post.authorId}/info`);
   };
 
+  const handleAskQuestion = () => {
+    if (!requireLogin() || !post?.authorId) return;
+    navigate(`/questions/request/${post.authorId}`, {
+      state: { receiverNick: post.author?.nickname ?? '작성자' },
+    });
+  };
+
   if (loadError) {
     return (
       <MainLayout>
@@ -187,9 +194,11 @@ export default function PostDetailPage() {
         subscribed={subscribed}
         showFollow={isLoggedIn() && !isOwnPost}
         showSubscribe={!isOwnPost}
+        showAskQuestion={isLoggedIn() && !isOwnPost}
         onLikeToggle={handleLikeToggle}
         onFollowToggle={handleFollowToggle}
         onSubscribe={handleSubscribe}
+        onAskQuestion={handleAskQuestion}
       />
 
       <CommentSection>

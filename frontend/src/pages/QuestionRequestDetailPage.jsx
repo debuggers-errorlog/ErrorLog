@@ -267,18 +267,16 @@ export default function QuestionRequestDetailPage() {
     }, [requestId])
 
     async function handleAccept() {
-        if (!confirm('질문을 수락할까요? 수락 즉시 결제가 진행됩니다.')) return
+        const priceText = request.questionPrice != null
+            ? `₩${Number(request.questionPrice).toLocaleString()}`
+            : '설정된 금액'
+        if (!confirm(`질문을 수락할까요?\n질문자에게 ${priceText}가 결제됩니다.`)) return
 
         setActing(true)
         setError('')
 
         try {
-            const res = await acceptRequest(requestId, {
-                title: request.title,
-                content: request.content,
-            })
-
-            const question = unwrapApiData(res)
+            const question = await acceptRequest(requestId)
             navigate(`/questions/${question.id}`)
         } catch (err) {
             setError(err.response?.data?.message || '수락에 실패했습니다.')
@@ -328,7 +326,12 @@ export default function QuestionRequestDetailPage() {
 
     // 액션 카드 텍스트
     const actionHint = {
-        PENDING:  { title: '수락하면 결제가 진행됩니다', desc: '거절 시 비용이 청구되지 않습니다.' },
+        PENDING:  {
+            title: '수락하면 결제가 진행됩니다',
+            desc: request.questionPrice != null
+                ? `질문자에게 ₩${Number(request.questionPrice).toLocaleString()}가 청구됩니다. 거절 시 비용이 청구되지 않습니다.`
+                : '거절 시 비용이 청구되지 않습니다.',
+        },
         ACCEPTED: { title: '이미 수락된 질문입니다',    desc: '채팅방에서 대화를 이어가세요.' },
         REJECTED: { title: '거절된 요청입니다',         desc: '비용이 청구되지 않았습니다.' },
         CANCELLED: { title: '취소된 요청입니다',         desc: '요청자가 취소한 질문입니다.' },
@@ -339,7 +342,7 @@ export default function QuestionRequestDetailPage() {
             <Header />
             <Container>
 
-                <BackRow onClick={() => navigate('/questions/inbox')}>
+                <BackRow onClick={() => navigate('/mypage', { state: { questionTab: 'received-requests' } })}>
                     ← 받은 요청 목록
                 </BackRow>
 
@@ -402,7 +405,7 @@ export default function QuestionRequestDetailPage() {
                             </Btn>
                         )}
 
-                        <Btn $variant="ghost" onClick={() => navigate('/questions/inbox')}>
+                        <Btn $variant="ghost" onClick={() => navigate('/mypage', { state: { questionTab: 'received-requests' } })}>
                             목록으로
                         </Btn>
                     </BtnRow>

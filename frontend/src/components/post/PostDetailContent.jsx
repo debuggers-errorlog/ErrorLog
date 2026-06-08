@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Heart, UserPlus, UserCheck, Star } from 'lucide-react';
+import { Heart, UserPlus, UserCheck, Star, MessageCircle } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Avatar, Badge, Button, Card } from '../common/Styled';
 import MarkdownImage from './MarkdownImage';
@@ -78,6 +78,24 @@ const SubscribeButton = styled.button`
     $subscribed ? theme.colors.surfaceHover : theme.colors.premiumDim};
   color: ${({ theme, $subscribed }) =>
     $subscribed ? theme.colors.textMuted : theme.colors.premium};
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const AskQuestionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid ${({ theme }) => theme.colors.accent}66;
+  background: ${({ theme }) => theme.colors.accentDim};
+  color: ${({ theme }) => theme.colors.accent};
 
   &:hover {
     opacity: 0.9;
@@ -198,9 +216,11 @@ export default function PostDetailContent({
   subscribed = false,
   showFollow = false,
   showSubscribe = false,
+  showAskQuestion = false,
   onLikeToggle,
   onFollowToggle,
   onSubscribe,
+  onAskQuestion,
 }) {
   return (
     <Article>
@@ -227,6 +247,12 @@ export default function PostDetailContent({
                 <Star size={14} fill={subscribed ? 'currentColor' : 'none'} />
                 {subscribed ? '구독 중' : '구독'}
               </SubscribeButton>
+            )}
+            {showAskQuestion && (
+              <AskQuestionButton type="button" onClick={onAskQuestion}>
+                <MessageCircle size={14} />
+                질문하기
+              </AskQuestionButton>
             )}
             <span className="time"> · {post.createdAt}</span>
           </div>

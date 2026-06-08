@@ -17,6 +17,7 @@ import { SubscriptionPaymentPage } from './pages/SubscriptionPaymentPage';
 import { SubscriptionManagePage } from './pages/SubscriptionManagePage';
 import { SettlementPage } from './pages/SettlementPage';
 import { SubscriptionSettingsPage } from './pages/SubscriptionSettingsPage';
+import { QuestionSettingsPage } from './pages/QuestionSettingsPage';
 import AdminLayout from './components/layout/Adminlayout.jsx'
 import Dashboard from './pages/admin/Dashboard.jsx'
 import UserManagement from './pages/admin/UserManagement.jsx'
@@ -56,6 +57,7 @@ export default function App() {
             <Route path="/subscriptions/:creatorId/payment" element={<PrivateRoute><SubscriptionPaymentPage /></PrivateRoute>} />
             <Route path="/subscriptions/manage" element={<PrivateRoute><SubscriptionManagePage /></PrivateRoute>} />
             <Route path="/subscription-settings" element={<PrivateRoute><SubscriptionSettingsPage /></PrivateRoute>} />
+            <Route path="/question-settings" element={<PrivateRoute><QuestionSettingsPage /></PrivateRoute>} />
             <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
             <Route path="/settlement" element={<PrivateRoute><SettlementPage /></PrivateRoute>} />
             <Route path="/questions/inbox" element={<PrivateRoute><QuestionInboxPage /></PrivateRoute>} />

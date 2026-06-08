@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { CreditCard, Shield, CheckCircle } from "lucide-react";
 import styled from "styled-components";
-import { subscribe } from '../api/subscriptionApi';
+import { getSubscriptionInfo, subscribe } from '../api/subscriptionApi';
 import { cancelPayment } from '../api/paymentApi';
 
 const Page = styled.div`
@@ -213,17 +214,51 @@ const FooterText = styled.p`
   margin: 0;
 `;
 
+const LoadingText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-align: center;
+  padding: 2rem;
+`;
+
+const ErrorText = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.danger};
+  text-align: center;
+  padding: 2rem;
+`;
+
 export function SubscriptionPaymentPage() {
   const { creatorId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const expiredAt = location.state?.expiredAt;
 
+  const [info, setInfo] = useState(location.state?.info ?? null);
+  const [loading, setLoading] = useState(!location.state?.info);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (info) return;
+
+    async function fetchInfo() {
+      try {
+        const { data } = await getSubscriptionInfo(creatorId);
+        setInfo(data);
+      } catch (e) {
+        setError(e.response?.data?.message ?? '구독 정보를 불러오지 못했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchInfo();
+  }, [creatorId, info]);
+
   const handlePayment = async () => {
     try {
       await subscribe(Number(creatorId));
       alert("구독 결제가 완료되었습니다!");
-      navigate(`/creator/${creatorId}`);
+      navigate('/subscriptions/manage');
     } catch {
       alert("결제에 실패했습니다.");
     }
@@ -236,7 +271,7 @@ export function SubscriptionPaymentPage() {
       console.error(e);
     } finally {
       alert("결제가 취소되었습니다.");
-      navigate(`/creator/${creatorId}`);
+      navigate(-1);
     }
   };
 
@@ -246,18 +281,45 @@ export function SubscriptionPaymentPage() {
   const formatDate = (d) =>
       `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
 
+  if (loading) {
+    return (
+      <Page>
+        <Content>
+          <CardWrapper>
+            <LoadingText>불러오는 중...</LoadingText>
+          </CardWrapper>
+        </Content>
+      </Page>
+    );
+  }
+
+  if (error || !info) {
+    return (
+      <Page>
+        <Content>
+          <CardWrapper>
+            <ErrorText>{error ?? '오류가 발생했습니다.'}</ErrorText>
+          </CardWrapper>
+        </Content>
+      </Page>
+    );
+  }
+
+  const formattedPrice = info.price.toLocaleString();
+  const isRenewal = !!expiredAt;
+
   return (
       <Page>
         <Content>
           <CardWrapper>
             <Header>
-              <HeaderTitle>결제하기</HeaderTitle>
+              <HeaderTitle>{isRenewal ? '구독 연장 결제' : '결제하기'}</HeaderTitle>
             </Header>
 
             <OrderCard>
               <OrderRow>
                 <OrderLabel>크리에이터</OrderLabel>
-                <OrderValue>김개발</OrderValue>
+                <OrderValue>{info.creatorName}</OrderValue>
               </OrderRow>
               <Divider />
               <OrderRow>
@@ -273,7 +335,7 @@ export function SubscriptionPaymentPage() {
 
             <TotalCard>
               <TotalLabel>총 결제 금액</TotalLabel>
-              <TotalAmount>₩3,900</TotalAmount>
+              <TotalAmount>₩{formattedPrice}</TotalAmount>
               <VatText>부가세 포함</VatText>
             </TotalCard>
 
@@ -302,7 +364,7 @@ export function SubscriptionPaymentPage() {
                 <CancelBtn onClick={handleCancel}>취소</CancelBtn>
                 <CtaBtn onClick={handlePayment}>
                   <CreditCard size={16} />
-                  ₩3,900 결제하기
+                  ₩{formattedPrice} 결제하기
                 </CtaBtn>
               </BtnRow>
               <FooterText>구독 후 즉시 모든 프리미엄 콘텐츠에 접근할 수 있습니다</FooterText>

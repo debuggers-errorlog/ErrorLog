@@ -18,8 +18,11 @@ import com.errorlog.backend.domain.question.entity.QuestionRequest.Status;
 import com.errorlog.backend.domain.question.repository.AnswerRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRepository;
 import com.errorlog.backend.domain.question.repository.QuestionRequestRepository;
+import com.errorlog.backend.domain.question.service.QuestionSettingsService;
 import com.errorlog.backend.domain.user.entity.User;
 import com.errorlog.backend.domain.user.repository.UserRepository;
+import com.errorlog.backend.global.exception.AppException;
+import com.errorlog.backend.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +43,7 @@ public class QuestionService {
     private final ImageRepository imageRepository;
     private final PaymentService paymentService;
     private final QuestionRequestStatusUpdater statusUpdater;
+    private final QuestionSettingsService questionSettingsService;
 
     private String getNickname(Long userId) {
         return userRepository.findById(userId)
@@ -57,6 +61,8 @@ public class QuestionService {
 
         if (requesterId.equals(dto.getReceiverId()))
             throw new IllegalArgumentException("자기 자신에게 질문 요청을 보낼 수 없습니다.");
+
+        questionSettingsService.getSettings(dto.getReceiverId());
 
         QuestionRequest saved = requestRepo.save(
                 QuestionRequest.builder()
@@ -123,6 +129,7 @@ public class QuestionService {
                 .createdAt(qr.getCreatedAt())
                 .imageUrls(imageUrls)
                 .questionId(questionId)
+                .questionPrice(questionSettingsService.getPriceOrThrow(qr.getReceiverId()))
                 .build();
     }
 
@@ -143,6 +150,8 @@ public class QuestionService {
         if (qr.getStatus() != Status.PENDING)
             throw new IllegalStateException("이미 처리된 요청입니다.");
 
+        Long questionPrice = questionSettingsService.getPriceOrThrow(mentorId);
+
         // 결제 성공 → 수락
         qr.accept();
 
@@ -161,7 +170,7 @@ public class QuestionService {
                     qr.getRequesterId(),
                     question.getId(),
                     PaymentType.QUESTION,
-                    0L,                  // 가격 확정되면 교체
+                    questionPrice,
                     PaymentStatus.PAID
             );
         } catch (Exception e) {
@@ -327,6 +336,12 @@ public class QuestionService {
     ════════════════════════════════════════════════════ */
 
     private QuestionRequestDto.RequestItem toRequestItem(QuestionRequest qr) {
+        Long questionPrice = null;
+        try {
+            questionPrice = questionSettingsService.getPriceOrThrow(qr.getReceiverId());
+        } catch (AppException ignored) {
+            // 멘토 단가 미설정
+        }
         return QuestionRequestDto.RequestItem.builder()
                 .id(qr.getId())
                 .requesterId(qr.getRequesterId())
@@ -336,6 +351,7 @@ public class QuestionService {
                 .title(qr.getTitle())
                 .status(qr.getStatus())
                 .createdAt(qr.getCreatedAt())
+                .questionPrice(questionPrice)
                 .build();
     }
 

@@ -18,6 +18,11 @@ INSERT INTO `subscription_settings` (`user_id`, `price`, `description`) VALUES
 (1, 4900, '관리자의 고급 에러 해결 노하우 및 1:1 답변 권한 프리미엄 패스'),
 (2, 3900, '코딩하는코린이의 에러 해결 노하우 공유');
 
+-- 4-1. 1:1 질문 단가 설정
+INSERT INTO `question_settings` (`user_id`, `price`, `description`) VALUES
+(1, 9900, '관리자 1:1 질문 — 에러 로그 분석 및 해결 방향 제시'),
+(2, 5900, '코딩하는코린이 1:1 질문 — 코드 리뷰 및 디버깅 조언');
+
 -- 5. 구독 내역 데이터 (일반 유저가 관리자를 구독)
 INSERT INTO `subscriptions` (`subscriber_id`, `creator_id`, `expired_at`) VALUES
 (2, 1, DATE_ADD(NOW(), INTERVAL 30 DAY));

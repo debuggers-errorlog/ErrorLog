@@ -218,7 +218,7 @@ export function SubscriptionManagePage() {
                 <Subtitle>구독 중인 크리에이터와 구독자를 관리하세요</Subtitle>
               </div>
               <HeaderActions>
-                <ActionBtn onClick={() => navigate("/subscription-settings")}>구독 플랜 설정</ActionBtn>
+                <ActionBtn onClick={() => navigate("/subscription-settings")}>플랜·질문 설정</ActionBtn>
                 <ActionBtn onClick={() => navigate("/settlement")}>정산 관리</ActionBtn>
                 <CloseBtn onClick={() => navigate(-1)}>✕</CloseBtn>
               </HeaderActions>
@@ -248,7 +248,10 @@ export function SubscriptionManagePage() {
                             </div>
                           </CardLeft>
                           <RenewBtn onClick={() => navigate(`/subscriptions/${item.creatorId}/payment`, {
-                            state: { expiredAt: item.expiredAt }
+                            state: {
+                              expiredAt: item.expiredAt,
+                              creatorName: item.creatorName,
+                            },
                           })}>
                             구독 연장하기
                           </RenewBtn>

@@ -14,6 +14,7 @@ DROP TABLE IF EXISTS `post_tags`;
 DROP TABLE IF EXISTS `posts`;
 DROP TABLE IF EXISTS `refresh_tokens`;
 DROP TABLE IF EXISTS `subscription_settings`;
+DROP TABLE IF EXISTS `question_settings`;
 DROP TABLE IF EXISTS `subscriptions`;
 DROP TABLE IF EXISTS `follows`;
 DROP TABLE IF EXISTS `question_requests`;
@@ -68,6 +69,16 @@ CREATE TABLE `subscription_settings` (
     PRIMARY KEY (`id`),
     CONSTRAINT `UQ_SUB_SETTINGS_USER` UNIQUE (`user_id`),
     CONSTRAINT `FK_USERS_TO_SUBSCRIPTION_SETTINGS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+);
+
+CREATE TABLE `question_settings` (
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `price` BIGINT NOT NULL DEFAULT 0,
+    `description` TEXT NOT NULL,
+    PRIMARY KEY (`id`),
+    CONSTRAINT `UQ_QUESTION_SETTINGS_USER` UNIQUE (`user_id`),
+    CONSTRAINT `FK_USERS_TO_QUESTION_SETTINGS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 
 CREATE TABLE `subscriptions` (

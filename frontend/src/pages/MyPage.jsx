@@ -1,16 +1,31 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing, getMyQuestions, getReceivedQuestions } from '../api/user'
 import { logout, withdraw } from '../api/auth'
 import { getSubscriptionList } from '../api/subscriptionApi'
+import {
+  getSentRequests,
+  getReceivedRequests,
+  acceptRequest,
+  rejectRequest,
+  cancelRequest,
+} from '../api/questionApi'
 import Header from '../components/layout/Header'
+
+const REQUEST_STATUS_MAP = {
+  PENDING: { label: '대기 중', color: '#f0b429', bg: 'rgba(240,180,41,0.15)' },
+  ACCEPTED: { label: '수락됨', color: '#3fb950', bg: 'rgba(63,185,80,0.15)' },
+  REJECTED: { label: '거절됨', color: '#f85149', bg: 'rgba(248,81,73,0.15)' },
+  CANCELLED: { label: '취소됨', color: '#6e7681', bg: 'rgba(110,118,129,0.15)' },
+}
 
 const NAV_ITEMS = [
   { key: 'summary', label: '내 프로필' },
   { key: 'posts', label: '내 게시글' },
   { key: 'following', label: '팔로우 목록' },
   { key: 'questions', label: '내 질문' },
+  { key: 'questionSettings', label: '플랜·질문 설정' },
   { key: 'subscriptions', label: '구독 관리' },
 ]
 
@@ -399,6 +414,29 @@ const QuestionBadge = styled.span`
     theme.colors.textMuted};
 `
 
+const RequestActions = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+`
+
+const RequestBtn = styled.button`
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  border: none;
+  cursor: pointer;
+  background: ${({ $variant, theme }) =>
+    $variant === 'accept' ? theme.colors.accent :
+    $variant === 'reject' ? 'rgba(248,81,73,0.15)' :
+    theme.colors.surfaceHover};
+  color: ${({ $variant, theme }) =>
+    $variant === 'accept' ? '#0b0e14' :
+    $variant === 'reject' ? theme.colors.danger :
+    theme.colors.textMuted};
+`
+
 const QuestionMeta = styled.div`
   display: flex;
   align-items: center;
@@ -590,6 +628,7 @@ const ModalDangerBtn = styled.button`
 
 export default function MyPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [activeNav, setActiveNav] = useState('summary')
   const [editMode, setEditMode] = useState(false)
@@ -608,8 +647,11 @@ export default function MyPage() {
   const [followingCount, setFollowingCount] = useState(null)
   const [myQuestions, setMyQuestions] = useState([])
   const [receivedQuestions, setReceivedQuestions] = useState([])
+  const [sentRequests, setSentRequests] = useState([])
+  const [receivedRequests, setReceivedRequests] = useState([])
   const [questionsLoading, setQuestionsLoading] = useState(false)
-  const [questionTab, setQuestionTab] = useState('sent')
+  const [questionTab, setQuestionTab] = useState(location.state?.questionTab ?? 'sent')
+  const [questionError, setQuestionError] = useState('')
 
   useEffect(() => {
     getMyProfile()
@@ -652,13 +694,65 @@ export default function MyPage() {
   }, [activeNav])
 
   useEffect(() => {
+    if (location.state?.questionTab) {
+      setActiveNav('questions')
+      setQuestionTab(location.state.questionTab)
+    }
+  }, [location.state])
+
+  useEffect(() => {
     if (activeNav !== 'questions') return
     setQuestionsLoading(true)
+    setQuestionError('')
     Promise.all([
       getMyQuestions().then(({ data }) => setMyQuestions(data.data ?? data)),
       getReceivedQuestions().then(({ data }) => setReceivedQuestions(data.data ?? data)),
-    ]).finally(() => setQuestionsLoading(false))
+      getSentRequests().then((data) => setSentRequests(data ?? [])),
+      getReceivedRequests().then((data) => setReceivedRequests(data ?? [])),
+    ])
+      .catch(() => setQuestionError('질문 목록을 불러오지 못했습니다.'))
+      .finally(() => setQuestionsLoading(false))
   }, [activeNav])
+
+  const reloadRequests = async () => {
+    const [sent, received] = await Promise.all([getSentRequests(), getReceivedRequests()])
+    setSentRequests(sent ?? [])
+    setReceivedRequests(received ?? [])
+  }
+
+  const handleAcceptRequest = async (e, item) => {
+    e.stopPropagation()
+    const priceText = item.questionPrice != null
+      ? `₩${Number(item.questionPrice).toLocaleString()}`
+      : '설정된 금액'
+    if (!confirm(`수락 시 질문자에게 ${priceText}가 결제됩니다.\n수락할까요?`)) return
+    try {
+      const question = await acceptRequest(item.id)
+      navigate(`/questions/${question.id}`)
+    } catch (err) {
+      setQuestionError(err.response?.data?.message || '수락에 실패했습니다.')
+    }
+  }
+
+  const handleRejectRequest = async (e, requestId) => {
+    e.stopPropagation()
+    try {
+      await rejectRequest(requestId)
+      await reloadRequests()
+    } catch (err) {
+      setQuestionError(err.response?.data?.message || '거절에 실패했습니다.')
+    }
+  }
+
+  const handleCancelRequest = async (e, requestId) => {
+    e.stopPropagation()
+    try {
+      await cancelRequest(requestId)
+      await reloadRequests()
+    } catch (err) {
+      setQuestionError(err.response?.data?.message || '취소에 실패했습니다.')
+    }
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -736,6 +830,10 @@ export default function MyPage() {
                 onClick={() => {
                   if (item.key === 'subscriptions') {
                     navigate('/subscriptions/manage')
+                    return
+                  }
+                  if (item.key === 'questionSettings') {
+                    navigate('/subscription-settings')
                     return
                   }
                   setActiveNav(item.key)
@@ -860,33 +958,98 @@ export default function MyPage() {
                 <SubTab $active={questionTab === 'received'} onClick={() => setQuestionTab('received')}>
                   받은 질문 ({receivedQuestions.length})
                 </SubTab>
+                <SubTab $active={questionTab === 'sent-requests'} onClick={() => setQuestionTab('sent-requests')}>
+                  보낸 요청 ({sentRequests.length})
+                </SubTab>
+                <SubTab $active={questionTab === 'received-requests'} onClick={() => setQuestionTab('received-requests')}>
+                  받은 요청 ({receivedRequests.length})
+                </SubTab>
               </SubTabs>
+              {questionError && <ErrorMsg>{questionError}</ErrorMsg>}
               {questionsLoading ? (
                 <EmptyText>불러오는 중...</EmptyText>
-              ) : (questionTab === 'sent' ? myQuestions : receivedQuestions).length === 0 ? (
-                <EmptyText>{questionTab === 'sent' ? '보낸 질문이 없습니다.' : '받은 질문이 없습니다.'}</EmptyText>
+              ) : questionTab === 'sent' || questionTab === 'received' ? (
+                (questionTab === 'sent' ? myQuestions : receivedQuestions).length === 0 ? (
+                  <EmptyText>{questionTab === 'sent' ? '보낸 질문이 없습니다.' : '받은 질문이 없습니다.'}</EmptyText>
+                ) : (
+                  (questionTab === 'sent' ? myQuestions : receivedQuestions).map((q) => (
+                    <QuestionCard key={q.id} onClick={() => navigate(`/questions/${q.id}`)} style={{ cursor: 'pointer' }}>
+                      <QuestionTop>
+                        <QuestionTitle>{q.title}</QuestionTitle>
+                        <QuestionBadge $status={q.status}>
+                          {q.status === 'ACTIVE' ? '진행중' :
+                           q.status === 'DELETED' ? '삭제됨' : q.status}
+                        </QuestionBadge>
+                      </QuestionTop>
+                      <QuestionMeta>
+                        {questionTab === 'sent'
+                          ? <span>멘토: @{q.mentorNickname}</span>
+                          : <span>질문자: @{q.askerNickname ?? q.userNickname}</span>
+                        }
+                        <span>답변 {q.answerCount}개</span>
+                        <span style={{ marginLeft: 'auto' }}>
+                          {new Date(q.createdAt).toLocaleDateString('ko-KR')}
+                        </span>
+                      </QuestionMeta>
+                    </QuestionCard>
+                  ))
+                )
               ) : (
-                (questionTab === 'sent' ? myQuestions : receivedQuestions).map((q) => (
-                  <QuestionCard key={q.id} onClick={() => navigate(`/questions/${q.id}`)} style={{ cursor: 'pointer' }}>
-                    <QuestionTop>
-                      <QuestionTitle>{q.title}</QuestionTitle>
-                      <QuestionBadge $status={q.status}>
-                        {q.status === 'ACTIVE' ? '진행중' :
-                         q.status === 'DELETED' ? '삭제됨' : q.status}
-                      </QuestionBadge>
-                    </QuestionTop>
-                    <QuestionMeta>
-                      {questionTab === 'sent'
-                        ? <span>멘토: @{q.mentorNickname}</span>
-                        : <span>질문자: @{q.userNickname}</span>
-                      }
-                      <span>답변 {q.answerCount}개</span>
-                      <span style={{ marginLeft: 'auto' }}>
-                        {new Date(q.createdAt).toLocaleDateString('ko-KR')}
-                      </span>
-                    </QuestionMeta>
-                  </QuestionCard>
-                ))
+                (questionTab === 'sent-requests' ? sentRequests : receivedRequests).length === 0 ? (
+                  <EmptyText>{questionTab === 'sent-requests' ? '보낸 요청이 없습니다.' : '받은 요청이 없습니다.'}</EmptyText>
+                ) : (
+                  (questionTab === 'sent-requests' ? sentRequests : receivedRequests).map((item) => {
+                    const s = REQUEST_STATUS_MAP[item.status] ?? { label: item.status, color: '#ccc', bg: '#333' }
+                    const isPending = item.status === 'PENDING'
+                    return (
+                      <QuestionCard
+                        key={item.id}
+                        onClick={() => navigate(`/questions/requests/${item.id}`)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <QuestionTop>
+                          <QuestionTitle>{item.title}</QuestionTitle>
+                          <QuestionBadge
+                            $status="ACTIVE"
+                            style={{ background: s.bg, color: s.color }}
+                          >
+                            {s.label}
+                          </QuestionBadge>
+                        </QuestionTop>
+                        <QuestionMeta>
+                          {questionTab === 'sent-requests'
+                            ? <span>→ @{item.receiverNickname}</span>
+                            : <span>@{item.requesterNickname}</span>
+                          }
+                          {item.questionPrice != null && (
+                            <span>₩{Number(item.questionPrice).toLocaleString()}</span>
+                          )}
+                          <span style={{ marginLeft: 'auto' }}>
+                            {new Date(item.createdAt).toLocaleDateString('ko-KR')}
+                          </span>
+                        </QuestionMeta>
+                        {isPending && (
+                          <RequestActions>
+                            {questionTab === 'received-requests' ? (
+                              <>
+                                <RequestBtn $variant="accept" onClick={(e) => handleAcceptRequest(e, item)}>
+                                  수락
+                                </RequestBtn>
+                                <RequestBtn $variant="reject" onClick={(e) => handleRejectRequest(e, item.id)}>
+                                  거절
+                                </RequestBtn>
+                              </>
+                            ) : (
+                              <RequestBtn $variant="cancel" onClick={(e) => handleCancelRequest(e, item.id)}>
+                                취소
+                              </RequestBtn>
+                            )}
+                          </RequestActions>
+                        )}
+                      </QuestionCard>
+                    )
+                  })
+                )
               )}
             </>
           )}
@@ -929,7 +1092,7 @@ export default function MyPage() {
           )}
 
           {/* 플레이스홀더 */}
-          {!['summary', 'posts', 'following', 'questions', 'subscriptions'].includes(activeNav) && !editMode && (
+          {!['summary', 'posts', 'following', 'questions', 'questionSettings', 'subscriptions'].includes(activeNav) && !editMode && (
             <>
               <SectionTitle>{NAV_ITEMS.find(n => n.key === activeNav)?.label}</SectionTitle>
               <EmptyText>준비 중입니다.</EmptyText>

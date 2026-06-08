@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ImagePlus, X } from 'lucide-react'
 import styled from 'styled-components'
@@ -16,6 +16,7 @@ import {
     ImageDropzone,
 } from '../components/post/WritePostForm'
 import { sendQuestionRequest } from '../api/questionApi'
+import { getQuestionSettings } from '../api/questionSettingsApi'
 import client from '../api/client'
 
 async function uploadRequestImages(requestId, files) {
@@ -46,6 +47,39 @@ const ReceiverBanner = styled.div`
     font-weight: 700;
     color: ${({ theme }) => theme.colors.accent};
   }
+`
+
+const PriceCard = styled.div`
+  padding: 16px;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.md};
+  margin-bottom: 20px;
+`
+
+const PriceAmount = styled.p`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.colors.accent};
+  margin: 4px 0 8px;
+`
+
+const PriceDesc = styled.p`
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  line-height: 1.6;
+  margin: 0;
+`
+
+const WarningBox = styled.div`
+  padding: 14px 16px;
+  background: rgba(248, 81, 73, 0.08);
+  border: 1px solid ${({ theme }) => theme.colors.danger}44;
+  border-radius: ${({ theme }) => theme.radius.md};
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.colors.danger};
+  line-height: 1.6;
 `
 
 const SectionLabel = styled.p`
@@ -102,8 +136,24 @@ export default function QuestionRequestPage() {
     const [submitting, setSubmitting] = useState(false)
     const [progress,   setProgress]   = useState('')   // 단계별 진행 메시지
     const [error,      setError]      = useState('')
+    const [mentorSettings, setMentorSettings] = useState(null)
+    const [settingsLoading, setSettingsLoading] = useState(true)
 
     const fileInputRef = useRef(null)
+
+    useEffect(() => {
+        async function loadSettings() {
+            try {
+                const { data } = await getQuestionSettings(receiverId)
+                setMentorSettings(data)
+            } catch {
+                setMentorSettings(null)
+            } finally {
+                setSettingsLoading(false)
+            }
+        }
+        loadSettings()
+    }, [receiverId])
 
 
     function handleImageAdd(e) {
@@ -127,6 +177,10 @@ export default function QuestionRequestPage() {
     async function handleSubmit() {
         if (!title.trim())   { setError('제목을 입력해 주세요.');  return }
         if (!content.trim()) { setError('내용을 입력해 주세요.');  return }
+        if (!mentorSettings) {
+            setError('이 멘토는 아직 1:1 질문을 받지 않습니다.')
+            return
+        }
 
         setSubmitting(true)
         setError('')
@@ -144,7 +198,7 @@ export default function QuestionRequestPage() {
                 await uploadRequestImages(created.id, imageFiles)
             }
 
-            navigate('/questions/inbox', { state: { tab: 'sent' } })
+            navigate('/mypage', { state: { questionTab: 'sent-requests' } })
         } catch (err) {
             setError(err.response?.data?.message || '요청 전송에 실패했습니다.')
         } finally {
@@ -167,7 +221,7 @@ export default function QuestionRequestPage() {
                             <Button
                                 $variant="primary"
                                 onClick={handleSubmit}
-                                disabled={submitting}
+                                disabled={submitting || settingsLoading || !mentorSettings}
                             >
                                 {submitting ? '전송 중...' : '질문 보내기'}
                             </Button>
@@ -178,6 +232,23 @@ export default function QuestionRequestPage() {
                             <span className="nick">{receiverNick}</span>
                             <span className="label">멘토</span>
                         </ReceiverBanner>
+
+                        {settingsLoading ? (
+                            <PriceCard><PriceDesc>질문 요금을 불러오는 중...</PriceDesc></PriceCard>
+                        ) : mentorSettings ? (
+                            <PriceCard>
+                                <span className="label" style={{ fontSize: 13, color: '#8b949e' }}>1회 질문료</span>
+                                <PriceAmount>₩{mentorSettings.price.toLocaleString()}</PriceAmount>
+                                <PriceDesc>{mentorSettings.description}</PriceDesc>
+                                <PriceDesc style={{ marginTop: 8 }}>
+                                    멘토가 수락하면 위 금액이 결제됩니다. 거절 시 청구되지 않습니다.
+                                </PriceDesc>
+                            </PriceCard>
+                        ) : (
+                            <WarningBox>
+                                이 멘토는 아직 1:1 질문 단가를 설정하지 않아 질문을 보낼 수 없습니다.
+                            </WarningBox>
+                        )}
 
                         <TitleInput
                             placeholder="질문 제목을 입력하세요..."
