@@ -1,6 +1,7 @@
 package com.errorlog.backend.domain.board.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class SearchService {
 	private final PostRepository postRepository;
 	private final PostSearchRepository postSearchRepository;
 	private final PostAccessService postAccessService;
+	private final PostEnrichmentService postEnrichmentService;
 
 	public PageResponse<PostSummaryResponse> search(
 			String keyword,
@@ -46,19 +48,33 @@ public class SearchService {
 					PostSpecification.byFramework(framework));
 			page = postRepository.findAll(spec, pageable);
 		} else {
-			String normalizedTag = tag != null && !tag.isBlank() ? Tag.normalize(tag) : null;
-			String categoryValue = category != null ? category.name() : null;
-			SearchScope effectiveScope = scope != null ? scope : SearchScope.ALL;
+			String trimmedKeyword = keyword.trim();
+			if (trimmedKeyword.startsWith("#")) {
+				String tagName = Tag.normalize(trimmedKeyword);
+				Specification<Post> spec = PostSpecification.combine(
+						PostSpecification.activeOnly(),
+						PostSpecification.withTags(),
+						PostSpecification.byTagName(tagName),
+						PostSpecification.byCategory(category),
+						PostSpecification.byFramework(framework));
+				page = postRepository.findAll(spec, pageable);
+			} else {
+				String normalizedTag = tag != null && !tag.isBlank() ? Tag.normalize(tag) : null;
+				String tagKeyword = Tag.normalize(trimmedKeyword);
+				String categoryValue = category != null ? category.name() : null;
+				SearchScope effectiveScope = scope != null ? scope : SearchScope.ALL;
 
-			page = switch (effectiveScope) {
-				case CONTENT -> postSearchRepository.searchByKeyword(
-						keyword, categoryValue, framework, normalizedTag, pageable);
-				case ERROR_MESSAGE -> postSearchRepository.searchByErrorMessage(keyword, categoryValue, pageable);
-				case ALL -> postSearchRepository.searchByKeyword(
-						keyword, categoryValue, framework, normalizedTag, pageable);
-			};
+				page = switch (effectiveScope) {
+					case CONTENT -> postSearchRepository.searchByKeyword(
+							trimmedKeyword, tagKeyword, categoryValue, framework, normalizedTag, pageable);
+					case ERROR_MESSAGE -> postSearchRepository.searchByErrorMessage(trimmedKeyword, categoryValue, pageable);
+					case ALL -> postSearchRepository.searchByKeyword(
+							trimmedKeyword, tagKeyword, categoryValue, framework, normalizedTag, pageable);
+				};
+			}
 		}
 
-		return PageResponse.from(page.map(post -> PostSummaryResponse.from(post, postAccessService.isLocked(post, viewerId))));
+		var summaries = postEnrichmentService.toSummaries(page.getContent(), viewerId, postAccessService);
+		return PageResponse.from(new PageImpl<>(summaries, pageable, page.getTotalElements()));
 	}
 }

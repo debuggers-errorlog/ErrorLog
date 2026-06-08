@@ -36,7 +36,7 @@ public class LikeService {
 
     @Transactional(readOnly = true)
     public LikeResponse getStatus(Long userId, Long postId) {
-        boolean liked = likeRepository.existsByUser_IdAndPost_Id(userId, postId);
+        boolean liked = userId != null && likeRepository.existsByUser_IdAndPost_Id(userId, postId);
         long count = likeRepository.countByPost_Id(postId);
         return new LikeResponse(liked, count);
     }

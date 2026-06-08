@@ -1,11 +1,17 @@
 package com.errorlog.backend.domain.board.service;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalAdjusters;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -13,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.errorlog.backend.domain.board.domain.dto.PostCreateRequest;
 import com.errorlog.backend.domain.board.domain.dto.PostResponse;
+import com.errorlog.backend.domain.board.domain.dto.PostStatsResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostSummaryResponse;
 import com.errorlog.backend.domain.board.domain.dto.PostUpdateRequest;
 import com.errorlog.backend.domain.board.domain.entity.Post;
@@ -22,8 +29,6 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.domain.vo.TroubleshootingMeta;
 import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.board.repository.PostSpecification;
-import com.errorlog.backend.domain.user.entity.User;
-import com.errorlog.backend.domain.user.repository.UserRepository;
 import com.errorlog.backend.global.dto.PageResponse;
 import com.errorlog.backend.global.exception.AppException;
 import com.errorlog.backend.global.exception.ErrorCode;
@@ -39,7 +44,7 @@ public class PostService {
 	private final TagService tagService;
 	private final PostAccessService postAccessService;
 	private final PostImageService postImageService;
-	private final UserRepository userRepository;
+	private final PostEnrichmentService postEnrichmentService;
 
 	@Transactional(readOnly = true)
 	public PageResponse<PostSummaryResponse> listPosts(
@@ -58,21 +63,33 @@ public class PostService {
 				PostSpecification.byFramework(framework));
 
 		Page<Post> postPage = postRepository.findAll(spec, pageable);
+		var summaries = postEnrichmentService.toSummaries(postPage.getContent(), viewerId, postAccessService);
+		return PageResponse.from(new PageImpl<>(summaries, pageable, postPage.getTotalElements()));
+	}
 
-		// 작성자 닉네임을 한 번에 조회해서 매핑 (게시글마다 조회하는 N+1 방지)
-		List<Long> authorIds = postPage.getContent().stream()
-				.map(Post::getUserId)
-				.distinct()
-				.toList();
-		Map<Long, String> nicknameMap = userRepository.findAllById(authorIds).stream()
-				.collect(Collectors.toMap(User::getId, User::getNickname));
+	@Transactional(readOnly = true)
+	public PostStatsResponse getStats() {
+		PostStatus active = PostStatus.ACTIVE;
+		long totalPosts = postRepository.countByStatus(active);
 
-		Page<PostSummaryResponse> page = postPage.map(post -> PostSummaryResponse.from(
-				post,
-				postAccessService.isLocked(post, viewerId),
-				nicknameMap.get(post.getUserId())));
+		ZoneId zone = ZoneId.of("Asia/Seoul");
+		LocalDateTime weekStart = LocalDate.now(zone)
+				.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+				.atStartOfDay();
+		long newPostsThisWeek = postRepository.countActiveSince(active, weekStart);
 
-		return PageResponse.from(page);
+		Map<String, Long> categoryCounts = new LinkedHashMap<>();
+		for (TroubleshootingCategory category : TroubleshootingCategory.values()) {
+			categoryCounts.put(category.name(), 0L);
+		}
+
+		for (Object[] row : postRepository.countGroupByCategory(active)) {
+			String categoryKey = row[0] != null ? row[0].toString() : TroubleshootingCategory.OTHER.name();
+			long count = (Long) row[1];
+			categoryCounts.merge(categoryKey, count, Long::sum);
+		}
+
+		return new PostStatsResponse(totalPosts, newPostsThisWeek, categoryCounts);
 	}
 
 	public PostResponse getPost(Long postId, Long viewerId) {
@@ -83,7 +100,7 @@ public class PostService {
 			postRepository.incrementViewCount(postId);
 		}
 
-		return PostResponse.from(post, locked, postImageService.listPostImages(postId, viewerId));
+		return postEnrichmentService.toDetail(post, locked, postImageService.listPostImages(postId, viewerId));
 	}
 
 	public PostResponse createPost(Long authorId, PostCreateRequest request) {
@@ -99,7 +116,7 @@ public class PostService {
 				tags);
 
 		Post saved = postRepository.save(post);
-		return PostResponse.from(saved, false, List.of());
+		return postEnrichmentService.toDetail(saved, false, List.of());
 	}
 
 	public PostResponse updatePost(Long postId, Long actorId, PostUpdateRequest request) {
@@ -115,7 +132,7 @@ public class PostService {
 				request.visibility(),
 				tags);
 
-		return PostResponse.from(post, false, postImageService.listPostImages(postId, actorId));
+		return postEnrichmentService.toDetail(post, false, postImageService.listPostImages(postId, actorId));
 	}
 
 	public void deletePost(Long postId, Long actorId) {

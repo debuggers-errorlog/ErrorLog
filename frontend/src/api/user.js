@@ -11,3 +11,6 @@ export const getMyPosts = (page = 0, size = 10) =>
 
 export const getMyFollowing = () =>
   api.get('/follows/following')
+
+export const getMyQuestions = () =>
+  api.get('/questions/my/asker')

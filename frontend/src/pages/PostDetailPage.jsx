@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import MainLayout from '../components/layout/MainLayout';
 import CategorySidebar from '../components/sidebar/CategorySidebar';
 import FilterSidebar from '../components/sidebar/FilterSidebar';
@@ -8,101 +8,138 @@ import PostDetailContent, {
   CommentSection,
   CommentList,
   CommentItem,
+  EmptyComments,
 } from '../components/post/PostDetailContent';
 import { Avatar, Button } from '../components/common/Styled';
-import { CATEGORIES } from '../mocks/categories';
-import { MOCK_POST_DETAIL } from '../mocks/posts';
+import { useBoardSidebarData } from '../hooks/useBoardSidebarData';
 import { fetchPost } from '../api/postApi';
-import {
-  getComments, createComment, deleteComment,
-  getLikeStatus, toggleLike,
-} from '../api/socialApi';
-import { getCurrentUserId } from '../utils/currentUser';
+import { fetchComments, createComment } from '../api/commentApi';
+import { fetchLikeStatus, toggleLike } from '../api/likeApi';
+import { fetchFollowStatus, toggleFollow } from '../api/followApi';
+import { mapApiPostDetail, mapApiComment } from '../utils/postMapper';
+import { isLoggedIn } from '../utils/authSession';
 import ReportModal from '../components/report/ReportModal.jsx';
-
-function formatTime(value) {
-  if (!value) return '';
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString('ko-KR');
-}
 
 export default function PostDetailPage() {
   const { postId } = useParams();
-  const myId = getCurrentUserId();
-
-  const [post, setPost] = useState(MOCK_POST_DETAIL);
+  const navigate = useNavigate();
+  const { categories, weeklyStats } = useBoardSidebarData();
+  const [post, setPost] = useState(null);
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [liked, setLiked] = useState(false);
+  const [following, setFollowing] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [reportOpen, setReportOpen] = useState(false);
 
-  // 좋아요 상태
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
-
-  // 댓글 상태
-  const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-
-  // 게시글 로드
-  useEffect(() => {
-    fetchPost(postId).then((data) => {
-      if (data?.title) {
-        setPost({ ...MOCK_POST_DETAIL, ...data, author: MOCK_POST_DETAIL.author });
-      }
-    });
+  const loadComments = useCallback(() => {
+    fetchComments(postId)
+      .then((data) => setComments(Array.isArray(data) ? data.map(mapApiComment) : []))
+      .catch(() => setComments([]));
   }, [postId]);
 
-  // 좋아요 상태 + 댓글 로드
   useEffect(() => {
-    if (!postId) return;
-    getLikeStatus(postId)
-      .then((s) => { setLiked(s.liked); setLikeCount(s.likeCount); })
-      .catch(() => { /* 비로그인 등 */ });
+    setLoadError('');
+    fetchPost(postId)
+      .then((data) => {
+        if (data?.title) {
+          const mapped = mapApiPostDetail(data);
+          setPost(mapped);
+
+          fetchFollowStatus(mapped.authorId)
+            .then((status) => {
+              setFollowing(status.following);
+              setFollowerCount(status.followerCount);
+            })
+            .catch(() => {});
+        } else {
+          setPost(null);
+          setLoadError('게시글을 찾을 수 없습니다.');
+        }
+      })
+      .catch(() => {
+        setPost(null);
+        setLoadError('게시글을 불러오지 못했습니다.');
+      });
+
     loadComments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postId]);
 
-  function loadComments() {
-    getComments(postId)
-      .then(setComments)
-      .catch(() => { /* 비로그인 등 */ });
-  }
+    fetchLikeStatus(postId)
+      .then((data) => {
+        setLiked(data.liked);
+        setPost((prev) => (prev ? { ...prev, likeCount: data.count } : prev));
+      })
+      .catch(() => {});
+  }, [postId, loadComments]);
 
-  async function handleToggleLike() {
-    if (!myId) { alert('로그인이 필요합니다.'); return; }
+  const requireLogin = () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return false;
+    }
+    return true;
+  };
+
+  const handleLikeToggle = async () => {
+    if (!requireLogin()) return;
+
     try {
-      const r = await toggleLike(postId);
-      setLiked(r.liked);
-      setLikeCount(r.likeCount);
+      const data = await toggleLike(postId);
+      setLiked(data.liked);
+      setPost((prev) => (prev ? { ...prev, likeCount: data.count } : prev));
     } catch {
       alert('좋아요 처리에 실패했습니다.');
     }
-  }
+  };
 
-  async function handleSubmitComment() {
-    if (!myId) { alert('로그인이 필요합니다.'); return; }
-    const content = newComment.trim();
-    if (!content) return;
-    setSubmitting(true);
+  const handleFollowToggle = async () => {
+    if (!requireLogin() || !post?.authorId) return;
+
     try {
-      await createComment(postId, content);
-      setNewComment('');
+      const data = await toggleFollow(post.authorId);
+      setFollowing(data.following);
+      setFollowerCount(data.followerCount);
+    } catch {
+      alert('팔로우 처리에 실패했습니다.');
+    }
+  };
+
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim()) return;
+    if (!requireLogin()) return;
+
+    setSubmittingComment(true);
+    try {
+      await createComment(Number(postId), commentText.trim());
+      setCommentText('');
       loadComments();
+      setPost((prev) =>
+        prev ? { ...prev, commentCount: (prev.commentCount ?? 0) + 1 } : prev,
+      );
     } catch {
       alert('댓글 작성에 실패했습니다.');
     } finally {
-      setSubmitting(false);
+      setSubmittingComment(false);
     }
+  };
+
+  if (loadError) {
+    return (
+      <MainLayout>
+        <p style={{ color: '#f85149' }}>{loadError}</p>
+      </MainLayout>
+    );
   }
 
-  async function handleDeleteComment(commentId) {
-    if (!window.confirm('댓글을 삭제할까요?')) return;
-    try {
-      await deleteComment(commentId);
-      loadComments();
-    } catch {
-      alert('본인 댓글만 삭제할 수 있습니다.');
-    }
+  if (!post) {
+    return (
+      <MainLayout>
+        <p>게시글을 불러오는 중...</p>
+      </MainLayout>
+    );
   }
 
   return (
@@ -110,7 +147,7 @@ export default function PostDetailPage() {
       leftSidebar={
         <>
           <CategorySidebar
-            categories={CATEGORIES}
+            categories={categories}
             activeId={activeCategory}
             onSelect={setActiveCategory}
           />
@@ -122,31 +159,38 @@ export default function PostDetailPage() {
           />
         </>
       }
-      rightSidebar={
-        <PostDetailSidebar
-          post={{ ...post, likeCount, commentCount: comments.length }}
-        />
-      }
+      rightSidebar={<PostDetailSidebar post={post} followerCount={followerCount} />}
     >
       <PostDetailContent
         post={post}
         liked={liked}
-        likeCount={likeCount}
-        onToggleLike={handleToggleLike}
+        following={following}
+        showFollow={isLoggedIn()}
+        onLikeToggle={handleLikeToggle}
+        onFollowToggle={handleFollowToggle}
       />
 
       <CommentSection>
         <h2>댓글 {comments.length}</h2>
         <textarea
-          placeholder="댓글을 입력하세요..."
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+          placeholder={isLoggedIn() ? '댓글을 입력하세요...' : '로그인 후 댓글을 작성할 수 있습니다.'}
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          disabled={!isLoggedIn()}
         />
-        <div className="flex items-center gap-2">
-          <Button $variant="primary" onClick={handleSubmitComment} disabled={submitting}>
-            {submitting ? '작성 중...' : '댓글 작성'}
+        <div className="comment-actions">
+          <Button
+            $variant="primary"
+            onClick={handleCommentSubmit}
+            disabled={submittingComment || !isLoggedIn()}
+          >
+            {submittingComment ? '작성 중...' : '댓글 작성'}
           </Button>
-          <Button $variant="primary" onClick={() => setReportOpen(true)}>게시글 신고</Button>
+          {isLoggedIn() && (
+            <Button $variant="ghost" onClick={() => setReportOpen(true)}>
+              게시글 신고
+            </Button>
+          )}
         </div>
         <ReportModal
           open={reportOpen}
@@ -156,25 +200,24 @@ export default function PostDetailPage() {
         />
 
         <CommentList>
-          {comments.map((c) => (
-            <CommentItem key={c.id}>
-              <Avatar $color="#6366f1" $size={36}>
-                {(c.nickname ?? String(c.userId)).charAt(0)}
-              </Avatar>
-              <div>
-                <div className="meta">
-                  {c.nickname ?? `유저 ${c.userId}`}
-                  <span className="time"> · {formatTime(c.createdAt)}</span>
+          {comments.length === 0 ? (
+            <EmptyComments>아직 댓글이 없습니다.</EmptyComments>
+          ) : (
+            comments.map((comment) => (
+              <CommentItem key={comment.id}>
+                <Avatar $color={comment.author.avatarColor} $size={36}>
+                  {comment.author.nickname[0]}
+                </Avatar>
+                <div>
+                  <div className="meta">
+                    {comment.author.nickname}
+                    <span className="time"> · {comment.createdAt}</span>
+                  </div>
+                  <p>{comment.content}</p>
                 </div>
-                <p>{c.content}</p>
-                <div className="actions">
-                  {myId === c.userId && (
-                    <span onClick={() => handleDeleteComment(c.id)}>삭제</span>
-                  )}
-                </div>
-              </div>
-            </CommentItem>
-          ))}
+              </CommentItem>
+            ))
+          )}
         </CommentList>
       </CommentSection>
     </MainLayout>

@@ -7,7 +7,7 @@ public record CommentResponse(
         Long id,
         Long postId,
         Long userId,
-        String nickname,      // 추가: 작성자 닉네임
+        String authorNickname,
         Long parentId,
         String content,
         String status,
@@ -18,7 +18,7 @@ public record CommentResponse(
                 c.getId(),
                 c.getPost().getId(),
                 c.getUser().getId(),
-                c.getUser().getNickname(),   // 추가: Comment가 들고 있는 User에서 닉네임
+                c.getUser().getNickname(),
                 c.getParent() == null ? null : c.getParent().getId(),
                 c.getContent(),
                 c.getStatus().name(),

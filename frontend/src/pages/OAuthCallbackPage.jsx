@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import styled from 'styled-components'
+import { saveTokens } from '../utils/authSession'
 
 const Wrapper = styled.div`
   min-height: 100vh;
@@ -24,8 +25,7 @@ export default function OAuthCallbackPage() {
     const refreshToken = searchParams.get('refreshToken')
 
     if (accessToken && refreshToken) {
-      localStorage.setItem('accessToken', accessToken)
-      localStorage.setItem('refreshToken', refreshToken)
+      saveTokens(accessToken, refreshToken)
       navigate('/', { replace: true })
     } else {
       navigate('/login', { replace: true })

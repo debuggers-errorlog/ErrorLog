@@ -41,7 +41,8 @@ public class FollowService {
     // 화면 처음 들어올 때, 버튼 초기 상태와 숫자를 알려주기 위한 조회
     @Transactional(readOnly = true)
     public FollowStatusResponse getStatus(Long viewerId, Long targetId) {
-        boolean following = followRepository.existsByFollower_IdAndFollowing_Id(viewerId, targetId);
+        boolean following = viewerId != null
+                && followRepository.existsByFollower_IdAndFollowing_Id(viewerId, targetId);
         long followerCount = followRepository.countByFollowing_Id(targetId);
         long followingCount = followRepository.countByFollower_Id(targetId);
         return new FollowStatusResponse(following, followerCount, followingCount);
