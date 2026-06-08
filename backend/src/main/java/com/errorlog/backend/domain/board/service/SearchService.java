@@ -51,13 +51,17 @@ public class SearchService {
 			String trimmedKeyword = keyword.trim();
 			if (trimmedKeyword.startsWith("#")) {
 				String tagName = Tag.normalize(trimmedKeyword);
-				Specification<Post> spec = PostSpecification.combine(
-						PostSpecification.activeOnly(),
-						PostSpecification.withTags(),
-						PostSpecification.byTagName(tagName),
-						PostSpecification.byCategory(category),
-						PostSpecification.byFramework(framework));
-				page = postRepository.findAll(spec, pageable);
+				if (tagName.isBlank()) {
+					page = Page.empty(pageable);
+				} else {
+					Specification<Post> spec = PostSpecification.combine(
+							PostSpecification.activeOnly(),
+							PostSpecification.withTags(),
+							PostSpecification.byTagName(tagName),
+							PostSpecification.byCategory(category),
+							PostSpecification.byFramework(framework));
+					page = postRepository.findAll(spec, pageable);
+				}
 			} else {
 				String normalizedTag = tag != null && !tag.isBlank() ? Tag.normalize(tag) : null;
 				String tagKeyword = Tag.normalize(trimmedKeyword);

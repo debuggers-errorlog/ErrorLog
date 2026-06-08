@@ -7,6 +7,8 @@ import com.errorlog.backend.domain.subscription.dto.SubscriptionInfoResponse;
 import com.errorlog.backend.domain.subscription.repository.SubscriptionSettingsRepository;
 import com.errorlog.backend.domain.user.entity.User;
 import com.errorlog.backend.domain.user.repository.UserRepository;
+import com.errorlog.backend.global.exception.AppException;
+import com.errorlog.backend.global.exception.ErrorCode;
 import com.errorlog.backend.domain.board.domain.enums.PostStatus;
 import com.errorlog.backend.domain.board.domain.enums.PostVisibility;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +31,7 @@ public class SubscriptionInfoService {
         // 1. 구독 설정 조회
         SubscriptionSettings settings = subscriptionSettingsRepository
                 .findByUserId(creatorId)
-                .orElseThrow(() -> new IllegalArgumentException("구독 플랜이 존재하지 않습니다."));
+                .orElseThrow(() -> new AppException(ErrorCode.SUBSCRIPTION_SETTINGS_NOT_FOUND));
         // 2. 크리에이터 이름 조회
         String creatorName = userRepository.findById(creatorId)
                 .map(User::getNickname)

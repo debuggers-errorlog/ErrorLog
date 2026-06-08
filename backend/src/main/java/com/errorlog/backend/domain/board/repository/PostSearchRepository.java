@@ -19,11 +19,11 @@ public interface PostSearchRepository extends JpaRepository<Post, Long> {
 					WHERE p.status = 'ACTIVE'
 					  AND (
 					    MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
-					    OR t.name = :tagKeyword
+					    OR t.name LIKE CONCAT('%', :tagKeyword, '%')
 					  )
 					  AND (:category IS NULL OR p.meta_category = :category)
 					  AND (:framework IS NULL OR p.meta_framework = :framework)
-					  AND (:tag IS NULL OR t.name = :tag)
+					  AND (:tag IS NULL OR t.name LIKE CONCAT('%', :tag, '%'))
 					ORDER BY p.created_at DESC
 					""",
 			countQuery = """
@@ -34,11 +34,11 @@ public interface PostSearchRepository extends JpaRepository<Post, Long> {
 					WHERE p.status = 'ACTIVE'
 					  AND (
 					    MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
-					    OR t.name = :tagKeyword
+					    OR t.name LIKE CONCAT('%', :tagKeyword, '%')
 					  )
 					  AND (:category IS NULL OR p.meta_category = :category)
 					  AND (:framework IS NULL OR p.meta_framework = :framework)
-					  AND (:tag IS NULL OR t.name = :tag)
+					  AND (:tag IS NULL OR t.name LIKE CONCAT('%', :tag, '%'))
 					""",
 			nativeQuery = true)
 	Page<Post> searchByKeyword(

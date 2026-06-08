@@ -352,7 +352,7 @@ export function SubscriptionInfoPage() {
                 </TotalPrice>
                 <BtnRow>
                     <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
-                    <CtaBtn onClick={() => navigate(`/subscriptions/${creatorId}/payment`)}>
+                    <CtaBtn onClick={() => navigate(`/subscriptions/${creatorId}/payment`, { state: { info } })}>
                         <Heart size={16} />
                         구독 시작하기
                     </CtaBtn>

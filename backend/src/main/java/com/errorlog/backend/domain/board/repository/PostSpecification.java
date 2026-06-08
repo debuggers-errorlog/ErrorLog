@@ -48,10 +48,14 @@ public final class PostSpecification {
 			return null;
 		}
 		String normalized = Tag.normalize(tagName);
+		if (normalized.isBlank()) {
+			return null;
+		}
+		String pattern = "%" + normalized + "%";
 		return (root, query, cb) -> {
 			Join<Post, Tag> tags = root.join("tags", JoinType.INNER);
 			query.distinct(true);
-			return cb.equal(tags.get("name"), normalized);
+			return cb.like(tags.get("name"), pattern);
 		};
 	}
 

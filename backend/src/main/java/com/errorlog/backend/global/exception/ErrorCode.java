@@ -34,7 +34,9 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "권한이 없습니다."),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
     INVALID_FILE_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 이미지 형식입니다."),
-    QUESTION_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 질문 요청입니다.");
+    QUESTION_REQUEST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 질문 요청입니다."),
+    SUBSCRIPTION_SETTINGS_NOT_FOUND(HttpStatus.NOT_FOUND, "구독 플랜이 존재하지 않습니다."),
+    SUBSCRIPTION_SETTINGS_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 구독 플랜이 존재합니다.");
 
     private final HttpStatus status;
     private final String message;

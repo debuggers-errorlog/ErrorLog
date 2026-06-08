@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Heart, UserPlus, UserCheck } from 'lucide-react';
+import { Heart, UserPlus, UserCheck, Star } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Avatar, Badge, Button, Card } from '../common/Styled';
 import MarkdownImage from './MarkdownImage';
@@ -57,6 +57,27 @@ const FollowButton = styled.button`
   background: ${({ theme, $following }) =>
     $following ? theme.colors.surfaceHover : theme.colors.accentDim};
   color: ${({ theme, $following }) => ($following ? theme.colors.textMuted : theme.colors.accent)};
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+const SubscribeButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid
+    ${({ theme, $subscribed }) => ($subscribed ? theme.colors.borderLight : theme.colors.premium)};
+  background: ${({ theme, $subscribed }) =>
+    $subscribed ? theme.colors.surfaceHover : theme.colors.premiumDim};
+  color: ${({ theme, $subscribed }) =>
+    $subscribed ? theme.colors.textMuted : theme.colors.premium};
 
   &:hover {
     opacity: 0.9;
@@ -174,9 +195,12 @@ export default function PostDetailContent({
   post,
   liked = false,
   following = false,
+  subscribed = false,
   showFollow = false,
+  showSubscribe = false,
   onLikeToggle,
   onFollowToggle,
+  onSubscribe,
 }) {
   return (
     <Article>
@@ -198,6 +222,12 @@ export default function PostDetailContent({
                 {following ? '팔로잉' : '팔로우'}
               </FollowButton>
             )}
+            {showSubscribe && (
+              <SubscribeButton type="button" $subscribed={subscribed} onClick={onSubscribe}>
+                <Star size={14} fill={subscribed ? 'currentColor' : 'none'} />
+                {subscribed ? '구독 중' : '구독'}
+              </SubscribeButton>
+            )}
             <span className="time"> · {post.createdAt}</span>
           </div>
         </AuthorInfo>
@@ -216,8 +246,8 @@ export default function PostDetailContent({
         <LockedBanner>
           <h3>구독자 전용 게시글</h3>
           <p>{post.excerpt || '이 글의 전체 내용은 작성자를 구독한 사용자만 열람할 수 있습니다.'}</p>
-          <Button $variant="primary" type="button" disabled>
-            구독하기 (준비 중)
+          <Button $variant="primary" type="button" onClick={onSubscribe}>
+            {subscribed ? '구독 관리하기' : '구독하기'}
           </Button>
         </LockedBanner>
         ) : (

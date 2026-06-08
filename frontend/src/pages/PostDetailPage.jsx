@@ -17,7 +17,8 @@ import { fetchComments, createComment } from '../api/commentApi';
 import { fetchLikeStatus, toggleLike } from '../api/likeApi';
 import { fetchFollowStatus, toggleFollow } from '../api/followApi';
 import { mapApiPostDetail, mapApiComment } from '../utils/postMapper';
-import { isLoggedIn } from '../utils/authSession';
+import { isLoggedIn, getCurrentUserId } from '../utils/authSession';
+import { fetchSubscriptionStatus } from '../api/subscriptionApi';
 import ReportModal from '../components/report/ReportModal.jsx';
 
 export default function PostDetailPage() {
@@ -29,6 +30,7 @@ export default function PostDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [liked, setLiked] = useState(false);
   const [following, setFollowing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [activeCategory, setActiveCategory] = useState('all');
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -55,6 +57,15 @@ export default function PostDetailPage() {
               setFollowerCount(status.followerCount);
             })
             .catch(() => {});
+
+          const currentUserId = getCurrentUserId();
+          if (currentUserId && mapped.authorId && currentUserId !== mapped.authorId) {
+            fetchSubscriptionStatus(mapped.authorId)
+              .then(setSubscribed)
+              .catch(() => setSubscribed(false));
+          } else {
+            setSubscribed(false);
+          }
         } else {
           setPost(null);
           setLoadError('게시글을 찾을 수 없습니다.');
@@ -126,6 +137,11 @@ export default function PostDetailPage() {
     }
   };
 
+  const handleSubscribe = () => {
+    if (!requireLogin() || !post?.authorId) return;
+    navigate(`/subscriptions/${post.authorId}/info`);
+  };
+
   if (loadError) {
     return (
       <MainLayout>
@@ -141,6 +157,9 @@ export default function PostDetailPage() {
       </MainLayout>
     );
   }
+
+  const currentUserId = getCurrentUserId();
+  const isOwnPost = currentUserId != null && post.authorId === currentUserId;
 
   return (
     <MainLayout
@@ -165,9 +184,12 @@ export default function PostDetailPage() {
         post={post}
         liked={liked}
         following={following}
-        showFollow={isLoggedIn()}
+        subscribed={subscribed}
+        showFollow={isLoggedIn() && !isOwnPost}
+        showSubscribe={!isOwnPost}
         onLikeToggle={handleLikeToggle}
         onFollowToggle={handleFollowToggle}
+        onSubscribe={handleSubscribe}
       />
 
       <CommentSection>
