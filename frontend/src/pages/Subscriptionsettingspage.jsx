@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Settings, Save } from "lucide-react";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
-import { getSubscriptionSettings, createSubscriptionSettings, updateSubscriptionSettings }
-    from '../api/subscriptionApi';
+import {
+    getMySubscriptionSettings,
+    saveMySubscriptionSettings,
+} from '../api/subscriptionApi';
+import { getCurrentUserId, isLoggedIn } from '../utils/authSession';
 
 const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
@@ -177,10 +179,7 @@ const MutedText = styled.p`
 
 export function SubscriptionSettingsPage() {
     const navigate = useNavigate();
-
-    //const creatorId = 1; // JWT 연동 후 제거
-    const token = localStorage.getItem("accessToken");
-    const creatorId = token ? jwtDecode(token).userId : null;
+    const creatorId = getCurrentUserId();
 
     const [price, setPrice] = useState("");
     const [description, setDescription] = useState("");
@@ -189,38 +188,68 @@ export function SubscriptionSettingsPage() {
     const [message, setMessage] = useState(null);
 
     useEffect(() => {
+        if (!isLoggedIn() || !creatorId) {
+            navigate('/login');
+        }
+    }, [creatorId, navigate]);
+
+    useEffect(() => {
+        if (!creatorId) {
+            setLoading(false);
+            return;
+        }
+
         async function fetchSettings() {
             try {
-                const { data } = await getSubscriptionSettings(creatorId);
-                setPrice(data.price);
-                setDescription(data.description);
-                setIsExisting(true);
+                const { data } = await getMySubscriptionSettings();
+                if (data.userId === creatorId) {
+                    setPrice(String(data.price ?? ''));
+                    setDescription(data.description ?? '');
+                    setIsExisting(true);
+                } else {
+                    setIsExisting(false);
+                }
             } catch (e) {
-                console.error(e);
+                if (e.response?.status === 404) {
+                    setIsExisting(false);
+                } else {
+                    console.error(e);
+                    setMessage({ type: 'error', text: '플랜 정보를 불러오지 못했습니다.' });
+                }
             } finally {
                 setLoading(false);
             }
         }
         fetchSettings();
-    }, []);
+    }, [creatorId]);
 
     const handleSubmit = async () => {
+        if (!creatorId) {
+            navigate('/login');
+            return;
+        }
         if (!price || !description) {
             setMessage({ type: "error", text: "가격과 설명을 입력해주세요." });
             return;
         }
         try {
-            if (isExisting) {
-                await updateSubscriptionSettings(creatorId, { userId: creatorId, price: Number(price), description });
-            } else {
-                await createSubscriptionSettings({ userId: creatorId, price: Number(price), description });
-            }
+            await saveMySubscriptionSettings({
+                price: Number(price),
+                description,
+            });
             setIsExisting(true);
             setMessage({ type: "success", text: "구독 플랜이 저장되었습니다!" });
-        } catch {
-            setMessage({ type: "error", text: "저장에 실패했습니다." });
+        } catch (e) {
+            const status = e.response?.status;
+            if (status === 401) {
+                setMessage({ type: "error", text: "로그인이 만료되었습니다. 다시 로그인해주세요." });
+            } else {
+                setMessage({ type: "error", text: "저장에 실패했습니다." });
+            }
         }
     };
+
+    if (!creatorId) return null;
 
     if (loading) return <Page><MutedText>불러오는 중...</MutedText></Page>;
 
