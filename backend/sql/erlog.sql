@@ -241,13 +241,14 @@ CREATE TABLE IF NOT EXISTS `images` (
 );
 
 CREATE TABLE `payments` (
-    `id` BIGINT PRIMARY KEY AUTO_INCREMENT,     -- 결제 고유 ID
-    `user_id` BIGINT NOT NULL,                  -- 결제자(구독자/질문자) ID
-    `target_id` BIGINT NOT NULL,                -- 구독일 경우 플랜ID, 질문일 경우 질문글ID
-    `payment_type` VARCHAR(20) NOT NULL,        -- 'SUBSCRIPTION' 또는 'QUESTION'
-    `price` BIGINT NOT NULL,                   -- 결제 금액
-    `status` ENUM('PAID', 'FAILED') NOT NULL,      -- 'PAID'(성공), 'FAILED'(실패)
-    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP, -- 결제 생성일
+    `id` BIGINT NOT NULL AUTO_INCREMENT,
+    `user_id` BIGINT NOT NULL,
+    `target_id` BIGINT NOT NULL,
+    `payment_type` VARCHAR(20) NOT NULL,
+    `price` BIGINT NOT NULL,
+    `status` VARCHAR(20) NOT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
     CONSTRAINT `FK_USERS_TO_PAYMENTS` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 );
 commit;

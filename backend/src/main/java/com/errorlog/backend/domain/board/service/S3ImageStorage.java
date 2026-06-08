@@ -50,6 +50,7 @@ public class S3ImageStorage implements ImageStoragePort {
 					: properties.publicUrlBase();
 			return base + "/" + key;
 		}
-		return "https://%s.s3.%s.amazonaws.com/%s".formatted(properties.bucket(), properties.region(), key);
+		// S3 객체는 private여도 GET /uploads/** 프록시로 제공
+		return "/uploads/" + key.replace('\\', '/');
 	}
 }

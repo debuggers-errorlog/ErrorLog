@@ -1,12 +1,15 @@
 import styled from 'styled-components';
-import { Heart, Bookmark, Share2 } from 'lucide-react';
+import { Heart, Bookmark, Share2, UserPlus, UserCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Avatar, Badge, Card } from '../common/Styled';
+import { Avatar, Badge, Button, Card } from '../common/Styled';
+import MarkdownImage from './MarkdownImage';
 
 const Article = styled.article``;
 
 const TopBadge = styled(Badge)`
   margin-bottom: 12px;
+  background: ${({ $bg }) => `${$bg}22`};
+  color: ${({ $bg }) => $bg};
 `;
 
 const Title = styled.h1`
@@ -37,6 +40,26 @@ const AuthorInfo = styled.div`
   span.time {
     font-size: 13px;
     color: ${({ theme }) => theme.colors.textMuted};
+  }
+`;
+
+const FollowButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 6px 12px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid
+    ${({ theme, $following }) => ($following ? theme.colors.borderLight : theme.colors.accent)};
+  background: ${({ theme, $following }) =>
+    $following ? theme.colors.surfaceHover : theme.colors.accentDim};
+  color: ${({ theme, $following }) => ($following ? theme.colors.textMuted : theme.colors.accent)};
+
+  &:hover {
+    opacity: 0.9;
   }
 `;
 
@@ -90,13 +113,34 @@ const Content = styled.div`
     margin-bottom: 12px;
   }
 
-  ol, ul {
+  ol,
+  ul {
     padding-left: 20px;
     margin-bottom: 16px;
     li {
       list-style: disc;
       margin-bottom: 6px;
     }
+  }
+`;
+
+const LockedBanner = styled.div`
+  padding: 32px;
+  text-align: center;
+  background: ${({ theme }) => theme.colors.surface};
+  border: 1px dashed ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.lg};
+
+  h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 14px;
+    color: ${({ theme }) => theme.colors.textMuted};
+    margin-bottom: 16px;
+    line-height: 1.6;
   }
 `;
 
@@ -126,103 +170,100 @@ const StatItem = styled.div`
   }
 `;
 
-const TechList = styled.ul`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-
-    &::before {
-      content: '';
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: ${({ theme }) => theme.colors.accent};
-    }
-  }
-`;
-
-export default function PostDetailContent({ post }) {
+export default function PostDetailContent({
+  post,
+  liked = false,
+  following = false,
+  showFollow = false,
+  onLikeToggle,
+  onFollowToggle,
+}) {
   return (
-    <>
-      <Article>
-        <TopBadge $bg="#61dafb" $text="#61dafb">
-          {post.categoryLabel || 'General'}
-        </TopBadge>
-        <Title>{post.title}</Title>
+    <Article>
+      <TopBadge $bg={post.categoryColor}>
+        {post.categoryLabel || 'General'}
+      </TopBadge>
+      <Title>{post.title}</Title>
 
-        <MetaRow>
-          <AuthorInfo>
-            <Avatar $color={post.author?.avatarColor}>
-              {post.author?.nickname?.[0]}
-            </Avatar>
-            <div>
-              <span className="name">{post.author?.nickname}</span>
-              <span className="time"> · {post.createdAt}</span>
-            </div>
-          </AuthorInfo>
-          <Actions>
-            <button type="button">
-              <Heart size={16} /> {post.likeCount}
-            </button>
-            <button type="button">
-              <Bookmark size={16} />
-            </button>
-            <button type="button">
-              <Share2 size={16} />
-            </button>
-          </Actions>
-        </MetaRow>
+      <MetaRow>
+        <AuthorInfo>
+          <Avatar $color={post.author?.avatarColor}>
+            {post.author?.nickname?.[0]}
+          </Avatar>
+          <div>
+            <span className="name">{post.author?.nickname}</span>
+            {showFollow && (
+              <FollowButton type="button" $following={following} onClick={onFollowToggle}>
+                {following ? <UserCheck size={14} /> : <UserPlus size={14} />}
+                {following ? '팔로잉' : '팔로우'}
+              </FollowButton>
+            )}
+            <span className="time"> · {post.createdAt}</span>
+          </div>
+        </AuthorInfo>
+        <Actions>
+          <button
+            type="button"
+            onClick={onLikeToggle}
+            style={liked ? { color: '#f85149' } : undefined}
+          >
+            <Heart size={16} fill={liked ? 'currentColor' : 'none'} /> {post.likeCount}
+          </button>
+          <button type="button">
+            <Bookmark size={16} />
+          </button>
+          <button type="button">
+            <Share2 size={16} />
+          </button>
+        </Actions>
+      </MetaRow>
 
-        <Content>
-          <ReactMarkdown>{post.content || post.excerpt}</ReactMarkdown>
-        </Content>
-      </Article>
-    </>
+      {post.locked ? (
+        <LockedBanner>
+          <h3>구독자 전용 게시글</h3>
+          <p>{post.excerpt || '이 글의 전체 내용은 작성자를 구독한 사용자만 열람할 수 있습니다.'}</p>
+          <Button $variant="primary" type="button" disabled>
+            구독하기 (준비 중)
+          </Button>
+        </LockedBanner>
+        ) : (
+          <Content>
+            <ReactMarkdown
+              components={{
+                img: MarkdownImage,
+              }}
+            >
+              {post.content || post.excerpt}
+            </ReactMarkdown>
+          </Content>
+        )}
+    </Article>
   );
 }
 
-export function PostDetailSidebar({ post }) {
+export function PostDetailSidebar({ post, followerCount }) {
   return (
-    <>
-      <Card>
-        <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>게시물 통계</h3>
-        <StatGrid>
-          <StatItem $color="#58a6ff">
-            <span className="label">조회수</span>
-            <span className="value">{post.viewCount?.toLocaleString()}</span>
-          </StatItem>
-          <StatItem $color="#f85149">
-            <span className="label">좋아요</span>
-            <span className="value">{post.likeCount}</span>
-          </StatItem>
-          <StatItem $color="#a371f7">
-            <span className="label">댓글</span>
-            <span className="value">{post.commentCount}</span>
-          </StatItem>
-          <StatItem $color="#3fb950">
-            <span className="label">북마크</span>
-            <span className="value">{post.bookmarkCount ?? 0}</span>
-          </StatItem>
-        </StatGrid>
-      </Card>
-
-      {post.techStack && (
-        <Card>
-          <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>사용된 기술 스택</h3>
-          <TechList>
-            {post.techStack.map((tech) => (
-              <li key={tech}>{tech}</li>
-            ))}
-          </TechList>
-        </Card>
-      )}
-    </>
+    <Card>
+      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>게시물 통계</h3>
+      <StatGrid>
+        <StatItem $color="#58a6ff">
+          <span className="label">조회수</span>
+          <span className="value">{post.viewCount?.toLocaleString()}</span>
+        </StatItem>
+        <StatItem $color="#f85149">
+          <span className="label">좋아요</span>
+          <span className="value">{post.likeCount}</span>
+        </StatItem>
+        <StatItem $color="#a371f7">
+          <span className="label">댓글</span>
+          <span className="value">{post.commentCount}</span>
+        </StatItem>
+        <StatItem $color="#3fb950">
+          <span className="label">팔로워</span>
+          <span className="value">{followerCount ?? 0}</span>
+        </StatItem>
+      </StatGrid>
+    </Card>
   );
 }
 
@@ -252,6 +293,12 @@ export const CommentSection = styled.section`
       border-color: ${({ theme }) => theme.colors.accent};
     }
   }
+
+  .comment-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 `;
 
 export const CommentList = styled.div`
@@ -272,7 +319,7 @@ export const CommentItem = styled.div`
   p {
     font-size: 14px;
     color: ${({ theme }) => theme.colors.textSecondary};
-    margin: 6px 0 10px;
+    margin: 6px 0 0;
   }
 
   .meta {
@@ -284,11 +331,10 @@ export const CommentItem = styled.div`
     color: ${({ theme }) => theme.colors.textMuted};
     font-weight: 400;
   }
+`;
 
-  .actions {
-    display: flex;
-    gap: 12px;
-    font-size: 12px;
-    color: ${({ theme }) => theme.colors.textMuted};
-  }
+export const EmptyComments = styled.p`
+  font-size: 14px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 16px;
 `;

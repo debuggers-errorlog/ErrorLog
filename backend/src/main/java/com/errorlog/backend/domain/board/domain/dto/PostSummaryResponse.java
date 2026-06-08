@@ -11,6 +11,7 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 public record PostSummaryResponse(
 		Long id,
 		Long authorId,
+		String authorNickname,
 		String title,
 		String excerpt,
 		PostVisibility visibility,
@@ -19,9 +20,16 @@ public record PostSummaryResponse(
 		String errorType,
 		List<String> tags,
 		int viewCount,
+		int likeCount,
+		int commentCount,
 		LocalDateTime createdAt) {
 
-	public static PostSummaryResponse from(Post post, boolean locked) {
+	public static PostSummaryResponse from(
+			Post post,
+			boolean locked,
+			String authorNickname,
+			int likeCount,
+			int commentCount) {
 		String excerpt = locked
 				? resolveLockedExcerpt(post)
 				: truncate(post.getContent(), 160);
@@ -33,6 +41,7 @@ public record PostSummaryResponse(
 		return new PostSummaryResponse(
 				post.getId(),
 				post.getUserId(),
+				authorNickname,
 				post.getTitle(),
 				excerpt,
 				post.getVisibility(),
@@ -41,7 +50,13 @@ public record PostSummaryResponse(
 				post.getMetaErrorType(),
 				post.getTags().stream().map(Tag::getName).sorted().toList(),
 				post.getViewCount(),
+				likeCount,
+				commentCount,
 				post.getCreatedAt());
+	}
+
+	public static PostSummaryResponse from(Post post, boolean locked) {
+		return from(post, locked, "Unknown", 0, 0);
 	}
 
 	private static String resolveLockedExcerpt(Post post) {

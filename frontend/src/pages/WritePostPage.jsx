@@ -20,6 +20,7 @@ import {
 import MarkdownEditor from '../components/post/MarkdownEditor';
 import { FRAMEWORKS } from '../mocks/frameworks';
 import { createPost } from '../api/postApi';
+import { isLoggedIn } from '../utils/authSession';
 
 const TROUBLESHOOTING_CATEGORIES = [
   { value: 'RUNTIME', label: 'Runtime' },
@@ -44,6 +45,11 @@ export default function WritePostPage() {
   const [visibility, setVisibility] = useState('PUBLIC');
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (!isLoggedIn()) {
+      navigate('/login', { state: { from: '/write' } });
+    }
+  }, [navigate]);
 
   const addTag = () => {
     const trimmed = tagInput.trim().replace(/^#/, '');

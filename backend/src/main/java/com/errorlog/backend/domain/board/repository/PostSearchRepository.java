@@ -17,7 +17,10 @@ public interface PostSearchRepository extends JpaRepository<Post, Long> {
 					LEFT JOIN post_tags pt ON p.id = pt.post_id
 					LEFT JOIN tags t ON pt.tag_id = t.id
 					WHERE p.status = 'ACTIVE'
-					  AND MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+					  AND (
+					    MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+					    OR t.name = :tagKeyword
+					  )
 					  AND (:category IS NULL OR p.meta_category = :category)
 					  AND (:framework IS NULL OR p.meta_framework = :framework)
 					  AND (:tag IS NULL OR t.name = :tag)
@@ -29,7 +32,10 @@ public interface PostSearchRepository extends JpaRepository<Post, Long> {
 					LEFT JOIN post_tags pt ON p.id = pt.post_id
 					LEFT JOIN tags t ON pt.tag_id = t.id
 					WHERE p.status = 'ACTIVE'
-					  AND MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+					  AND (
+					    MATCH(p.title, p.content) AGAINST (:keyword IN NATURAL LANGUAGE MODE)
+					    OR t.name = :tagKeyword
+					  )
 					  AND (:category IS NULL OR p.meta_category = :category)
 					  AND (:framework IS NULL OR p.meta_framework = :framework)
 					  AND (:tag IS NULL OR t.name = :tag)
@@ -37,6 +43,7 @@ public interface PostSearchRepository extends JpaRepository<Post, Long> {
 			nativeQuery = true)
 	Page<Post> searchByKeyword(
 			@Param("keyword") String keyword,
+			@Param("tagKeyword") String tagKeyword,
 			@Param("category") String category,
 			@Param("framework") String framework,
 			@Param("tag") String tag,
