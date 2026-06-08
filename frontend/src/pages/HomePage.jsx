@@ -9,6 +9,7 @@ import { CATEGORIES } from '../mocks/categories';
 import { WEEKLY_STATS } from '../mocks/stats';
 import { MOCK_POSTS } from '../mocks/posts';
 import { fetchPosts } from '../api/postApi';
+import { getLikeStatus, getComments } from '../api/socialApi';
 
 function mapApiPost(apiPost) {
   const locked = apiPost.locked;
@@ -41,9 +42,26 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    fetchPosts().then((data) => {
+    fetchPosts().then(async (data) => {
       if (Array.isArray(data) && data.length > 0 && data[0].title) {
-        setPosts(data.map(mapApiPost));
+        const mapped = data.map(mapApiPost);
+        setPosts(mapped);
+
+        // 좋아요/댓글 수를 API로 게시글마다 채워서 실시간 반영
+        const enriched = await Promise.all(
+          mapped.map(async (p) => {
+            try {
+              const [likeRes, comments] = await Promise.all([
+                getLikeStatus(p.id),
+                getComments(p.id),
+              ]);
+              return { ...p, likeCount: likeRes.likeCount, commentCount: comments.length };
+            } catch {
+              return p; // 비로그인 등 실패 시 기존값 유지
+            }
+          })
+        );
+        setPosts(enriched);
       }
     });
   }, []);

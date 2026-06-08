@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { Heart, Bookmark, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Avatar, Badge, Card } from '../common/Styled';
+import FollowButton from '../social/FollowButton';
 
 const Article = styled.article``;
 
@@ -56,6 +57,10 @@ const Actions = styled.div`
     &:hover {
       background: ${({ theme }) => theme.colors.surfaceHover};
     }
+  }
+
+  button.liked {
+    color: #f85149;
   }
 `;
 
@@ -147,7 +152,10 @@ const TechList = styled.ul`
   }
 `;
 
-export default function PostDetailContent({ post }) {
+// liked / likeCount / onToggleLike 는 PostDetailPage에서 실제 상태를 내려준다.
+// (안 내려주면 기존처럼 post.likeCount를 그대로 보여줌)
+export default function PostDetailContent({ post, liked, likeCount, onToggleLike }) {
+  const count = likeCount ?? post.likeCount;
   return (
     <>
       <Article>
@@ -165,10 +173,15 @@ export default function PostDetailContent({ post }) {
               <span className="name">{post.author?.nickname}</span>
               <span className="time"> · {post.createdAt}</span>
             </div>
+            <FollowButton targetUserId={post.authorId} />   {/* ← 이 줄 추가 */}
           </AuthorInfo>
           <Actions>
-            <button type="button">
-              <Heart size={16} /> {post.likeCount}
+            <button
+              type="button"
+              className={liked ? 'liked' : ''}
+              onClick={onToggleLike}
+            >
+              <Heart size={16} fill={liked ? 'currentColor' : 'none'} /> {count}
             </button>
             <button type="button">
               <Bookmark size={16} />
@@ -290,5 +303,10 @@ export const CommentItem = styled.div`
     gap: 12px;
     font-size: 12px;
     color: ${({ theme }) => theme.colors.textMuted};
+
+    span {
+      cursor: pointer;
+      &:hover { color: ${({ theme }) => theme.colors.text}; }
+    }
   }
 `;
