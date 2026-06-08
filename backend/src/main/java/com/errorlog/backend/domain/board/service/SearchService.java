@@ -15,6 +15,7 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.board.repository.PostSearchRepository;
 import com.errorlog.backend.domain.board.repository.PostSpecification;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import com.errorlog.backend.global.dto.PageResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class SearchService {
 
 	private final PostRepository postRepository;
 	private final PostSearchRepository postSearchRepository;
+	private final UserRepository userRepository;
 	private final PostAccessService postAccessService;
 	private final PostEnrichmentService postEnrichmentService;
 
@@ -61,6 +63,23 @@ public class SearchService {
 							PostSpecification.byCategory(category),
 							PostSpecification.byFramework(framework));
 					page = postRepository.findAll(spec, pageable);
+				}
+			} else if (trimmedKeyword.startsWith("@")) {
+				String nickname = trimmedKeyword.substring(1).trim();
+				if (nickname.isBlank()) {
+					page = Page.empty(pageable);
+				} else {
+					page = userRepository.findByNickname(nickname)
+							.map(user -> {
+								Specification<Post> spec = PostSpecification.combine(
+										PostSpecification.activeOnly(),
+										PostSpecification.withTags(),
+										PostSpecification.byAuthor(user.getId()),
+										PostSpecification.byCategory(category),
+										PostSpecification.byFramework(framework));
+								return postRepository.findAll(spec, pageable);
+							})
+							.orElse(Page.empty(pageable));
 				}
 			} else {
 				String normalizedTag = tag != null && !tag.isBlank() ? Tag.normalize(tag) : null;

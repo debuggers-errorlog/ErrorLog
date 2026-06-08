@@ -26,6 +26,9 @@ public class EmailVerificationService {
     @Value("${email.verification.expiration}")
     private long expirationSeconds;
 
+    @Value("${email.dev-mode:false}")
+    private boolean devMode;
+
     private final Map<String, VerificationEntry> store = new ConcurrentHashMap<>();
 
     public void sendVerificationCode(String email, Purpose purpose) {
@@ -57,6 +60,11 @@ public class EmailVerificationService {
     }
 
     private void sendEmail(String to, String code, Purpose purpose) {
+        if (devMode) {
+            log.warn("[MAIL DEV MODE] {} → {} 인증 코드: {}", purpose, to, code);
+            return;
+        }
+
         String subject = purpose == Purpose.PASSWORD_RESET
                 ? "[Errorlog] 비밀번호 재설정 인증 코드"
                 : "[Errorlog] 이메일 인증 코드";
@@ -70,7 +78,12 @@ public class EmailVerificationService {
                 "코드는 " + (expirationSeconds / 60) + "분 후 만료됩니다.\n" +
                 "본인이 요청하지 않은 경우 이 메일을 무시하세요."
         );
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+        } catch (Exception e) {
+            log.error("이메일 발송 실패 ({}): Gmail 앱 비밀번호·MAIL_DEV_MODE 설정 확인", to, e);
+            throw e;
+        }
     }
 
     private String generateCode() {

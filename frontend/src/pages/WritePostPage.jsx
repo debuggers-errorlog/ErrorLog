@@ -41,7 +41,6 @@ export default function WritePostPage() {
   const [category, setCategory] = useState('RUNTIME');
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState('');
-  const [frameworks, setFrameworks] = useState([]);
   const [visibility, setVisibility] = useState('PUBLIC');
   const [submitting, setSubmitting] = useState(false);
 
@@ -60,10 +59,12 @@ export default function WritePostPage() {
   };
 
   const toggleFramework = (name) => {
-    setFrameworks((prev) =>
-      prev.includes(name) ? prev.filter((f) => f !== name) : [...prev, name],
+    setTags((prev) =>
+      prev.includes(name) ? prev.filter((t) => t !== name) : [...prev, name],
     );
   };
+
+  const primaryFramework = FRAMEWORKS.find((fw) => tags.includes(fw)) ?? null;
 
   const handleSubmit = async () => {
     if (!title.trim() || !content.trim()) {
@@ -82,7 +83,7 @@ export default function WritePostPage() {
         troubleshootingMeta: {
           category,
           environment: {
-            framework: frameworks[0] || null,
+            framework: primaryFramework,
           },
           error: { message: title },
           symptom: content.slice(0, 200),
@@ -135,7 +136,26 @@ export default function WritePostPage() {
             </Card>
 
             <Card style={{ marginBottom: 20 }}>
-              <SectionTitle>에러 태그</SectionTitle>
+              <SectionTitle>프레임워크/기술 스택</SectionTitle>
+              <p style={{ fontSize: 12, color: 'var(--text-muted, #8b949e)', margin: '0 0 12px' }}>
+                선택하면 아래 태그에 자동으로 추가됩니다.
+              </p>
+              <FrameworkList>
+                {FRAMEWORKS.map((fw) => (
+                  <FrameworkItem key={fw}>
+                    <input
+                      type="checkbox"
+                      checked={tags.includes(fw)}
+                      onChange={() => toggleFramework(fw)}
+                    />
+                    {fw}
+                  </FrameworkItem>
+                ))}
+              </FrameworkList>
+            </Card>
+
+            <Card style={{ marginBottom: 20 }}>
+              <SectionTitle>태그</SectionTitle>
               <TagInputRow>
                 <input
                   placeholder="태그 입력 (예: CORS, 404)"
@@ -151,28 +171,15 @@ export default function WritePostPage() {
                 {tags.map((tag) => (
                   <TagChip key={tag}>
                     #{tag}
-                    <button type="button" onClick={() => setTags(tags.filter((t) => t !== tag))}>
+                    <button
+                      type="button"
+                      onClick={() => setTags(tags.filter((t) => t !== tag))}
+                    >
                       ×
                     </button>
                   </TagChip>
                 ))}
               </TagChipList>
-            </Card>
-
-            <Card style={{ marginBottom: 20 }}>
-              <SectionTitle>프레임워크/기술 스택</SectionTitle>
-              <FrameworkList>
-                {FRAMEWORKS.map((fw) => (
-                  <FrameworkItem key={fw}>
-                    <input
-                      type="checkbox"
-                      checked={frameworks.includes(fw)}
-                      onChange={() => toggleFramework(fw)}
-                    />
-                    {fw}
-                  </FrameworkItem>
-                ))}
-              </FrameworkList>
             </Card>
 
             <Card>

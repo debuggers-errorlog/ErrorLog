@@ -39,7 +39,14 @@ export default function SearchPage() {
       onSearchChange={setSearchQuery}
     >
       {loadError && <p style={{ color: '#f85149', marginBottom: 16 }}>{loadError}</p>}
-      <PostFeed posts={posts} title={`"${q}" 검색 결과`} />
+      <PostFeed
+        posts={posts}
+        title={
+          q.startsWith('@')
+            ? `@${q.slice(1)} 님이 작성한 글`
+            : `"${q}" 검색 결과`
+        }
+      />
     </MainLayout>
   );
 }

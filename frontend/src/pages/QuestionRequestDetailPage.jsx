@@ -248,15 +248,12 @@ export default function QuestionRequestDetailPage() {
             try {
                 const res = await getRequestDetail(requestId)
                 const detail = unwrapApiData(res)
-                console.log('[DEBUG] request detail:', detail)
                 if (detail && String(detail.id) === String(requestId)) {
                     setRequest(detail)
                 } else {
-                    console.warn('[mock] id 불일치 → mock 사용', detail?.id, requestId)
                     setRequest(getMockRequestDetail(requestId))
                 }
             } catch (e) {
-                console.warn('[mock] getRequestDetail 실패 → mock 사용', e)
                 setRequest(getMockRequestDetail(requestId))
             } finally {
                 setLoading(false)

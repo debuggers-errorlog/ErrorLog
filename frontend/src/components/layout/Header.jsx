@@ -61,7 +61,7 @@ export default function Header({ searchValue, onSearchChange, onSearchSubmit }) 
           <Search />
           <input
             type="search"
-            placeholder="에러 코드나 키워드로 검색..."
+            placeholder="키워드, #태그, @닉네임 검색..."
             value={searchValue ?? ''}
             onChange={(e) => onSearchChange?.(e.target.value)}
             onKeyDown={handleSearchKeyDown}

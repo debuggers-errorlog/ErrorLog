@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Receipt } from "lucide-react";
 import styled from "styled-components";
-import { jwtDecode } from "jwt-decode";
 import { getSettlement } from '../api/paymentApi';
+import { getCurrentUserId } from '../utils/authSession';
 
 const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
@@ -151,9 +151,7 @@ const TABS = [
 
 export function SettlementPage() {
   const navigate = useNavigate();
-  //const creatorId = 2; // JWT 연동 후 제거
-  const token = localStorage.getItem("accessToken");
-  const creatorId = token ? jwtDecode(token).userId : null;
+  const creatorId = getCurrentUserId();
 
   const [activeTab, setActiveTab] = useState("SUBSCRIPTION");
   const [data, setData] = useState(null);
@@ -173,7 +171,7 @@ export function SettlementPage() {
       }
     }
     fetchSettlement();
-  }, [activeTab]);
+  }, [activeTab, creatorId]);
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);

@@ -68,6 +68,8 @@ jwt:
 email:
   verification:
     expiration: 300
+  # true면 실제 메일 대신 서버 로그에 인증 코드 출력 (로컬/시연용)
+  dev-mode: ${MAIL_DEV_MODE:false}
 
 frontend:
   url: ${FRONTEND_URL}
