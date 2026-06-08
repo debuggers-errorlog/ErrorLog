@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Receipt } from "lucide-react";
 import styled from "styled-components";
+import { jwtDecode } from "jwt-decode";
 import { getSettlement } from '../api/paymentApi';
 
 const Page = styled.div`
@@ -150,7 +151,9 @@ const TABS = [
 
 export function SettlementPage() {
   const navigate = useNavigate();
-  const creatorId = 2; // JWT 연동 후 제거
+  //const creatorId = 2; // JWT 연동 후 제거
+  const token = localStorage.getItem("accessToken");
+  const creatorId = token ? jwtDecode(token).userId : null;
 
   const [activeTab, setActiveTab] = useState("SUBSCRIPTION");
   const [data, setData] = useState(null);

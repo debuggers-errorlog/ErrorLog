@@ -7,8 +7,20 @@ import { getSubscriptionInfo } from '../api/subscriptionApi';
 const Page = styled.div`
   background: ${({ theme }) => theme.colors.bg};
   min-height: 100vh;
+  width: 100%;
   padding: 2rem;
   color: ${({ theme }) => theme.colors.text};
+  box-sizing: border-box;
+`;
+
+const Content = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const CardWrapper = styled.div`
+  max-width: 600px;
+  margin: 0 auto;
 `;
 
 const LoadingText = styled.div`
@@ -288,76 +300,80 @@ export function SubscriptionInfoPage() {
 
     return (
         <Page>
-            <TopHeader>
-                <TopTitle>크리에이터 구독</TopTitle>
-                <TopSubtitle>전문 지식을 지속적으로 받아보세요</TopSubtitle>
-            </TopHeader>
+            <Content>
+                <CardWrapper>
+                    <TopHeader>
+                        <TopTitle>크리에이터 구독</TopTitle>
+                        <TopSubtitle>전문 지식을 지속적으로 받아보세요</TopSubtitle>
+                    </TopHeader>
 
-            <CreatorHeader>
-                <CreatorAvatar>{info.creatorName[0]}</CreatorAvatar>
-                <div>
-                    <CreatorName>{info.creatorName} 크리에이터</CreatorName>
-                    <CreatorCta>구독 시작하기</CreatorCta>
-                </div>
-            </CreatorHeader>
+                    <CreatorHeader>
+                        <CreatorAvatar>{info.creatorName[0]}</CreatorAvatar>
+                        <div>
+                            <CreatorName>{info.creatorName} 크리에이터</CreatorName>
+                            <CreatorCta>구독 시작하기</CreatorCta>
+                        </div>
+                    </CreatorHeader>
 
-            <PriceCard>
-                <PriceLabel>월 구독료</PriceLabel>
-                <div>
-                    <PriceAmount>₩{info.price.toLocaleString()}</PriceAmount>
-                    <PricePeriod> / 월</PricePeriod>
-                </div>
-                <PriceDesc>{info.description}</PriceDesc>
-                <DateRange>
-                    <Calendar size={14} />
-                    <span>{formatDate(today)} ~ {formatDate(nextMonth)} · 부가세 포함 금액</span>
-                </DateRange>
-            </PriceCard>
+                    <PriceCard>
+                        <PriceLabel>월 구독료</PriceLabel>
+                        <div>
+                            <PriceAmount>₩{info.price.toLocaleString()}</PriceAmount>
+                            <PricePeriod> / 월</PricePeriod>
+                        </div>
+                        <PriceDesc>{info.description}</PriceDesc>
+                        <DateRange>
+                            <Calendar size={14} />
+                            <span>{formatDate(today)} ~ {formatDate(nextMonth)} · 부가세 포함 금액</span>
+                        </DateRange>
+                    </PriceCard>
 
-            <SectionTitle>
-                <Star size={16} />
-                구독 혜택
-            </SectionTitle>
+                    <SectionTitle>
+                        <Star size={16} />
+                        구독 혜택
+                    </SectionTitle>
 
-            <BenefitCard>
-                <BenefitIcon><Unlock size={16} /></BenefitIcon>
-                <BenefitText>모든 유료글 무제한 열람</BenefitText>
-            </BenefitCard>
-            <BenefitCard>
-                <BenefitIcon><Bell size={16} /></BenefitIcon>
-                <BenefitText>새 프리미엄 글 알림 수신</BenefitText>
-            </BenefitCard>
+                    <BenefitCard>
+                        <BenefitIcon><Unlock size={16} /></BenefitIcon>
+                        <BenefitText>모든 유료글 무제한 열람</BenefitText>
+                    </BenefitCard>
+                    <BenefitCard>
+                        <BenefitIcon><Bell size={16} /></BenefitIcon>
+                        <BenefitText>새 프리미엄 글 알림 수신</BenefitText>
+                    </BenefitCard>
 
-            <div style={{ marginTop: "1.5rem" }}>
-                <SectionTitle>
-                    <FileText size={16} />
-                    프리미엄 콘텐츠
-                </SectionTitle>
-                <PostCountBadge>
-                    <Lock size={12} />
-                    총 {info.premiumPostCount}개의 프리미엄 글
-                </PostCountBadge>
-                {info.recentPremiumPosts.map((post) => (
-                    <PostItem key={post.id}>
-                        <PostTitle>{post.title}</PostTitle>
-                        <PostLock><Lock size={13} /></PostLock>
-                    </PostItem>
-                ))}
-            </div>
+                    <div style={{ marginTop: "1.5rem" }}>
+                        <SectionTitle>
+                            <FileText size={16} />
+                            프리미엄 콘텐츠
+                        </SectionTitle>
+                        <PostCountBadge>
+                            <Lock size={12} />
+                            총 {info.premiumPostCount}개의 프리미엄 글
+                        </PostCountBadge>
+                        {info.recentPremiumPosts.map((post) => (
+                            <PostItem key={post.id}>
+                                <PostTitle>{post.title}</PostTitle>
+                                <PostLock><Lock size={13} /></PostLock>
+                            </PostItem>
+                        ))}
+                    </div>
 
-            <CtaSection>
-                <TotalPrice>
-                    <TotalLabel>총 결제 금액</TotalLabel>
-                    <TotalAmount>₩{info.price.toLocaleString()}</TotalAmount>
-                </TotalPrice>
-                <BtnRow>
-                    <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
-                    <CtaBtn onClick={() => navigate(`/subscriptions/${creatorId}/payment`, { state: { info } })}>
-                        <Heart size={16} />
-                        구독 시작하기
-                    </CtaBtn>
-                </BtnRow>
-            </CtaSection>
+                    <CtaSection>
+                        <TotalPrice>
+                            <TotalLabel>총 결제 금액</TotalLabel>
+                            <TotalAmount>₩{info.price.toLocaleString()}</TotalAmount>
+                        </TotalPrice>
+                        <BtnRow>
+                            <CancelBtn onClick={() => navigate(-1)}>취소</CancelBtn>
+                            <CtaBtn onClick={() => navigate(`/subscriptions/${creatorId}/payment`, { state: { info } })}>
+                                <Heart size={16} />
+                                구독 시작하기
+                            </CtaBtn>
+                        </BtnRow>
+                    </CtaSection>
+                </CardWrapper>
+            </Content>
         </Page>
     );
 }

@@ -5,6 +5,7 @@ import com.errorlog.backend.domain.payment.enums.PaymentType;
 import com.errorlog.backend.domain.payment.service.SettlementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,8 +22,8 @@ public class SettlementController {
     // 정산 조회 (구독/질문글/전체)
     @GetMapping("/settlement")
     public ResponseEntity<SettlementResponse> getSettlement(
-            @RequestParam Long creatorId,
+            @AuthenticationPrincipal Long userId,
             @RequestParam(required = false) PaymentType paymentType) {
-        return ResponseEntity.ok(settlementService.getSettlement(creatorId, paymentType));
+        return ResponseEntity.ok(settlementService.getSettlement(userId, paymentType));
     }
 }
