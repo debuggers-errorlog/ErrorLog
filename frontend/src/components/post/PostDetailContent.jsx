@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Heart, Bookmark, Share2, UserPlus, UserCheck } from 'lucide-react';
+import { Heart, UserPlus, UserCheck } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Avatar, Badge, Button, Card } from '../common/Styled';
 import MarkdownImage from './MarkdownImage';
@@ -208,12 +208,6 @@ export default function PostDetailContent({
             style={liked ? { color: '#f85149' } : undefined}
           >
             <Heart size={16} fill={liked ? 'currentColor' : 'none'} /> {post.likeCount}
-          </button>
-          <button type="button">
-            <Bookmark size={16} />
-          </button>
-          <button type="button">
-            <Share2 size={16} />
           </button>
         </Actions>
       </MetaRow>
