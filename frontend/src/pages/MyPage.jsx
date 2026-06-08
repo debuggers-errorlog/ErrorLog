@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
-import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing, getMyQuestions } from '../api/user'
+import { getMyProfile, updateMyProfile, getMyPosts, getMyFollowing, getMyQuestions, getReceivedQuestions } from '../api/user'
 import { logout, withdraw } from '../api/auth'
 import { getSubscriptionList } from '../api/subscriptionApi'
 import Header from '../components/layout/Header'
@@ -337,6 +337,23 @@ const PageInfo = styled.span`
   color: ${({ theme }) => theme.colors.textMuted};
 `
 
+const SubTabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border};
+  margin-bottom: 20px;
+  gap: 4px;
+`
+
+const SubTab = styled.button`
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: ${({ $active }) => ($active ? 600 : 400)};
+  color: ${({ $active, theme }) => ($active ? theme.colors.accent : theme.colors.textMuted)};
+  border-bottom: 2px solid ${({ $active, theme }) => ($active ? theme.colors.accent : 'transparent')};
+  transition: color 0.15s;
+  &:hover { color: ${({ theme }) => theme.colors.text}; }
+`
+
 const QuestionCard = styled.div`
   background: ${({ theme }) => theme.colors.surface};
   border: 1px solid ${({ theme }) => theme.colors.border};
@@ -590,7 +607,9 @@ export default function MyPage() {
   const [followingLoading, setFollowingLoading] = useState(false)
   const [followingCount, setFollowingCount] = useState(null)
   const [myQuestions, setMyQuestions] = useState([])
+  const [receivedQuestions, setReceivedQuestions] = useState([])
   const [questionsLoading, setQuestionsLoading] = useState(false)
+  const [questionTab, setQuestionTab] = useState('sent')
 
   useEffect(() => {
     getMyProfile()
@@ -635,9 +654,10 @@ export default function MyPage() {
   useEffect(() => {
     if (activeNav !== 'questions') return
     setQuestionsLoading(true)
-    getMyQuestions()
-      .then(({ data }) => setMyQuestions(data.data ?? data))
-      .finally(() => setQuestionsLoading(false))
+    Promise.all([
+      getMyQuestions().then(({ data }) => setMyQuestions(data.data ?? data)),
+      getReceivedQuestions().then(({ data }) => setReceivedQuestions(data.data ?? data)),
+    ]).finally(() => setQuestionsLoading(false))
   }, [activeNav])
 
   const handleChange = (e) => {
@@ -833,13 +853,21 @@ export default function MyPage() {
           {activeNav === 'questions' && !editMode && (
             <>
               <SectionTitle>내 질문</SectionTitle>
+              <SubTabs>
+                <SubTab $active={questionTab === 'sent'} onClick={() => setQuestionTab('sent')}>
+                  보낸 질문 ({myQuestions.length})
+                </SubTab>
+                <SubTab $active={questionTab === 'received'} onClick={() => setQuestionTab('received')}>
+                  받은 질문 ({receivedQuestions.length})
+                </SubTab>
+              </SubTabs>
               {questionsLoading ? (
                 <EmptyText>불러오는 중...</EmptyText>
-              ) : myQuestions.length === 0 ? (
-                <EmptyText>작성한 질문이 없습니다.</EmptyText>
+              ) : (questionTab === 'sent' ? myQuestions : receivedQuestions).length === 0 ? (
+                <EmptyText>{questionTab === 'sent' ? '보낸 질문이 없습니다.' : '받은 질문이 없습니다.'}</EmptyText>
               ) : (
-                myQuestions.map((q) => (
-                  <QuestionCard key={q.id} onClick={() => navigate(`/questions/${q.id}`)}>
+                (questionTab === 'sent' ? myQuestions : receivedQuestions).map((q) => (
+                  <QuestionCard key={q.id} onClick={() => navigate(`/questions/${q.id}`)} style={{ cursor: 'pointer' }}>
                     <QuestionTop>
                       <QuestionTitle>{q.title}</QuestionTitle>
                       <QuestionBadge $status={q.status}>
@@ -848,7 +876,10 @@ export default function MyPage() {
                       </QuestionBadge>
                     </QuestionTop>
                     <QuestionMeta>
-                      <span>멘토: @{q.mentorNickname}</span>
+                      {questionTab === 'sent'
+                        ? <span>멘토: @{q.mentorNickname}</span>
+                        : <span>질문자: @{q.userNickname}</span>
+                      }
                       <span>답변 {q.answerCount}개</span>
                       <span style={{ marginLeft: 'auto' }}>
                         {new Date(q.createdAt).toLocaleDateString('ko-KR')}

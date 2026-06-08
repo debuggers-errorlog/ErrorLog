@@ -14,3 +14,6 @@ export const getMyFollowing = () =>
 
 export const getMyQuestions = () =>
   api.get('/questions/my/asker')
+
+export const getReceivedQuestions = () =>
+  api.get('/questions/my/mentor')
