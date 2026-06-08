@@ -1,7 +1,9 @@
 package com.errorlog.backend.domain.board.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +22,8 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 import com.errorlog.backend.domain.board.domain.vo.TroubleshootingMeta;
 import com.errorlog.backend.domain.board.repository.PostRepository;
 import com.errorlog.backend.domain.board.repository.PostSpecification;
+import com.errorlog.backend.domain.user.entity.User;
+import com.errorlog.backend.domain.user.repository.UserRepository;
 import com.errorlog.backend.global.dto.PageResponse;
 import com.errorlog.backend.global.exception.AppException;
 import com.errorlog.backend.global.exception.ErrorCode;
@@ -35,6 +39,7 @@ public class PostService {
 	private final TagService tagService;
 	private final PostAccessService postAccessService;
 	private final PostImageService postImageService;
+	private final UserRepository userRepository;
 
 	@Transactional(readOnly = true)
 	public PageResponse<PostSummaryResponse> listPosts(
@@ -52,8 +57,20 @@ public class PostService {
 				PostSpecification.byCategory(category),
 				PostSpecification.byFramework(framework));
 
-		Page<PostSummaryResponse> page = postRepository.findAll(spec, pageable)
-				.map(post -> PostSummaryResponse.from(post, postAccessService.isLocked(post, viewerId)));
+		Page<Post> postPage = postRepository.findAll(spec, pageable);
+
+		// 작성자 닉네임을 한 번에 조회해서 매핑 (게시글마다 조회하는 N+1 방지)
+		List<Long> authorIds = postPage.getContent().stream()
+				.map(Post::getUserId)
+				.distinct()
+				.toList();
+		Map<Long, String> nicknameMap = userRepository.findAllById(authorIds).stream()
+				.collect(Collectors.toMap(User::getId, User::getNickname));
+
+		Page<PostSummaryResponse> page = postPage.map(post -> PostSummaryResponse.from(
+				post,
+				postAccessService.isLocked(post, viewerId),
+				nicknameMap.get(post.getUserId())));
 
 		return PageResponse.from(page);
 	}

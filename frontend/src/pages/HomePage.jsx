@@ -16,7 +16,7 @@ function mapApiPost(apiPost) {
   return {
     id: apiPost.id,
     authorId: apiPost.authorId,
-    author: { nickname: `User${apiPost.authorId}`, avatarColor: '#3b82f6' },
+    author: { nickname: apiPost.authorNickname ?? `User${apiPost.authorId}`, avatarColor: '#3b82f6' },
     title: apiPost.title,
     excerpt: apiPost.excerpt || '내용 미리보기 없음',
     category: 'backend',
@@ -45,9 +45,9 @@ export default function HomePage() {
     fetchPosts().then(async (data) => {
       if (Array.isArray(data) && data.length > 0 && data[0].title) {
         const mapped = data.map(mapApiPost);
-        setPosts(mapped);
+        setPosts(mapped); // 일단 빠르게 표시
 
-        // 좋아요/댓글 수를 API로 게시글마다 채워서 실시간 반영
+        // 좋아요/댓글 수를 Roof API로 게시글마다 채워서 실시간 반영
         const enriched = await Promise.all(
           mapped.map(async (p) => {
             try {

@@ -11,6 +11,7 @@ import com.errorlog.backend.domain.board.domain.enums.TroubleshootingCategory;
 public record PostSummaryResponse(
 		Long id,
 		Long authorId,
+		String authorNickname,   // 추가: 작성자 닉네임
 		String title,
 		String excerpt,
 		PostVisibility visibility,
@@ -21,7 +22,12 @@ public record PostSummaryResponse(
 		int viewCount,
 		LocalDateTime createdAt) {
 
+	// 닉네임 없이 호출하던 기존 코드 호환용 (예: 검색 서비스)
 	public static PostSummaryResponse from(Post post, boolean locked) {
+		return from(post, locked, null);
+	}
+
+	public static PostSummaryResponse from(Post post, boolean locked, String authorNickname) {
 		String excerpt = locked
 				? resolveLockedExcerpt(post)
 				: truncate(post.getContent(), 160);
@@ -33,6 +39,7 @@ public record PostSummaryResponse(
 		return new PostSummaryResponse(
 				post.getId(),
 				post.getUserId(),
+				authorNickname,
 				post.getTitle(),
 				excerpt,
 				post.getVisibility(),
